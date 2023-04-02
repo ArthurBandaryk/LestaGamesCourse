@@ -44,7 +44,7 @@ jobs:
         
       - name: 01-1-homework(simple hello world)
         run: |
-          cmake && \
+          cmake ../ && \
           cmake --build .
           cmake --install .
           ctest
