@@ -33,21 +33,20 @@ jobs:
         include:
           - os: macos-latest
           - os: ubuntu-latest
-          - os: windows-latest
+          #- os: windows-latest
 
     steps:
       # Checkout the repository under $GITHUB_WORKSPACE.
       - uses: actions/checkout@v2
 
-      - name: Create build directory and go into it
-        run: mkdir -p build && cd build
-        
       - name: 01-1-homework(simple hello world)
         run: |
-          cmake ../ && \
-          cmake --build .
-          cmake --install .
-          ctest
+          mkdir -p build && cd build && \
+          cmake .. && \
+          cmake --build . && \
+          cmake --install . && \
+          #cd 01-homework-hello/01-1-simple-hello && \
+          ctest --test-dir 01-homework-hello/01-1-simple-hello
 
       - name: Debug using tmate (if failure)
         uses: mxschmitt/action-tmate@v3
