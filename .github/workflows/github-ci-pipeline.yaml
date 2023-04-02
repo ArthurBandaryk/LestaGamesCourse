@@ -32,7 +32,7 @@ jobs:
       matrix:
         include:
           - os: ubuntu-latest
-          # Support for macOS and Windows might be added in the future.
+          # TODO(arc1): add support for macOS and Windows.
           # - os: macos-latest
           # - os: windows-latest
 
