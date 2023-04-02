@@ -1,0 +1,60 @@
+name: Build Targets and Run All Tests
+
+# Here I use action's triggers 'push' and 'pull_request'.
+# The strategy is the following: this action will be
+# triggered on any push to 'main' branch and any pull
+# request to any branch. Thus we avoid duplicate work-
+# flows.
+on:
+  push:
+    branches:
+      - "main"
+  pull_request:
+    branches:
+      - "**"
+  workflow_dispatch:
+    inputs:
+      # Live debug failures using tmate by toggling input parameter
+      # 'debug_enabled':
+      # https://github.com/mxschmitt/action-tmate#manually-triggered-debug
+      # When manually running this workflow:
+      # https://docs.github.com/en/actions/managing-workflow-runs/manually-running-a-workflow
+      debug_enabled:
+        description: 'Enable tmate debugging'
+        type: boolean
+        default: false
+
+jobs:
+  build-and-test:
+    name: Build and Test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+          - os: ubuntu-latest
+          - os: windows-latest
+
+    steps:
+      # Checkout the repository under $GITHUB_WORKSPACE.
+      - uses: actions/checkout@v2
+
+      #- name: Create `build` directory
+      #  run: mkdir -p build
+      - name: Check for Ninja version
+        run: ninja --version
+        
+      - name: 01-1-homework(simple hello world)
+        run: |
+          cmake -G Ninja . && \
+          cmake --build .
+          cmake --install .
+          ctest
+
+      - name: Debug using tmate (if failure)
+        uses: mxschmitt/action-tmate@v3
+        # Optionally enable tmate debugging if the workflow was manually-triggered
+        # with `debug_enabled` set to `true`.
+        # https://github.com/mxschmitt/action-tmate#manually-triggered-debug
+        if: ${{ failure() && github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
+    
