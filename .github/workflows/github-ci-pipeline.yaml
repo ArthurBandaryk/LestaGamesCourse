@@ -31,15 +31,16 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: macos-latest
           - os: ubuntu-latest
-          #- os: windows-latest
+          # Support for macOS and Windows might be added in the future.
+          # - os: macos-latest
+          # - os: windows-latest
 
     steps:
       # Checkout the repository under $GITHUB_WORKSPACE.
       - uses: actions/checkout@v2
 
-      - name: 01-1-homework(simple hello world) using gcc
+      - name: 01-1-homework(simple hello world) using GNU
         run: |
           mkdir -p build && cd build && \
           cmake .. && \
@@ -49,8 +50,7 @@ jobs:
 
       - name: 01-1-homework(simple hello world) using clang
         run: |
-          pwd && ls -la && \
-          mkdir -p build && cd build && \
+          rm -r build && mkdir build && cd build && \
           CXX=clang++ cmake .. && \
           CXX=clang++ cmake --build . && \
           cmake --install . && \
