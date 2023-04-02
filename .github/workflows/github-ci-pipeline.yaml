@@ -39,14 +39,12 @@ jobs:
       # Checkout the repository under $GITHUB_WORKSPACE.
       - uses: actions/checkout@v2
 
-      #- name: Create `build` directory
-      #  run: mkdir -p build
-      - name: Check for Ninja version
-        run: ninja --version
+      - name: Create build directory and go into it
+        run: mkdir -p build && cd build
         
       - name: 01-1-homework(simple hello world)
         run: |
-          cmake -G Ninja . && \
+          cmake && \
           cmake --build .
           cmake --install .
           ctest
