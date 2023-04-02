@@ -39,14 +39,22 @@ jobs:
       # Checkout the repository under $GITHUB_WORKSPACE.
       - uses: actions/checkout@v2
 
-      - name: 01-1-homework(simple hello world)
+      - name: 01-1-homework(simple hello world) using gcc
         run: |
           mkdir -p build && cd build && \
           cmake .. && \
           cmake --build . && \
           cmake --install . && \
-          #cd 01-homework-hello/01-1-simple-hello && \
           ctest --test-dir 01-homework-hello/01-1-simple-hello
+
+      - name: 01-1-homework(simple hello world) using clang
+        run: |
+          pwd && ls -la && \
+          mkdir -p build && cd build && \
+          CXX=clang++ cmake .. && \
+          CXX=clang++ cmake --build . && \
+          cmake --install . && \
+          ctest --test-dir 01-homework-hello/01-1-simple-hello    
 
       - name: Debug using tmate (if failure)
         uses: mxschmitt/action-tmate@v3
