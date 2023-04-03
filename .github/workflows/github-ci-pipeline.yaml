@@ -47,7 +47,9 @@ jobs:
           cmake --build . && \
           cmake --install . && \
           ctest --test-dir 01-homework-hello/01-1-simple-hello && \
-          ctest --test-dir 01-homework-hello/01-2-hello-libs/hello-bin-with-static-and-shared
+          ctest --test-dir 01-homework-hello/01-2-hello-libs/hello-bin-with-static-and-shared && \
+          cd ../bin/install && ./simple-hello && \
+          ./hello-bin-static && ./hello-bin-dynamic
 
       - name: 01-homework using clang
         run: |
@@ -56,7 +58,9 @@ jobs:
           CXX=clang++ cmake --build . && \
           cmake --install . && \
           ctest --test-dir 01-homework-hello/01-1-simple-hello && \
-          ctest --test-dir 01-homework-hello/01-2-hello-libs/hello-bin-with-static-and-shared
+          ctest --test-dir 01-homework-hello/01-2-hello-libs/hello-bin-with-static-and-shared && \
+          cd ../bin/install && ./simple-hello && \
+          ./hello-bin-static && ./hello-bin-dynamic
 
       - name: Debug using tmate (if failure)
         uses: mxschmitt/action-tmate@v3

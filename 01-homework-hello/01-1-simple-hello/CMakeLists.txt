@@ -13,7 +13,8 @@ target_compile_options(
                        "$<${msvc_like_cxx}:$<BUILD_INTERFACE:-W3;>>")
 
 # Set install rules.
-install(TARGETS simple-hello DESTINATION ${PROJECT_SOURCE_DIR}/install/bin)
+install(TARGETS simple-hello
+        DESTINATION ${PROJECT_SOURCE_DIR}/../../bin/install)
 
 # Enable testing.
 enable_testing()
