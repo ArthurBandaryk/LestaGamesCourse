@@ -40,6 +40,14 @@ jobs:
       # Checkout the repository under $GITHUB_WORKSPACE.
       - uses: actions/checkout@v2
 
+      - name: Build and push Docker image
+        uses: mr-smithers-excellent/docker-build-push@v6
+        with:
+          image: arthurbandaryk/hello-world-tasks
+          registry: docker.io
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}    
+
       - name: 01-homework using GNU
         run: |
           mkdir -p build && cd build && \
