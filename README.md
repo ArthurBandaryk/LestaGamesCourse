@@ -50,15 +50,16 @@ ctest --test-dir build/01-homework-hello/01-1-simple-hello/
 
 # Visual Studio Code setup
 
-If you are using []`Visual Studio Code`](https://code.visualstudio.com/) you can configure the project following the next steps:
+If you are using [`Visual Studio Code`](https://code.visualstudio.com/) you can configure the project following the next steps:
 
 1. Firstly make sure that you have installed the following plugins for better development process:
-..* [`C/C++`](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools)
-..* [Clang-format](https://marketplace.visualstudio.com/items?itemName=xaver.clang-format)
-..* [CMake](https://marketplace.visualstudio.com/items?itemName=josetr.cmake-language-support-vscode)
-..* [CMake Tools](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cmake-tools)
-..* [cmake-format](https://marketplace.visualstudio.com/items?itemName=cheshirekow.cmake-format#:~:text=The%20cmake%2Dformat%20extension%20for,for%20cmake%2Dformat%20in%20github.)
-..* [Python](https://marketplace.visualstudio.com/items?itemName=ms-python.python)
+
+    * [`C/C++`](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools)
+    * [Clang-format](https://marketplace.visualstudio.com/items?itemName=xaver.clang-format)
+    * [CMake](https://marketplace.visualstudio.com/items?itemName=josetr.cmake-language-support-vscode)
+    * [CMake Tools](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cmake-tools)
+    * [cmake-format](https://marketplace.visualstudio.com/items?itemName=cheshirekow.cmake-format#:~:text=The%20cmake%2Dformat%20extension%20for,for%20cmake%2Dformat%20in%20github.)
+    * [Python](https://marketplace.visualstudio.com/items?itemName=ms-python.python)
 
 2. You can base on the following `.vscode/settings.json` to specify pathes to executables needed (clang-format, cmake-format, compilers, etc.)
 
