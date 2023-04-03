@@ -5,6 +5,5 @@ project(hello-world-tasks)
 # Creating simple binary.
 add_subdirectory(01-1-simple-hello)
 
-# Creating static and shared library.
-
-# add_subdirectory(01-2-hello-libs)
+# Creating static and shared library and linking them to the main executable.
+add_subdirectory(01-2-hello-libs)

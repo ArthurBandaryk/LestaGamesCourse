@@ -1,0 +1,9 @@
+// Macro for optional usage of 'hello' library.
+#cmakedefine USE_HELLO_LIB
+
+#ifdef USE_HELLO_LIB
+// clang-format off
+#define PROGRAMM_VERSION_MAJOR @static-and-shared-libs_VERSION_MAJOR@
+#define PROGRAMM_VERSION_MINOR @static-and-shared-libs_VERSION_MINOR@
+// clang-format on
+#endif
