@@ -50,7 +50,7 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}    
 
-      - name: 01-homework using GNU
+      - name: All Homework using GNU
         run: |
           mkdir -p build && cd build && \
           cmake .. && \
@@ -58,10 +58,11 @@ jobs:
           cmake --install . && \
           ctest --test-dir 01-homework-hello/01-1-simple-hello && \
           ctest --test-dir 01-homework-hello/01-2-hello-libs/hello-bin-with-static-and-shared && \
+          ctest --test-dir 02-homework-sdl-lib -R .*exit.code.* && \
           cd ../bin/install && ./simple-hello && \
-          ./hello-bin-static && ./hello-bin-dynamic
+          ./hello-bin-static && ./hello-bin-dynamic && ./sdl-bin-static
 
-      - name: 01-homework using clang
+      - name: All homework using clang
         run: |
           rm -r build && mkdir build && cd build && \
           CXX=clang++ cmake .. && \
@@ -69,8 +70,9 @@ jobs:
           cmake --install . && \
           ctest --test-dir 01-homework-hello/01-1-simple-hello && \
           ctest --test-dir 01-homework-hello/01-2-hello-libs/hello-bin-with-static-and-shared && \
+          ctest --test-dir 02-homework-sdl-lib -R .*exit.code.* && \
           cd ../bin/install && ./simple-hello && \
-          ./hello-bin-static && ./hello-bin-dynamic
+          ./hello-bin-static && ./hello-bin-dynamic && ./sdl-bin-static
 
       - name: Debug using tmate (if failure)
         uses: mxschmitt/action-tmate@v3
