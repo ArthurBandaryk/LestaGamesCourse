@@ -11,7 +11,7 @@ Linux x64(gcc, clang) | [![Ubuntu](https://github.com/ArthurBandaryk/LestaGamesC
 # Building project
 
 ```
-git clone https://github.com/ArthurBandaryk/LestaGamesCourse.git
+git clone --recurse-submodules https://github.com/ArthurBandaryk/LestaGamesCourse.git
 cd LestaGamesCourse/
 mkdir -p build && cd build
 cmake -G Ninja ..
@@ -38,7 +38,7 @@ or if you are already in `bin/install` directory:
 You can run `CMake` tests from the root directory in the following way:
 
 ```
-ctest --test-dir build/01-homework-hello/01-1-simple-hello/
+ctest --test-dir build/path-to-dir-containing-executables-needed
 ```
 
 # Visual Studio Code setup
