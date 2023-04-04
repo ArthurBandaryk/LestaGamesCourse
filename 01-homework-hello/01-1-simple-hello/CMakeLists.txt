@@ -18,4 +18,4 @@ install(TARGETS simple-hello
 
 # Enable testing.
 enable_testing()
-add_test(NAME check_exit_code COMMAND simple-hello)
+add_test(NAME check-exit-code COMMAND simple-hello)
