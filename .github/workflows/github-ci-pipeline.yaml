@@ -39,6 +39,8 @@ jobs:
     steps:
       # Checkout the repository under $GITHUB_WORKSPACE.
       - uses: actions/checkout@v2
+        with:
+          submodules: "recursive"
 
       - name: Build and push Docker image
         uses: mr-smithers-excellent/docker-build-push@v6
