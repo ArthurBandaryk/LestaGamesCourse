@@ -42,8 +42,6 @@ target_link_libraries(hello-bin-dynamic PRIVATE ${EXTRA_DYNAMIC_LIB}
 set_target_properties(
   hello-bin-dynamic PROPERTIES INSTALL_RPATH
                                ${CMAKE_CURRENT_LIST_DIR}/../../../bin/install)
-set_target_properties(hello-bin-dynamic PROPERTIES INSTALL_RPATH_USE_LINK_PATH
-                                                   TRUE)
 
 # Install rules.
 install(FILES ${PROJECT_BINARY_DIR}/../../../hello-config.hpp
