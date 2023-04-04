@@ -71,4 +71,4 @@ If you are using [`Visual Studio Code`](https://code.visualstudio.com/) you can 
 
 3. You need to configure debugging mode. A good example is [`here`](https://www.youtube.com/watch?v=BBPKMRR69_s&list=LL&index=25&t=953s&ab_channel=LearnQtGuide)
 
-4. `Enjoy it :)`
+4. `Enjoy it :))`
