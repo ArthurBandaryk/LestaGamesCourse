@@ -40,8 +40,11 @@ target_compile_features(sdl-bin-shared PRIVATE cxx_std_17)
 target_compile_options(
   sdl-bin-shared PRIVATE "$<${gcc_like_cxx}:$<BUILD_INTERFACE:-Wall;-Wextra>>")
 set_target_properties(
-  sdl-bin-shared PROPERTIES INSTALL_RPATH
-                            ${CMAKE_CURRENT_LIST_DIR}/../bin/install/lib)
+  sdl-bin-shared
+  PROPERTIES
+    INSTALL_RPATH
+    "${CMAKE_CURRENT_LIST_DIR}/../bin/install/lib;${CMAKE_CURRENT_LIST_DIR}/../build/sdl"
+)
 
 # Install rules.
 install(TARGETS sdl-bin-shared DESTINATION ${PROJECT_SOURCE_DIR}/../bin/install)
