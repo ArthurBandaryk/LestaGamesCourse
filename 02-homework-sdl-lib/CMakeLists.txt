@@ -15,7 +15,7 @@ endif()
 if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../submodules/sdl)
   message(
     FATAL_ERROR
-      "Submodule `submodules/SDL` is not initialized. "
+      "Submodule `SDL` is not initialized. "
       "Make sure you've cloned this repo with '--recurse-submodules' option.")
 endif()
 
