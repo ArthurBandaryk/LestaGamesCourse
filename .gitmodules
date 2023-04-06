@@ -1,3 +1,6 @@
 [submodule "submodules/glog"]
 	path = submodules/glog
 	url = https://github.com/google/glog.git
+[submodule "submodules/sdl"]
+	path = submodules/sdl
+	url = https://github.com/libsdl-org/SDL.git
