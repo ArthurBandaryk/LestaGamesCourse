@@ -60,7 +60,7 @@ jobs:
           ctest --test-dir 01-homework-hello/01-2-hello-libs/hello-bin-with-static-and-shared && \
           ctest --test-dir 02-homework-sdl-lib -R .*exit.code.* && \
           cd ../bin/install && ./simple-hello && \
-          ./hello-bin-static && ./hello-bin-dynamic && ./sdl-bin-static
+          ./hello-bin-static && ./hello-bin-dynamic && ./sdl-bin-shared
 
       - name: All homework using clang
         run: |
@@ -72,7 +72,7 @@ jobs:
           ctest --test-dir 01-homework-hello/01-2-hello-libs/hello-bin-with-static-and-shared && \
           ctest --test-dir 02-homework-sdl-lib -R .*exit.code.* && \
           cd ../bin/install && ./simple-hello && \
-          ./hello-bin-static && ./hello-bin-dynamic && ./sdl-bin-static
+          ./hello-bin-static && ./hello-bin-dynamic && ./sdl-bin-shared
 
       - name: Debug using tmate (if failure)
         uses: mxschmitt/action-tmate@v3
