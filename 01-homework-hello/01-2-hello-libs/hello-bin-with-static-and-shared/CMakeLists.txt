@@ -44,7 +44,7 @@ set_target_properties(
                                ${CMAKE_CURRENT_LIST_DIR}/../../../bin/install)
 
 # Install rules.
-install(FILES ${PROJECT_BINARY_DIR}/../../../hello-config.hpp
+install(FILES ${CMAKE_BINARY_DIR}/hello-config.hpp
         DESTINATION ${PROJECT_SOURCE_DIR}/../../../bin/install)
 install(
   TARGETS hello-bin-dynamic hello-bin-static
