@@ -59,7 +59,7 @@ jobs:
           cmake -G Ninja -S 01-homework-hello/01-1-simple-hello -B build/ && \
           cmake --build build/ && \
           cmake --install build/ && \
-          ctest --test-dir build/01-homework-hello/01-1-simple-hello && \
+          ctest --test-dir build/ && \
           ./bin/install/simple-hello
 
       - name: Simple hello using clang
@@ -68,7 +68,7 @@ jobs:
           CXX=clang++ cmake -G Ninja -S 01-homework-hello/01-1-simple-hello -B build/ && \
           CXX=clang++ cmake --build build/ && \
           cmake --install build/ && \
-          ctest --test-dir build/01-homework-hello/01-1-simple-hello && \
+          ctest --test-dir build/ && \
           ./bin/install/simple-hello
 
       - name: Hello lib using GNU
