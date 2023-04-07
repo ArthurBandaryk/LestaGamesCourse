@@ -77,7 +77,7 @@ jobs:
           cmake -G Ninja -S 01-homework-hello/01-2-hello-libs -B build/ && \
           cmake --build build/ && \
           cmake --install build/ && \
-          ctest --test-dir build/01-homework-hello/01-2-hello-libs/hello-bin-with-static-and-shared && \
+          ctest --test-dir build/hello-bin-with-static-and-shared && \
           .bin/install/hello-bin-static && .bin/install/hello-bin-dynamic
 
       - name: Hello lib using clang
@@ -86,7 +86,7 @@ jobs:
           CXX=clang++ cmake -G Ninja -S 01-homework-hello/01-2-hello-libs -B build/ && \
           CXX=clang++ cmake --build build/ && \
           cmake --install build/ && \
-          ctest --test-dir build/01-homework-hello/01-2-hello-libs/hello-bin-with-static-and-shared && \
+          ctest --test-dir build/hello-bin-with-static-and-shared && \
           .bin/install/hello-bin-static && .bin/install/hello-bin-dynamic
 
       - name: Static SDL using GNU
@@ -95,7 +95,7 @@ jobs:
           cmake -G Ninja -DBUILD_SDL_STATIC=ON -S 02-homework-sdl-lib -B build/ && \
           cmake --build build/ && \
           cmake --install build/ && \
-          ctest --test-dir build/02-homework-sdl-lib -R .*exit.code.* && \
+          ctest --test-dir build/ -R .*exit.code.* && \
           ./bin/install/sdl-bin-static
 
       - name: Static SDL using clang
@@ -104,7 +104,7 @@ jobs:
           CXX=clang++ cmake -G Ninja -DBUILD_SDL_STATIC=ON -S 02-homework-sdl-lib -B build/ && \
           CXX=clang++ cmake --build build/ && \
           cmake --install build/ && \
-          ctest --test-dir build/02-homework-sdl-lib -R .*exit.code.* && \
+          ctest --test-dir build/ -R .*exit.code.* && \
           ./bin/install/sdl-bin-static
 
       - name: Dynamic SDL using GNU
@@ -113,7 +113,7 @@ jobs:
           cmake -G Ninja -S 02-homework-sdl-lib -B build/ && \
           cmake --build build/ && \
           cmake --install build/ && \
-          ctest --test-dir build/02-homework-sdl-lib -R .*exit.code.* && \
+          ctest --test-dir build/ -R .*exit.code.* && \
           ./bin/install/sdl-bin-shared
 
       - name: Dynamic SDL using clang
@@ -122,7 +122,7 @@ jobs:
           CXX=clang++ cmake -G Ninja -S 02-homework-sdl-lib -B build/ && \
           CXX=clang++ cmake --build build/ && \
           cmake --install build/ && \
-          ctest --test-dir build/02-homework-sdl-lib -R .*exit.code.* && \
+          ctest --test-dir build/ -R .*exit.code.* && \
           ./bin/install/sdl-bin-shared    
 
       - name: Debug using tmate (if failure)
