@@ -57,8 +57,8 @@ jobs:
         run: |
           mkdir -p build && \
           cmake -G Ninja -S 01-homework-hello/01-1-simple-hello -B build/ && \
-          cmake --build /build && \
-          cmake --install /build && \
+          cmake --build build/ && \
+          cmake --install build/ && \
           ctest --test-dir build/01-homework-hello/01-1-simple-hello && \
           ./bin/install/simple-hello
 
@@ -66,8 +66,8 @@ jobs:
         run: |
           rm -rf build/{*,.*} && \
           CXX=clang++ cmake -G Ninja -S 01-homework-hello/01-1-simple-hello -B build/ && \
-          CXX=clang++ cmake --build /build && \
-          cmake --install /build && \
+          CXX=clang++ cmake --build build/ && \
+          cmake --install build/ && \
           ctest --test-dir build/01-homework-hello/01-1-simple-hello && \
           ./bin/install/simple-hello
 
@@ -75,8 +75,8 @@ jobs:
         run: |
           rm -rf build/{*,.*} && \
           cmake -G Ninja -S 01-homework-hello/01-2-hello-libs -B build/ && \
-          cmake --build /build && \
-          cmake --install /build && \
+          cmake --build build/ && \
+          cmake --install build/ && \
           ctest --test-dir build/01-homework-hello/01-2-hello-libs/hello-bin-with-static-and-shared && \
           .bin/install/hello-bin-static && .bin/install/hello-bin-dynamic
 
@@ -84,8 +84,8 @@ jobs:
         run: |
           rm -rf build/{*,.*} && \
           CXX=clang++ cmake -G Ninja -S 01-homework-hello/01-2-hello-libs -B build/ && \
-          CXX=clang++ cmake --build /build && \
-          cmake --install /build && \
+          CXX=clang++ cmake --build build/ && \
+          cmake --install build/ && \
           ctest --test-dir build/01-homework-hello/01-2-hello-libs/hello-bin-with-static-and-shared && \
           .bin/install/hello-bin-static && .bin/install/hello-bin-dynamic
 
