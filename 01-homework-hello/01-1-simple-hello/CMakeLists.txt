@@ -6,7 +6,7 @@ project(simple-hello-binary)
 set(gcc_like_cxx "$<COMPILE_LANG_AND_ID:CXX,Clang,GNU>")
 set(msvc_like_cxx "$<COMPILE_LANG_AND_ID:CXX,MSVC>")
 
-add_executable(simple-hello main.cpp)
+add_executable(simple-hello main.cxx)
 target_compile_features(simple-hello PRIVATE cxx_std_17)
 target_compile_options(
   simple-hello PRIVATE "$<${gcc_like_cxx}:$<BUILD_INTERFACE:-Wall;-Wextra>>"

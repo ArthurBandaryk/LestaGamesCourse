@@ -1,4 +1,4 @@
-#include "hello.hpp"
+#include "hello.hxx"
 #include <iostream>
 
 namespace arci {

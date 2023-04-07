@@ -6,8 +6,8 @@ project(hello-binary VERSION 1.0)
 option(USE_HELLO_LIB "Using my hello lib implementation" ON)
 
 # For optional usage of hello library and version values.
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/../hello-config/hello-config.hpp.in
-               ${CMAKE_BINARY_DIR}/hello-config.hpp @ONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/../hello-config/hello-config.hxx.in
+               ${CMAKE_BINARY_DIR}/hello-config.hxx @ONLY)
 
 # If option `USE_HELLO_LIB` = ON => build hello library.
 if(USE_HELLO_LIB)
@@ -18,7 +18,7 @@ if(USE_HELLO_LIB)
 endif()
 
 # Steps for static linking.
-add_executable(hello-bin-static main.cpp)
+add_executable(hello-bin-static main.cxx)
 
 # For `hello-config.hpp` file.
 target_include_directories(hello-bin-static PRIVATE ${CMAKE_BINARY_DIR})
@@ -29,7 +29,7 @@ target_link_libraries(hello-bin-static PRIVATE ${EXTRA_STATIC_LIB}
                                                ${EXTRA_COMPILER_FLAGS})
 
 # Steps for dynamic linking.
-add_executable(hello-bin-dynamic main.cpp)
+add_executable(hello-bin-dynamic main.cxx)
 target_include_directories(hello-bin-dynamic PRIVATE ${CMAKE_BINARY_DIR})
 target_link_libraries(hello-bin-dynamic PRIVATE ${EXTRA_DYNAMIC_LIB}
                                                 ${EXTRA_COMPILER_FLAGS})
@@ -44,7 +44,7 @@ set_target_properties(
                                ${CMAKE_CURRENT_LIST_DIR}/../../../bin/install)
 
 # Install rules.
-install(FILES ${CMAKE_BINARY_DIR}/hello-config.hpp
+install(FILES ${CMAKE_BINARY_DIR}/hello-config.hxx
         DESTINATION ${PROJECT_SOURCE_DIR}/../../../bin/install)
 install(
   TARGETS hello-bin-dynamic hello-bin-static

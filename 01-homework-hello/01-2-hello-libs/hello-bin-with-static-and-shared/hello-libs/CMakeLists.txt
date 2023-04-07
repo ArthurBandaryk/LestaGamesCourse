@@ -16,8 +16,8 @@ target_compile_options(
   INTERFACE "$<${gcc_like_cxx}:$<BUILD_INTERFACE:-Wall;-Wextra>>"
             "$<${msvc_like_cxx}:$<BUILD_INTERFACE:-W3;>>")
 
-list(APPEND SOURCE_FILES ${CMAKE_CURRENT_SOURCE_DIR}/include/hello.hpp
-     ${CMAKE_CURRENT_SOURCE_DIR}/src/hello.cpp)
+list(APPEND SOURCE_FILES ${CMAKE_CURRENT_SOURCE_DIR}/include/hello.hxx
+     ${CMAKE_CURRENT_SOURCE_DIR}/src/hello.cxx)
 
 add_library(hello-static-lib STATIC ${SOURCE_FILES})
 target_link_libraries(hello-static-lib hello-compiler-flags)

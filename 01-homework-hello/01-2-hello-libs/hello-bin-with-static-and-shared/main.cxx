@@ -1,6 +1,6 @@
-#include "hello-config.hpp"
+#include "hello-config.hxx"
 #ifdef USE_HELLO_LIB
-#include "hello.hpp"
+#include "hello.hxx"
 #else
 #include <iostream>
 #endif
