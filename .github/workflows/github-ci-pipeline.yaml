@@ -91,6 +91,7 @@ jobs:
 
       - name: Static SDL using GNU
         run: |
+          rm -rf build/* && \
           cmake -G Ninja -DBUILD_SDL_STATIC=ON -S 02-homework-sdl-lib -B build/ && \
           cmake --build build/ && \
           cmake --install build/ && \
@@ -99,6 +100,7 @@ jobs:
 
       - name: Static SDL using clang
         run: |
+          rm -rf build/* && \
           CXX=clang++ cmake -G Ninja -DBUILD_SDL_STATIC=ON -S 02-homework-sdl-lib -B build/ && \
           CXX=clang++ cmake --build build/ && \
           cmake --install build/ && \
@@ -107,6 +109,7 @@ jobs:
 
       - name: Dynamic SDL using GNU
         run: |
+          rm -rf build/* && \
           cmake -G Ninja -S 02-homework-sdl-lib -B build/ && \
           cmake --build build/ && \
           cmake --install build/ && \
@@ -115,6 +118,7 @@ jobs:
 
       - name: Dynamic SDL using clang
         run: |
+          rm -rf build/* && \
           CXX=clang++ cmake -G Ninja -S 02-homework-sdl-lib -B build/ && \
           CXX=clang++ cmake --build build/ && \
           cmake --install build/ && \
