@@ -78,7 +78,7 @@ jobs:
           cmake --build build/ && \
           cmake --install build/ && \
           ctest --test-dir build/hello-bin-with-static-and-shared && \
-          .bin/install/hello-bin-static && .bin/install/hello-bin-dynamic
+          ./bin/install/hello-bin-static && ./bin/install/hello-bin-dynamic
 
       - name: Hello lib using clang
         run: |
@@ -87,7 +87,7 @@ jobs:
           CXX=clang++ cmake --build build/ && \
           cmake --install build/ && \
           ctest --test-dir build/hello-bin-with-static-and-shared && \
-          .bin/install/hello-bin-static && .bin/install/hello-bin-dynamic
+          ./bin/install/hello-bin-static && ./bin/install/hello-bin-dynamic
 
       - name: Static SDL using GNU
         run: |
