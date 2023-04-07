@@ -53,7 +53,7 @@ int main(int, char** argv) {
   SDL_VERSION(&compiled_sdl_version);
 
   CHECK_EQ(SDL_GetVersion(&linked_sdl_version), 0)
-      << "SDL_GetError() failed with the following error: "
+      << "SDL_GetVersion() failed with the following error: "
       << SDL_GetError();
 
   std::cout << "SDL compiled version: "
