@@ -15,14 +15,6 @@ std::ostream& operator<<(std::ostream& os, const SDL_version& version) {
   return os;
 }
 
-bool operator==(
-    const SDL_version& compiled_version,
-    const SDL_version& linked_version) {
-  return compiled_version.major == linked_version.major
-      && compiled_version.minor == linked_version.minor
-      && compiled_version.patch == linked_version.patch;
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 
 int main(int, char** argv) {
