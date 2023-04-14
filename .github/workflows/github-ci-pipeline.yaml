@@ -53,77 +53,89 @@ jobs:
       #     username: ${{ secrets.DOCKER_USERNAME }}
       #     password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Simple hello using GNU
+      # - name: Simple hello using GNU
+      #   run: |
+      #     mkdir -p build && \
+      #     cmake -G Ninja -S 01-homework-hello/01-1-simple-hello -B build/ && \
+      #     cmake --build build/ && \
+      #     cmake --install build/ && \
+      #     ctest --test-dir build/ && \
+      #     ./bin/install/simple-hello
+
+      # - name: Simple hello using clang
+      #   run: |
+      #     rm -rf build/* && \
+      #     CXX=clang++ cmake -G Ninja -S 01-homework-hello/01-1-simple-hello -B build/ && \
+      #     CXX=clang++ cmake --build build/ && \
+      #     cmake --install build/ && \
+      #     ctest --test-dir build/ && \
+      #     ./bin/install/simple-hello
+
+      # - name: Hello lib using GNU
+      #   run: |
+      #     rm -rf build/* && \
+      #     cmake -G Ninja -S 01-homework-hello/01-2-hello-libs -B build/ && \
+      #     cmake --build build/ && \
+      #     cmake --install build/ && \
+      #     ctest --test-dir build/hello-bin-with-static-and-shared && \
+      #     ./bin/install/hello-bin-static && ./bin/install/hello-bin-dynamic
+
+      # - name: Hello lib using clang
+      #   run: |
+      #     rm -rf build/* && \
+      #     CXX=clang++ cmake -G Ninja -S 01-homework-hello/01-2-hello-libs -B build/ && \
+      #     CXX=clang++ cmake --build build/ && \
+      #     cmake --install build/ && \
+      #     ctest --test-dir build/hello-bin-with-static-and-shared && \
+      #     ./bin/install/hello-bin-static && ./bin/install/hello-bin-dynamic
+
+      # - name: Static SDL using GNU
+      #   run: |
+      #     rm -rf build/* && \
+      #     cmake -G Ninja -DBUILD_SDL_STATIC=ON -S 02-homework-sdl-lib -B build/ && \
+      #     cmake --build build/ && \
+      #     cmake --install build/ && \
+      #     ctest --test-dir build/ -R .*exit.code.* && \
+      #     ./bin/install/sdl-bin-static
+
+      # - name: Static SDL using clang
+      #   run: |
+      #     rm -rf build/* && \
+      #     CXX=clang++ cmake -G Ninja -DBUILD_SDL_STATIC=ON -S 02-homework-sdl-lib -B build/ && \
+      #     CXX=clang++ cmake --build build/ && \
+      #     cmake --install build/ && \
+      #     ctest --test-dir build/ -R .*exit.code.* && \
+      #     ./bin/install/sdl-bin-static
+
+      # - name: Dynamic SDL using GNU
+      #   run: |
+      #     rm -rf build/* && \
+      #     cmake -G Ninja -S 02-homework-sdl-lib -B build/ && \
+      #     cmake --build build/ && \
+      #     cmake --install build/ && \
+      #     ctest --test-dir build/ -R .*exit.code.* && \
+      #     ./bin/install/sdl-bin-shared
+
+      # - name: Dynamic SDL using clang
+      #   run: |
+      #     rm -rf build/* && \
+      #     CXX=clang++ cmake -G Ninja -S 02-homework-sdl-lib -B build/ && \
+      #     CXX=clang++ cmake --build build/ && \
+      #     cmake --install build/ && \
+      #     ctest --test-dir build/ -R .*exit.code.* && \
+      #     ./bin/install/sdl-bin-shared
+
+      - name: Simple sdl loop using GNU
         run: |
           mkdir -p build && \
-          cmake -G Ninja -S 01-homework-hello/01-1-simple-hello -B build/ && \
-          cmake --build build/ && \
-          cmake --install build/ && \
-          ctest --test-dir build/ && \
-          ./bin/install/simple-hello
+          cmake -G Ninja -S 03-homework-sdl-loop/sdl-simple-loop -B build/ && \
+          cmake --build build/
 
-      - name: Simple hello using clang
+      - name: Simple sdl loop using GNU
         run: |
           rm -rf build/* && \
-          CXX=clang++ cmake -G Ninja -S 01-homework-hello/01-1-simple-hello -B build/ && \
-          CXX=clang++ cmake --build build/ && \
-          cmake --install build/ && \
-          ctest --test-dir build/ && \
-          ./bin/install/simple-hello
-
-      - name: Hello lib using GNU
-        run: |
-          rm -rf build/* && \
-          cmake -G Ninja -S 01-homework-hello/01-2-hello-libs -B build/ && \
-          cmake --build build/ && \
-          cmake --install build/ && \
-          ctest --test-dir build/hello-bin-with-static-and-shared && \
-          ./bin/install/hello-bin-static && ./bin/install/hello-bin-dynamic
-
-      - name: Hello lib using clang
-        run: |
-          rm -rf build/* && \
-          CXX=clang++ cmake -G Ninja -S 01-homework-hello/01-2-hello-libs -B build/ && \
-          CXX=clang++ cmake --build build/ && \
-          cmake --install build/ && \
-          ctest --test-dir build/hello-bin-with-static-and-shared && \
-          ./bin/install/hello-bin-static && ./bin/install/hello-bin-dynamic
-
-      - name: Static SDL using GNU
-        run: |
-          rm -rf build/* && \
-          cmake -G Ninja -DBUILD_SDL_STATIC=ON -S 02-homework-sdl-lib -B build/ && \
-          cmake --build build/ && \
-          cmake --install build/ && \
-          ctest --test-dir build/ -R .*exit.code.* && \
-          ./bin/install/sdl-bin-static
-
-      - name: Static SDL using clang
-        run: |
-          rm -rf build/* && \
-          CXX=clang++ cmake -G Ninja -DBUILD_SDL_STATIC=ON -S 02-homework-sdl-lib -B build/ && \
-          CXX=clang++ cmake --build build/ && \
-          cmake --install build/ && \
-          ctest --test-dir build/ -R .*exit.code.* && \
-          ./bin/install/sdl-bin-static
-
-      - name: Dynamic SDL using GNU
-        run: |
-          rm -rf build/* && \
-          cmake -G Ninja -S 02-homework-sdl-lib -B build/ && \
-          cmake --build build/ && \
-          cmake --install build/ && \
-          ctest --test-dir build/ -R .*exit.code.* && \
-          ./bin/install/sdl-bin-shared
-
-      - name: Dynamic SDL using clang
-        run: |
-          rm -rf build/* && \
-          CXX=clang++ cmake -G Ninja -S 02-homework-sdl-lib -B build/ && \
-          CXX=clang++ cmake --build build/ && \
-          cmake --install build/ && \
-          ctest --test-dir build/ -R .*exit.code.* && \
-          ./bin/install/sdl-bin-shared    
+          CXX=clang++ cmake -G Ninja -S 03-homework-sdl-loop/sdl-simple-loop -B build/ && \
+          CXX=clang++ cmake --build build/
 
       - name: Debug using tmate (if failure)
         uses: mxschmitt/action-tmate@v3
