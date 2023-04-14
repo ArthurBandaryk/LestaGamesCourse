@@ -131,7 +131,7 @@ jobs:
           cmake -G Ninja -S 03-homework-sdl-loop/sdl-simple-loop -B build/ && \
           cmake --build build/
 
-      - name: Simple sdl loop using GNU
+      - name: Simple sdl loop using clang
         run: |
           rm -rf build/* && \
           CXX=clang++ cmake -G Ninja -S 03-homework-sdl-loop/sdl-simple-loop -B build/ && \
