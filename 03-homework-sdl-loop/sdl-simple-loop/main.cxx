@@ -106,6 +106,8 @@ int main(int, char** argv) {
         << SDL_GetError();
   }
 
+  SDL_DestroyRenderer(sdl_renderer);
+  SDL_DestroySurface(sdl_surface);
   SDL_DestroyWindow(sdl_window);
 
   SDL_Quit();
