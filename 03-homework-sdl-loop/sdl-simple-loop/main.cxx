@@ -3,6 +3,44 @@
 //
 #include <glog/logging.h>
 
+//
+#include <string_view>
+#include <algorithm>
+#include <array>
+
+///////////////////////////////////////////////////////////////////////////////
+
+struct key {
+  SDL_KeyCode key_code;
+  std::string_view key_name{};
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+const std::array<key, 6> keys{
+    key{SDLK_LEFT, "left"},
+    key{SDLK_RIGHT, "right"},
+    key{SDLK_UP, "up"},
+    key{SDLK_DOWN, "down"},
+    key{SDLK_SPACE, "space"},
+    key{SDLK_ESCAPE, "escape/exit"},
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+void process_input(const SDL_Event& sdl_event) {
+  const auto iter = std::find_if(
+      keys.begin(),
+      keys.end(),
+      [&sdl_event](const key& k) {
+        return sdl_event.key.keysym.sym == k.key_code;
+      });
+
+  if (iter != keys.end()) {
+    LOG(INFO) << "Button '" << iter->key_name << "' has been released";
+  }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 int main(int, char** argv) {
@@ -67,8 +105,7 @@ int main(int, char** argv) {
           is_running = false;
           break;
         case SDL_EVENT_KEY_UP:
-          LOG(INFO) << "Key " << sdl_event.key.keysym.sym
-                    << " has been released";
+          process_input(sdl_event);
           break;
         case SDL_EVENT_WINDOW_RESIZED:
           LOG(INFO) << "Window has been resized!";
