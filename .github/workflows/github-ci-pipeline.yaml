@@ -137,6 +137,30 @@ jobs:
           CXX=clang++ cmake -G Ninja -S 03-homework-sdl-loop/sdl-simple-loop -B build/ && \
           CXX=clang++ cmake --build build/
 
+      - name: Static sdl engine using GNU
+        run: |
+          rm -rf build/* && \
+          cmake -G Ninja -S 03-homework-sdl-loop/sdl-static-engine -B build/ && \
+          cmake --build build/
+
+      - name: Static sdl engine using clang
+        run: |
+          rm -rf build/* && \
+          CXX=clang++ cmake -G Ninja -S 03-homework-sdl-loop/sdl-static-engine -B build/ && \
+          CXX=clang++ cmake --build build/
+
+      - name: Shared sdl engine using GNU
+        run: |
+          rm -rf build/* && \
+          cmake -G Ninja -S 03-homework-sdl-loop/sdl-shared-engine -B build/ && \
+          cmake --build build/
+
+      - name: Shared sdl engine using clang
+        run: |
+          rm -rf build/* && \
+          CXX=clang++ cmake -G Ninja -S 03-homework-sdl-loop/sdl-shared-engine -B build/ && \
+          CXX=clang++ cmake --build build/    
+
       - name: Debug using tmate (if failure)
         uses: mxschmitt/action-tmate@v3
         # Optionally enable tmate debugging if the workflow was manually-triggered
