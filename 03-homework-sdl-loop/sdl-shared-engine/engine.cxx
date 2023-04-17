@@ -78,8 +78,23 @@ class engine_using_sdl final : public iengine {
   engine_using_sdl& operator=(const engine_using_sdl&) = delete;
   engine_using_sdl& operator=(engine_using_sdl&&) = delete;
 
+  bool testSDLVersion() {
+    SDL_version compiled;
+    SDL_version linked;
+
+    SDL_VERSION(&compiled);
+    SDL_GetVersion(&linked);
+
+    SDL_Log("Compiled version SDL: %u.%u.%u\n", compiled.major, compiled.minor, compiled.patch);
+    SDL_Log("Linked version SDL: %u.%u.%u\n", linked.major, linked.minor, linked.patch);
+
+    return SDL_COMPILEDVERSION == SDL_VERSIONNUM(linked.major, linked.minor, linked.patch);
+  }
+
   void init() override {
     // SDL initialization.
+    CHECK(testSDLVersion()) << "warning: SDL2 compiled and linked version mismatch";
+
     CHECK_EQ(SDL_Init(SDL_INIT_VIDEO), 0)
         << "`SDL_Init()` failed with the following error: "
         << SDL_GetError();
