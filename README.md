@@ -13,10 +13,9 @@ Linux x64(gcc, clang) | [![Ubuntu](https://github.com/ArthurBandaryk/LestaGamesC
 ```
 git clone --recurse-submodules https://github.com/ArthurBandaryk/LestaGamesCourse.git
 cd LestaGamesCourse/
-mkdir -p build && cd build
-cmake -G Ninja ..
-cmake --build .
-cmake --install .
+cmake -B .build -G "Ninja" ..
+cmake --build .build
+cmake --install .build
 ```
 
 ## Running executables
