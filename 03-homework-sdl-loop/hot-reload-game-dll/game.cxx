@@ -39,9 +39,13 @@ class aim_target_shooting_game final : public igame {
     : m_engine{engine} {
     srand(time(NULL));
 
-    constexpr size_t k_target_width{40}, k_target_height{40};
+    // const size_t k_target_width{40}, k_target_height{40};
 
-    constexpr unsigned char r{255}, g{255}, b{50}, a{255};
+    // const unsigned char r{255}, g{255}, b{50}, a{255};
+
+    const size_t k_target_width{100}, k_target_height{100};
+
+    const unsigned char r{204}, g{0}, b{102}, a{255};
 
     m_target_rectangle.width = k_target_width;
     m_target_rectangle.height = k_target_height;
@@ -109,6 +113,19 @@ class aim_target_shooting_game final : public igame {
   void render() override {
     CHECK_NOTNULL(m_engine);
 
+    // const unsigned char r{204}, g{0}, b{102}, a{255};
+    // // const unsigned char r{255}, g{255}, b{50}, a{255};
+
+    // m_engine->render_rectangle(
+    //     m_target_rectangle.left,
+    //     m_target_rectangle.top,
+    //     m_target_rectangle.width,
+    //     m_target_rectangle.height,
+    //     r,
+    //     g,
+    //     b,
+    //     a);
+
     m_engine->render_rectangle(
         m_target_rectangle.left,
         m_target_rectangle.top,
@@ -146,6 +163,7 @@ class aim_target_shooting_game final : public igame {
             % (x_max_allowed_target_coordinate - 
             static_cast<size_t>(m_target_rectangle.width) + 1));
 
+    
     m_target_rectangle.top =
         static_cast<float>(
             rand()
@@ -168,14 +186,13 @@ class aim_target_shooting_game final : public igame {
   const size_t x_max_allowed_target_coordinate{1024};
   const size_t y_max_allowed_target_coordinate{768};
 
-
   // Time reaction for user to try to hit target. If the delta
   // specified will expire => the current target will update
   // it's coordinates and the `m_miss_counter` value will be
   // changed by '+1'.
-  float m_delta_time_respawn{0.8f};
+  float m_delta_time_respawn{2.f};
   size_t m_miss_counter{};
-  const size_t m_max_allowed_misses{3};
+  const size_t m_max_allowed_misses{20};
   bool m_is_game_over{false};
 };
 

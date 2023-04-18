@@ -13,6 +13,7 @@
 #include <filesystem>
 #include <memory>
 #include <optional>
+#include <thread>
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -268,7 +269,18 @@ void engine_destroy(iengine* engine) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-extern "C" int main(int, char** argv) {
+arci::igame* hot_reload(
+    void*& old_handle,
+    arci::igame* old_game,
+    arci::iengine* engine);
+/* clang-format off */
+#ifdef __cplusplus
+extern "C"
+#endif
+    /* clang-format on */
+
+    int
+    main(int, char** argv) {
   // Initialize google logging library.
   FLAGS_logtostderr = true;
   google::InitGoogleLogging(argv[0]);
@@ -280,45 +292,48 @@ extern "C" int main(int, char** argv) {
 
   engine->init();
 
-  // std::unique_ptr<arci::igame, void (*)(arci::igame*)> game{
-  //     arci::create_game(engine.get()),
-  //     arci::destroy_game};
-  // arci::create_game(engine.get());
+  void* game_handle{nullptr};
 
-  std::string_view dll_name_for_game{"./libgame-shared.so"};
-  std::string_view copy_dll_name{"./libgame-shared-copy.so"};
+  arci::igame* game = hot_reload(
+      game_handle,
+      nullptr,
+      engine.get());
 
-  CHECK(std::filesystem::exists(dll_name_for_game.data()));
+  const char* game_name_dll = "./libgame-shared.so";
 
-  if (std::filesystem::exists(copy_dll_name.data())) {
-    CHECK(std::filesystem::remove(copy_dll_name.data()));
-  }
+  auto time_during_loading_game =
+      std::filesystem::last_write_time(game_name_dll);
 
-  void* handle_game{nullptr};
-
-  try {
-    std::filesystem::copy(dll_name_for_game.data(), copy_dll_name.data());
-  } catch (std::filesystem::filesystem_error& exception) {
-    LOG(ERROR) << "Failed when copying `libgame-shared.so` dll: "
-               << exception.what();
-  }
-
-  handle_game = SDL_LoadObject(copy_dll_name.data());
-
-  CHECK_NOTNULL(handle_game);
-
-  using func_ptr_create_game = arci::igame* (*) (arci::iengine*);
-
-  SDL_FunctionPointer fp = SDL_LoadFunction(handle_game, "create_game");
-  CHECK_NOTNULL(fp);
-
-  auto* create_game_ptr = reinterpret_cast<func_ptr_create_game>(fp);
-
-  auto* game = create_game_ptr(engine.get());
+  CHECK_NOTNULL(game_handle);
 
   bool loop_continue{true};
 
   while (loop_continue) {
+    // Try hot reload.
+    auto current_time = std::filesystem::last_write_time(game_name_dll);
+
+    if (current_time != time_during_loading_game) {
+      // We should wait a little bit in case system is still overwriting
+      // game dll.
+      std::filesystem::file_time_type time_still_write;
+      while (true) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        time_still_write = std::filesystem::last_write_time(game_name_dll);
+
+        // System defenitelly finished writing dll, just break.
+        if (time_still_write == current_time) {
+          break;
+        }
+
+        current_time = time_still_write;
+      }
+
+      // Now we are able to reload game.
+      game = hot_reload(game_handle, game, engine.get());
+
+      time_during_loading_game = time_still_write;
+    }
+
     arci::event event{};
 
     while (engine->process_input(event)) {
@@ -346,6 +361,72 @@ extern "C" int main(int, char** argv) {
   engine->uninit();
 
   return EXIT_SUCCESS;
+}
+
+// Hot reload mechanism.
+arci::igame* hot_reload(
+    void*& old_game_handle,
+    arci::igame* old_game,
+    arci::iengine* engine) {
+  LOG(INFO) << "hot reload";
+  const char* game_dll_name = "./libgame-shared.so";
+  const char* copy_game_dll_name = "./libgame-shared-copy.so";
+
+  if (old_game_handle) {
+    // Before reloading game dll we should destroy old game in order
+    // to not have memory leak.
+    // LOG(INFO) << "old unload";
+    // CHECK(std::filesystem::exists(copy_game_dll_name));
+
+    // void* copy_game_handle = SDL_LoadObject(copy_game_dll_name);
+
+    // CHECK_NOTNULL(copy_game_handle);
+
+    // using func_ptr_destroy_game = void (*)(arci::igame*);
+
+    // auto sdl_func_ptr =
+    //     SDL_LoadFunction(copy_game_handle, "destroy_game");
+
+    // CHECK_NOTNULL(sdl_func_ptr);
+
+    // auto destroy_game = reinterpret_cast<func_ptr_destroy_game>(sdl_func_ptr);
+
+    // destroy_game(old_game);
+
+    SDL_UnloadObject(old_game_handle);
+  }
+
+  CHECK(std::filesystem::exists(game_dll_name));
+
+  try {
+    std::filesystem::copy(
+        game_dll_name,
+        copy_game_dll_name,
+        std::filesystem::copy_options::overwrite_existing);
+  } catch (std::filesystem::filesystem_error& exception) {
+    LOG(ERROR) << "Failed when copying `libgame-shared.so` dll: "
+               << exception.what();
+  }
+
+  void* game_handle = SDL_LoadObject(copy_game_dll_name);
+
+  CHECK_NOTNULL(game_handle);
+
+  old_game_handle = game_handle;
+
+  // using func_ptr_create_game = arci::igame* (*) (arci::iengine*);
+  using func_ptr_create_game = decltype(&arci::create_game);
+
+  SDL_FunctionPointer sdl_func_ptr =
+      SDL_LoadFunction(game_handle, "create_game");
+
+  CHECK_NOTNULL(sdl_func_ptr);
+
+  auto create_game_ptr = reinterpret_cast<func_ptr_create_game>(sdl_func_ptr);
+
+  arci::igame* new_game = create_game_ptr(engine);
+
+  return new_game;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
