@@ -44,4 +44,5 @@ target_link_libraries(engine-bin PRIVATE compiler-flags-lib glog::glog
 set_target_properties(engine-bin PROPERTIES ENABLE_EXPORTS 1)
 
 add_library(game-shared SHARED game.cxx)
-target_link_libraries(game-shared PUBLIC engine-bin glog::glog)
+target_link_libraries(game-shared PRIVATE compiler-flags-lib engine-bin
+                                          glog::glog)
