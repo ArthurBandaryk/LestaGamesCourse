@@ -88,11 +88,9 @@ class engine_using_sdl final : public iengine {
     LOG(INFO) << "Current video driver: " << SDL_GetCurrentVideoDriver();
 
     // Window setup.
-    m_window = SDL_CreateWindow(
-        "Aim target shooting",
-        1024,
-        768,
-        SDL_WINDOW_OPENGL);
+    m_window = std::unique_ptr<SDL_Window, void (*)(SDL_Window*)>(
+        SDL_CreateWindow("Aim target shooting", 1024, 768, SDL_WINDOW_OPENGL),
+        SDL_DestroyWindow);
 
     CHECK(m_window)
         << "`SDL_CreateWindow()` failed with the following error: "
@@ -100,17 +98,19 @@ class engine_using_sdl final : public iengine {
 
     CHECK_EQ(
         SDL_SetWindowPosition(
-            m_window,
+            m_window.get(),
             SDL_WINDOWPOS_CENTERED,
             SDL_WINDOWPOS_CENTERED),
         0)
         << "`SDL_SetWindowPosition()` failed with the following error: "
         << SDL_GetError();
 
-    m_renderer = SDL_CreateRenderer(
-        m_window,
-        "opengl",
-        SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    m_renderer = std::unique_ptr<SDL_Renderer, void (*)(SDL_Renderer*)>(
+        SDL_CreateRenderer(
+            m_window.get(),
+            "opengl",
+            SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC),
+        SDL_DestroyRenderer);
 
     CHECK_NOTNULL(m_renderer);
   }
@@ -174,36 +174,31 @@ class engine_using_sdl final : public iengine {
     const SDL_FRect rect{left, top, width, height};
 
     // Set color for background.
-    CHECK(!SDL_SetRenderDrawColor(m_renderer, 0, 0, 0, 255))
+    CHECK(!SDL_SetRenderDrawColor(m_renderer.get(), 0, 0, 0, 255))
         << "`SDL_SetRenderDrawColor` for background"
         << " failed with the following error: "
         << SDL_GetError();
 
-    CHECK(!SDL_RenderClear(m_renderer))
+    CHECK(!SDL_RenderClear(m_renderer.get()))
         << "`SDL_RenderClear` failed with the following error: "
         << SDL_GetError();
 
     // Set color for target.
-    CHECK(!SDL_SetRenderDrawColor(m_renderer, r, g, b, a))
+    CHECK(!SDL_SetRenderDrawColor(m_renderer.get(), r, g, b, a))
         << "`SDL_SetRenderDrawColor` for target"
         << " failed with the following error: "
         << SDL_GetError();
 
-    CHECK(!SDL_RenderFillRect(m_renderer, &rect))
+    CHECK(!SDL_RenderFillRect(m_renderer.get(), &rect))
         << "`SDL_RenderFillRect` failed with the following error: "
         << SDL_GetError();
 
-    CHECK(!SDL_RenderPresent(m_renderer))
+    CHECK(!SDL_RenderPresent(m_renderer.get()))
         << "`SDL_RenderPresent` failed with the following error: "
         << SDL_GetError();
   }
 
   void uninit() override {
-    CHECK(m_renderer) << "Invalid renderer state on engine uninit";
-    SDL_DestroyRenderer(m_renderer);
-
-    CHECK(m_window) << "Invalid 'm_window' state on uninit engine call";
-    SDL_DestroyWindow(m_window);
     SDL_Quit();
   }
 
@@ -224,8 +219,11 @@ class engine_using_sdl final : public iengine {
     return {};
   }
 
-  SDL_Window* m_window{nullptr};
-  SDL_Renderer* m_renderer{nullptr};
+  std::unique_ptr<SDL_Renderer, void (*)(SDL_Renderer*)>
+      m_renderer{nullptr, nullptr};
+
+  std::unique_ptr<SDL_Window, void (*)(SDL_Window*)>
+      m_window{nullptr, nullptr};
 };
 
 ///////////////////////////////////////////////////////////////////////////////
