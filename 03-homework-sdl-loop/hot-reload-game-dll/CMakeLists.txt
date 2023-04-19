@@ -38,7 +38,6 @@ target_compile_options(
 add_executable(engine-bin engine.hxx engine.cxx)
 target_link_libraries(engine-bin PRIVATE compiler-flags-lib glog::glog
                                          SDL3::SDL3-shared)
-# target_include_directories(engine-bin PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 # Specify if the executable exports symbols for loadable modules.
 # https://cmake.org/cmake/help/latest/prop_tgt/ENABLE_EXPORTS.html

@@ -39,13 +39,15 @@ class aim_target_shooting_game final : public igame {
     : m_engine{engine} {
     srand(time(NULL));
 
-    // const size_t k_target_width{40}, k_target_height{40};
+    // Uncomment this code for hot-reload mechanism demostration.
+    // constexpr size_t k_target_width{40}, k_target_height{40};
 
-    // const unsigned char r{255}, g{255}, b{50}, a{255};
+    // constexpr unsigned char r{255}, g{255}, b{50}, a{255};
 
-    const size_t k_target_width{100}, k_target_height{100};
+    // Comment this code for hot-reload mechanism demostration.
+    constexpr size_t k_target_width{100}, k_target_height{100};
 
-    const unsigned char r{204}, g{0}, b{102}, a{255};
+    constexpr unsigned char r{204}, g{0}, b{102}, a{255};
 
     m_target_rectangle.width = k_target_width;
     m_target_rectangle.height = k_target_height;
@@ -112,19 +114,6 @@ class aim_target_shooting_game final : public igame {
 
   void render() override {
     CHECK_NOTNULL(m_engine);
-
-    // const unsigned char r{204}, g{0}, b{102}, a{255};
-    // // const unsigned char r{255}, g{255}, b{50}, a{255};
-
-    // m_engine->render_rectangle(
-    //     m_target_rectangle.left,
-    //     m_target_rectangle.top,
-    //     m_target_rectangle.width,
-    //     m_target_rectangle.height,
-    //     r,
-    //     g,
-    //     b,
-    //     a);
 
     m_engine->render_rectangle(
         m_target_rectangle.left,

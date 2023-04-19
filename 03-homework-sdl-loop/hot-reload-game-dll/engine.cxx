@@ -270,17 +270,12 @@ void engine_destroy(iengine* engine) {
 ///////////////////////////////////////////////////////////////////////////////
 
 arci::igame* hot_reload(
+    const std::string_view game_name_dll,
     void*& old_handle,
     arci::igame* old_game,
     arci::iengine* engine);
-/* clang-format off */
-#ifdef __cplusplus
-extern "C"
-#endif
-    /* clang-format on */
 
-    int
-    main(int, char** argv) {
+int main(int, char** argv) {
   // Initialize google logging library.
   FLAGS_logtostderr = true;
   google::InitGoogleLogging(argv[0]);
@@ -294,15 +289,16 @@ extern "C"
 
   void* game_handle{nullptr};
 
+  std::string_view game_name_dll{"./libgame-shared.so"};
+
   arci::igame* game = hot_reload(
+      game_name_dll,
       game_handle,
       nullptr,
       engine.get());
 
-  const char* game_name_dll = "./libgame-shared.so";
-
   auto time_during_loading_game =
-      std::filesystem::last_write_time(game_name_dll);
+      std::filesystem::last_write_time(game_name_dll.data());
 
   CHECK_NOTNULL(game_handle);
 
@@ -329,7 +325,7 @@ extern "C"
       }
 
       // Now we are able to reload game.
-      game = hot_reload(game_handle, game, engine.get());
+      game = hot_reload(game_name_dll, game_handle, game, engine.get());
 
       time_during_loading_game = time_still_write;
     }
@@ -365,56 +361,50 @@ extern "C"
 
 // Hot reload mechanism.
 arci::igame* hot_reload(
+    const std::string_view game_dll_name,
     void*& old_game_handle,
     arci::igame* old_game,
     arci::iengine* engine) {
-  LOG(INFO) << "hot reload";
-  const char* game_dll_name = "./libgame-shared.so";
-  const char* copy_game_dll_name = "./libgame-shared-copy.so";
+  const std::string_view copy_game_dll_name = "./libgame-shared-copy.so";
 
   if (old_game_handle) {
     // Before reloading game dll we should destroy old game in order
     // to not have memory leak.
-    // LOG(INFO) << "old unload";
-    // CHECK(std::filesystem::exists(copy_game_dll_name));
+    auto sdl_func_ptr =
+        SDL_LoadFunction(old_game_handle, "destroy_game");
 
-    // void* copy_game_handle = SDL_LoadObject(copy_game_dll_name);
+    CHECK_NOTNULL(sdl_func_ptr);
 
-    // CHECK_NOTNULL(copy_game_handle);
+    using func_ptr_destroy_game = void (*)(arci::igame*);
 
-    // using func_ptr_destroy_game = void (*)(arci::igame*);
+    auto destroy_game = reinterpret_cast<func_ptr_destroy_game>(sdl_func_ptr);
 
-    // auto sdl_func_ptr =
-    //     SDL_LoadFunction(copy_game_handle, "destroy_game");
-
-    // CHECK_NOTNULL(sdl_func_ptr);
-
-    // auto destroy_game = reinterpret_cast<func_ptr_destroy_game>(sdl_func_ptr);
-
-    // destroy_game(old_game);
+    destroy_game(old_game);
 
     SDL_UnloadObject(old_game_handle);
   }
 
-  CHECK(std::filesystem::exists(game_dll_name));
+  CHECK(std::filesystem::exists(game_dll_name.data()));
+
+  if (std::filesystem::exists(copy_game_dll_name.data())) {
+    CHECK(std::filesystem::remove(copy_game_dll_name.data()));
+  }
 
   try {
-    std::filesystem::copy(
-        game_dll_name,
-        copy_game_dll_name,
-        std::filesystem::copy_options::overwrite_existing);
+    std::filesystem::copy(game_dll_name, copy_game_dll_name);
   } catch (std::filesystem::filesystem_error& exception) {
     LOG(ERROR) << "Failed when copying `libgame-shared.so` dll: "
                << exception.what();
+
+    exit(EXIT_FAILURE);
   }
 
-  void* game_handle = SDL_LoadObject(copy_game_dll_name);
+  void* game_handle = SDL_LoadObject(copy_game_dll_name.data());
 
   CHECK_NOTNULL(game_handle);
 
   old_game_handle = game_handle;
 
-  // using func_ptr_create_game = arci::igame* (*) (arci::iengine*);
   using func_ptr_create_game = decltype(&arci::create_game);
 
   SDL_FunctionPointer sdl_func_ptr =
@@ -424,9 +414,7 @@ arci::igame* hot_reload(
 
   auto create_game_ptr = reinterpret_cast<func_ptr_create_game>(sdl_func_ptr);
 
-  arci::igame* new_game = create_game_ptr(engine);
-
-  return new_game;
+  return create_game_ptr(engine);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
