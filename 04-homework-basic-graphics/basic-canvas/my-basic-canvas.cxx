@@ -38,9 +38,8 @@ std::ostream& operator<<(std::ostream& os, const std::vector<color>& pixels) {
       pixels.begin(),
       pixels.end(),
       [&os, i = 0](const color& c) mutable {
-        os << "[" << i << "]: r = " << static_cast<int>(c.r)
-           << "\tg = " << static_cast<int>(c.g)
-           << "\tb = " << static_cast<int>(c.b)
+        os << "[" << i << "]: "
+           << c
            << "\n";
         ++i;
       });
