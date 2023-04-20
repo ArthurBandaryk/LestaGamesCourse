@@ -20,7 +20,7 @@ struct color {
 };
 #pragma pack(pop)
 
-std::ostream& operator<<(std::ostream& os, const std::vector<color> pixels);
+std::ostream& operator<<(std::ostream& os, const std::vector<color>& pixels);
 
 ///////////////////////////////////////////////////////////////////////////////
 

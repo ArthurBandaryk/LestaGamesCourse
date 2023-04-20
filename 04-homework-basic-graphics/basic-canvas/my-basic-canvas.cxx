@@ -33,7 +33,7 @@ std::ostream& operator<<(std::ostream& os, const color& color) {
   return os;
 }
 
-std::ostream& operator<<(std::ostream& os, const std::vector<color> pixels) {
+std::ostream& operator<<(std::ostream& os, const std::vector<color>& pixels) {
   std::for_each(
       pixels.begin(),
       pixels.end(),
