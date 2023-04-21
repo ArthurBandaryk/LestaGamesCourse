@@ -71,6 +71,7 @@ void my_canvas::load_ppm3_image(const std::string_view name_image) {
   size_t width{}, height{};
 
   file >> ppm_format;
+  CHECK(file.good());
 
   CHECK(!ppm_format.empty()) << "Invalid ppm format for '"
                              << name_image << "'";
@@ -81,11 +82,13 @@ void my_canvas::load_ppm3_image(const std::string_view name_image) {
   LOG(INFO) << "Format read from '" << name_image << "' is: " << ppm_format;
 
   const char white_space = file.get();
+  CHECK(file.good());
 
   CHECK(isspace(static_cast<unsigned char>(white_space)))
       << "After P3 format should be a whitespace symbol";
 
   char first_symbol_on_new_line = file.get();
+  CHECK(file.good());
 
   // Extracts all whitespace symbols. As a result, we should get the
   // position for symbol which is a beginning for a comment('#') or
@@ -93,6 +96,7 @@ void my_canvas::load_ppm3_image(const std::string_view name_image) {
   auto extracting_whitespaces = [&file, &first_symbol_on_new_line]() {
     while (isspace(static_cast<unsigned char>(first_symbol_on_new_line))) {
       first_symbol_on_new_line = file.get();
+      CHECK(file.good());
     }
   };
 
@@ -104,8 +108,10 @@ void my_canvas::load_ppm3_image(const std::string_view name_image) {
   while (first_symbol_on_new_line == '#') {
     std::string comment{};
     std::getline(file, comment, '\n');
+    CHECK(file.good());
     comments += comment + "\n";
     first_symbol_on_new_line = file.get();
+    CHECK(file.good());
     extracting_whitespaces();
   }
 
@@ -113,14 +119,18 @@ void my_canvas::load_ppm3_image(const std::string_view name_image) {
   // position to the previous symbol.
   const std::streampos pos = file.tellg() - static_cast<std::streamoff>(1);
   file.seekg(pos);
+  CHECK(file.good());
 
   if (!comments.empty()) {
     LOG(INFO) << comments;
   }
 
   file >> width;
+  CHECK(file.good());
   file >> height;
+  CHECK(file.good());
   file >> max_color_value;
+  CHECK(file.good());
 
   LOG(INFO) << "Width: " << width;
   LOG(INFO) << "Height: " << height;
@@ -135,6 +145,7 @@ void my_canvas::load_ppm3_image(const std::string_view name_image) {
       m_pixels.end(),
       [&file, r = 0, g = 0, b = 0](color& c) mutable {
         file >> r >> g >> b;
+        CHECK(file.good());
         c.r = static_cast<unsigned char>(r);
         c.g = static_cast<unsigned char>(g);
         c.b = static_cast<unsigned char>(b);
