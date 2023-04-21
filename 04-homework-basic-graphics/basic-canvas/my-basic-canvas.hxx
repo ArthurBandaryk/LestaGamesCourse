@@ -2,6 +2,7 @@
 
 #include <string_view>
 #include <iosfwd>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -29,7 +30,10 @@ class my_canvas final {
  public:
   ~my_canvas() = default;
   my_canvas() = default;
-  my_canvas(const size_t width, const size_t height);
+  my_canvas(
+      const size_t width,
+      const size_t height,
+      const std::string& format);
   my_canvas(const my_canvas& other) = default;
   my_canvas(my_canvas&& other) = default;
   my_canvas& operator=(const my_canvas& other) = default;
@@ -46,16 +50,15 @@ class my_canvas final {
   size_t get_height() const noexcept;
   std::pair<size_t, size_t> get_resolution() const noexcept;
 
-  // P3 format of ppm file.
-  void load_ppm3_image(const std::string_view name_image);
-  void save_ppm3_image(const std::string_view name_image) const;
-
-  // P6 format of ppm file.
-  void load_ppm6_image(const std::string_view name_image);
-  void save_ppm6_image(const std::string_view name_image) const;
+  void load_ppm_image(const std::string_view name_image);
+  void save_ppm_image(const std::string_view name_image) const;
 
  private:
   std::vector<color> m_pixels{};
+
+  // P3 or P6.
+  std::string m_ppm_format{"P6"};
+
   size_t m_width{};
   size_t m_height{};
 };

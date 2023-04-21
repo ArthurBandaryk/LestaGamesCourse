@@ -49,8 +49,12 @@ std::ostream& operator<<(std::ostream& os, const std::vector<color>& pixels) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-my_canvas::my_canvas(const size_t width, const size_t height)
-  : m_width{width},
+my_canvas::my_canvas(
+    const size_t width,
+    const size_t height,
+    const std::string& format)
+  : m_ppm_format{format},
+    m_width{width},
     m_height{height} {
   m_pixels.resize(width * height);
 }
@@ -77,35 +81,28 @@ std::pair<size_t, size_t> my_canvas::get_resolution() const noexcept {
   return std::make_pair(get_width(), get_height());
 }
 
-void my_canvas::load_ppm3_image(const std::string_view name_image) {
+void my_canvas::load_ppm_image(const std::string_view name_image) {
   std::ifstream file{};
 
+  file.exceptions(std::ios_base::failbit);
   file.open(name_image.data());
 
   CHECK(file.is_open()) << "Error on opening '"
                         << name_image << "' for reading";
 
-  std::string ppm_format{}, max_color_value{};
+  uint16_t max_color_value{};
 
-  file >> ppm_format;
-  CHECK(file.good());
+  file >> m_ppm_format;
 
-  CHECK(!ppm_format.empty()) << "Invalid ppm format for '"
-                             << name_image << "'";
+  CHECK(!m_ppm_format.empty()) << "Invalid ppm format for '"
+                               << name_image << "'";
 
-  CHECK_STREQ("P3", ppm_format.c_str())
-      << "Function 'load_ppm3_image' supports only 'P3' format";
+  CHECK("P3" == m_ppm_format || "P6" == m_ppm_format)
+      << "Function 'load_ppm_image' supports only 'P3' and 'P6' formats";
 
-  LOG(INFO) << "Format read from '" << name_image << "' is: " << ppm_format;
-
-  const char white_space = file.get();
-  CHECK(file.good());
-
-  CHECK(isspace(static_cast<unsigned char>(white_space)))
-      << "After P3 format should be a whitespace symbol";
+  LOG(INFO) << "Format read from '" << name_image << "' is: " << m_ppm_format;
 
   char first_symbol_on_new_line = file.get();
-  CHECK(file.good());
 
   // Extracts all whitespace symbols. As a result, we should get the
   // position for symbol which is a beginning for a comment('#') or
@@ -113,7 +110,6 @@ void my_canvas::load_ppm3_image(const std::string_view name_image) {
   auto extracting_whitespaces = [&file, &first_symbol_on_new_line]() {
     while (isspace(static_cast<unsigned char>(first_symbol_on_new_line))) {
       first_symbol_on_new_line = file.get();
-      CHECK(file.good());
     }
   };
 
@@ -136,18 +132,21 @@ void my_canvas::load_ppm3_image(const std::string_view name_image) {
   // position to the previous symbol.
   const std::streampos pos = file.tellg() - static_cast<std::streamoff>(1);
   file.seekg(pos);
-  CHECK(file.good());
 
   if (!comments.empty()) {
     LOG(INFO) << comments;
   }
 
-  file >> m_width;
-  CHECK(file.good());
-  file >> m_height;
-  CHECK(file.good());
-  file >> max_color_value;
-  CHECK(file.good());
+  char white_space{};
+
+  file >> m_width
+      >> m_height
+      >> max_color_value
+      >> std::noskipws
+      >> white_space;
+
+  CHECK(isspace(static_cast<unsigned char>(white_space)))
+      << "After max color value should be a whitespace symbol";
 
   LOG(INFO) << "Width: " << m_width;
   LOG(INFO) << "Height: " << m_height;
@@ -157,52 +156,60 @@ void my_canvas::load_ppm3_image(const std::string_view name_image) {
 
   CHECK_EQ(m_pixels.size(), m_width * m_height);
 
-  std::for_each(
-      m_pixels.begin(),
-      m_pixels.end(),
-      [&file, r = 0, g = 0, b = 0](color& c) mutable {
-        file >> r >> g >> b;
-        CHECK(file.good());
-        c.r = static_cast<unsigned char>(r);
-        c.g = static_cast<unsigned char>(g);
-        c.b = static_cast<unsigned char>(b);
-      });
+  if (m_ppm_format == "P3") {
+    std::for_each(
+        m_pixels.begin(),
+        m_pixels.end(),
+        [&file, r = 0, g = 0, b = 0](color& c) mutable {
+          char white_space{};
+          file >> r >> white_space;
+          CHECK(isspace(static_cast<unsigned char>(white_space)));
+          file >> g >> white_space;
+          CHECK(isspace(static_cast<unsigned char>(white_space)));
+          file >> b >> white_space;
+          CHECK(isspace(static_cast<unsigned char>(white_space)));
+          c.r = static_cast<unsigned char>(r);
+          c.g = static_cast<unsigned char>(g);
+          c.b = static_cast<unsigned char>(b);
+        });
+  } else {
+    const std::streamsize bytes_to_read = sizeof(color) * m_pixels.size();
+    file.read(reinterpret_cast<char*>(m_pixels.data()), bytes_to_read);
+  }
 
   file.close();
-  CHECK(file.good())
-      << "Error on closing '"
-      << name_image
-      << "' when reading";
 }
 
-void my_canvas::save_ppm3_image(const std::string_view name_file) const {
+void my_canvas::save_ppm_image(const std::string_view name_file) const {
   std::ofstream file{};
-  uint16_t max_color_value{255};
+
+  file.exceptions(std::ios_base::failbit);
   file.open(name_file.data(), std::ios_base::trunc);
 
   CHECK(file.is_open())
       << "Error on opening '" << name_file << "' for writing";
 
-  file << "P3\n";
+  CHECK("P3" == m_ppm_format || "P6" == m_ppm_format)
+      << "Function 'save_ppm_image' supports only 'P3' and 'P6' formats";
+
+  uint16_t max_color_value{255};
+
+  file << m_ppm_format << "\n";
   file << m_width << " " << m_height << "\n";
   file << max_color_value << "\n";
-  CHECK(file.good());
 
-  std::for_each(m_pixels.begin(), m_pixels.end(), [&file](const color& c) {
-    file << static_cast<int>(c.r) << " "
-         << static_cast<int>(c.g) << " "
-         << static_cast<int>(c.b) << "\n";
-    CHECK(file.good());
-  });
+  if (m_ppm_format == "P3") {
+    std::for_each(m_pixels.begin(), m_pixels.end(), [&file](const color& c) {
+      file << static_cast<int>(c.r) << " "
+           << static_cast<int>(c.g) << " "
+           << static_cast<int>(c.b) << "\n";
+    });
+  } else {
+    std::streamsize bytes_to_write = sizeof(color) * m_pixels.size();
+    file.write(reinterpret_cast<const char*>(m_pixels.data()), bytes_to_write);
+  }
 
   file.close();
-  CHECK(file.good()) << "Error on closing '" << name_file << "' for writing";
-}
-
-void my_canvas::load_ppm6_image(const std::string_view file_name) {
-}
-
-void my_canvas::save_ppm6_image(const std::string_view name_image) const {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
