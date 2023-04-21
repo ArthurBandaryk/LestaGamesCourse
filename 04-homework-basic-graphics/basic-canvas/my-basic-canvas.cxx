@@ -152,6 +152,10 @@ void my_canvas::load_ppm3_image(const std::string_view name_image) {
       });
 
   file.close();
+  CHECK(file.good())
+      << "Error on closing '"
+      << name_image
+      << "' when reading";
 }
 
 ///////////////////////////////////////////////////////////////////////////////
