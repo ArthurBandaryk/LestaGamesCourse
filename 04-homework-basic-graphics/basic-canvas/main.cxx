@@ -3,6 +3,11 @@
 //
 #include <glog/logging.h>
 
+//
+#include <vector>
+
+///////////////////////////////////////////////////////////////////////////////
+
 int main(int, char** argv) {
   // Init google logging library.
   FLAGS_logtostderr = true;
@@ -38,8 +43,9 @@ int main(int, char** argv) {
       {255, 255, 0},
       {255, 255, 255},
   };
-
   CHECK_EQ(test_ppm3_1, canvas.get_pixels());
+
+  ///////////////////////////////////////////////////////////////////////////////
 
   std::vector<arci::color> test_ppm3_2{
       {255, 0, 0},
@@ -55,3 +61,5 @@ int main(int, char** argv) {
 
   return EXIT_SUCCESS;
 }
+
+///////////////////////////////////////////////////////////////////////////////
