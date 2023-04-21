@@ -62,7 +62,7 @@ std::vector<color> my_canvas::get_pixels() const {
 void my_canvas::load_ppm3_image(const std::string_view name_image) {
   std::ifstream file{};
 
-  file.open(name_image.data(), std::ios_base::binary);
+  file.open(name_image.data());
 
   CHECK(file.is_open()) << "Error on opening '"
                         << name_image << "' for reading";
@@ -80,23 +80,41 @@ void my_canvas::load_ppm3_image(const std::string_view name_image) {
 
   LOG(INFO) << "Format read from '" << name_image << "' is: " << ppm_format;
 
-  char symbol = file.get();
-  CHECK(file.good());
+  const char white_space = file.get();
+
+  CHECK(isspace(static_cast<unsigned char>(white_space)))
+      << "After P3 format should be a whitespace symbol";
+
+  char first_symbol_on_new_line = file.get();
+
+  // Extracts all whitespace symbols. As a result, we should get the
+  // position for symbol which is a beginning for a comment('#') or
+  // int value for triplet column number.
+  auto extracting_whitespaces = [&file, &first_symbol_on_new_line]() {
+    while (isspace(static_cast<unsigned char>(first_symbol_on_new_line))) {
+      first_symbol_on_new_line = file.get();
+    }
+  };
+
+  extracting_whitespaces();
 
   std::string comments{};
 
   // Reading all comments.
-  while (symbol == '#' || isspace(static_cast<unsigned char>(symbol))) {
+  while (first_symbol_on_new_line == '#') {
     std::string comment{};
     std::getline(file, comment, '\n');
     comments += comment + "\n";
-    symbol = file.get();
-    CHECK(file.good());
+    first_symbol_on_new_line = file.get();
+    extracting_whitespaces();
   }
 
+  // We've consumed important symbol for reading. So set current file
+  // position to the previous symbol.
+  const std::streampos pos = file.tellg() - static_cast<std::streamoff>(1);
+  file.seekg(pos);
+
   if (!comments.empty()) {
-    const std::streampos pos = file.tellg() - static_cast<std::streamoff>(1);
-    file.seekg(pos);
     LOG(INFO) << comments;
   }
 
