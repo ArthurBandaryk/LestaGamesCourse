@@ -10,37 +10,48 @@ int main(int, char** argv) {
 
   arci::my_canvas canvas{};
 
-  // canvas.load_ppm3_image("resources/simple-p3-image-for-loading.ppm");
-  canvas.load_ppm3_image("/home/arc1/LestaGames/LestaGamesCourse/04-homework-basic-graphics/basic-canvas/resources/simple-p3-image-for-loading.ppm");
-  std::vector<arci::color> test{
-      arci::color{255, 0, 0},
-      arci::color{0, 255, 0},
-      arci::color{0, 0, 255},
-      arci::color{255, 255, 0},
-      arci::color{255, 255, 255},
-      arci::color{0, 0, 0},
-      arci::color{255, 0, 0},
-      arci::color{0, 255, 0},
-      arci::color{0, 0, 255},
-      arci::color{255, 255, 0},
-      arci::color{255, 0, 0},
-      arci::color{0, 255, 0},
-      arci::color{0, 0, 255},
-      arci::color{255, 255, 0},
-      arci::color{255, 255, 255},
-      arci::color{255, 0, 0},
-      arci::color{0, 255, 0},
-      arci::color{0, 0, 255},
-      arci::color{255, 255, 0},
-      arci::color{255, 255, 255},
-      arci::color{255, 0, 0},
-      arci::color{0, 255, 0},
-      arci::color{0, 0, 255},
-      arci::color{255, 255, 0},
-      arci::color{255, 255, 255},
+  canvas.load_ppm3_image("resources/simple-p3-image-for-loading-1.ppm");
+  std::vector<arci::color> test_ppm3_1{
+      {255, 0, 0},
+      {0, 255, 0},
+      {0, 0, 255},
+      {255, 255, 0},
+      {255, 255, 255},
+      {0, 0, 0},
+      {255, 0, 0},
+      {0, 255, 0},
+      {0, 0, 255},
+      {255, 255, 0},
+      {255, 0, 0},
+      {0, 255, 0},
+      {0, 0, 255},
+      {255, 255, 0},
+      {255, 255, 255},
+      {255, 0, 0},
+      {0, 255, 0},
+      {0, 0, 255},
+      {255, 255, 0},
+      {255, 255, 255},
+      {255, 0, 0},
+      {0, 255, 0},
+      {0, 0, 255},
+      {255, 255, 0},
+      {255, 255, 255},
   };
 
-  CHECK_EQ(test, canvas.get_pixels());
+  CHECK_EQ(test_ppm3_1, canvas.get_pixels());
+
+  std::vector<arci::color> test_ppm3_2{
+      {255, 0, 0},
+      {0, 255, 0},
+      {0, 0, 255},
+      {255, 255, 0},
+      {255, 255, 255},
+      {0, 0, 0},
+  };
+
+  canvas.load_ppm3_image("resources/simple-p3-image-for-loading-2.ppm");
+  CHECK_EQ(test_ppm3_2, canvas.get_pixels());
 
   return EXIT_SUCCESS;
 }
