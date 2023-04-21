@@ -36,6 +36,7 @@ class my_canvas final {
   my_canvas& operator=(my_canvas&& other) = default;
 
   std::vector<color> get_pixels() const noexcept;
+  void fill_all_with_color(const color& color);
   void set_color_for_pixel(
       const size_t i,
       const size_t j,

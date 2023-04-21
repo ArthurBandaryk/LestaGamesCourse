@@ -52,11 +52,17 @@ std::ostream& operator<<(std::ostream& os, const std::vector<color>& pixels) {
 my_canvas::my_canvas(const size_t width, const size_t height)
   : m_width{width},
     m_height{height} {
-  m_pixels.reserve(width * height);
+  m_pixels.resize(width * height);
 }
 
 std::vector<color> my_canvas::get_pixels() const noexcept {
   return m_pixels;
+}
+
+void my_canvas::fill_all_with_color(const color& some_color) {
+  std::for_each(m_pixels.begin(), m_pixels.end(), [&some_color](color& c) {
+    c = some_color;
+  });
 }
 
 size_t my_canvas::get_width() const noexcept {
@@ -171,6 +177,7 @@ void my_canvas::load_ppm3_image(const std::string_view name_image) {
 
 void my_canvas::save_ppm3_image(const std::string_view name_file) const {
   std::ofstream file{};
+  uint16_t max_color_value{255};
   file.open(name_file.data(), std::ios_base::trunc);
 
   CHECK(file.is_open())
@@ -178,7 +185,7 @@ void my_canvas::save_ppm3_image(const std::string_view name_file) const {
 
   file << "P3\n";
   file << m_width << " " << m_height << "\n";
-  file << 255 << "\n";
+  file << max_color_value << "\n";
   CHECK(file.good());
 
   std::for_each(m_pixels.begin(), m_pixels.end(), [&file](const color& c) {
@@ -187,10 +194,15 @@ void my_canvas::save_ppm3_image(const std::string_view name_file) const {
          << static_cast<int>(c.b) << "\n";
     CHECK(file.good());
   });
-  CHECK(file.good());
 
   file.close();
   CHECK(file.good()) << "Error on closing '" << name_file << "' for writing";
+}
+
+void my_canvas::load_ppm6_image(const std::string_view file_name) {
+}
+
+void my_canvas::save_ppm6_image(const std::string_view name_image) const {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
