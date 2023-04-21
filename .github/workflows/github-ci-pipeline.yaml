@@ -161,16 +161,28 @@ jobs:
       #     CXX=clang++ cmake -G Ninja -S 03-homework-sdl-loop/sdl-shared-engine -B build/ && \
       #     CXX=clang++ cmake --build build/
 
-      - name: Hot reload using GNU
+      # - name: Hot reload using GNU
+      #   run: |
+      #     mkdir -p build && \
+      #     cmake -G Ninja -S 03-homework-sdl-loop/hot-reload-game-dll -B build/ && \
+      #     cmake --build build/
+
+      # - name: Hot reload using clang
+      #   run: |
+      #     rm -rf build/* && \
+      #     CXX=clang++ cmake -G Ninja -S 03-homework-sdl-loop/hot-reload-game-dll -B build/ && \
+      #     CXX=clang++ cmake --build build/
+
+      - name: Basic graphics using GNU
         run: |
           mkdir -p build && \
-          cmake -G Ninja -S 03-homework-sdl-loop/hot-reload-game-dll -B build/ && \
+          cmake -G Ninja -S 04-homework-basic-graphics/ -B build/ && \
           cmake --build build/
 
-      - name: Hot reload using clang
+      - name: Basic graphics using clang
         run: |
           rm -rf build/* && \
-          CXX=clang++ cmake -G Ninja -S 03-homework-sdl-loop/hot-reload-game-dll -B build/ && \
+          CXX=clang++ cmake -G Ninja -S 04-homework-basic-graphics/ -B build/ && \
           CXX=clang++ cmake --build build/
 
       - name: Debug using tmate (if failure)
