@@ -68,7 +68,6 @@ void my_canvas::load_ppm3_image(const std::string_view name_image) {
                         << name_image << "' for reading";
 
   std::string ppm_format{}, max_color_value{};
-  size_t width{}, height{};
 
   file >> ppm_format;
   CHECK(file.good());
@@ -125,20 +124,20 @@ void my_canvas::load_ppm3_image(const std::string_view name_image) {
     LOG(INFO) << comments;
   }
 
-  file >> width;
+  file >> m_width;
   CHECK(file.good());
-  file >> height;
+  file >> m_height;
   CHECK(file.good());
   file >> max_color_value;
   CHECK(file.good());
 
-  LOG(INFO) << "Width: " << width;
-  LOG(INFO) << "Height: " << height;
+  LOG(INFO) << "Width: " << m_width;
+  LOG(INFO) << "Height: " << m_height;
   LOG(INFO) << "Max color value is: " << max_color_value;
 
-  m_pixels.resize(width * height);
+  m_pixels.resize(m_width * m_height);
 
-  CHECK_EQ(m_pixels.size(), width * height);
+  CHECK_EQ(m_pixels.size(), m_width * m_height);
 
   std::for_each(
       m_pixels.begin(),
