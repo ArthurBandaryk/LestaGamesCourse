@@ -2,6 +2,7 @@
 
 #include <string_view>
 #include <iosfwd>
+#include <utility>
 #include <vector>
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -34,11 +35,15 @@ class my_canvas final {
   my_canvas& operator=(const my_canvas& other) = default;
   my_canvas& operator=(my_canvas&& other) = default;
 
-  std::vector<color> get_pixels() const;
+  std::vector<color> get_pixels() const noexcept;
   void set_color_for_pixel(
       const size_t i,
       const size_t j,
       const color& color);
+
+  size_t get_width() const noexcept;
+  size_t get_height() const noexcept;
+  std::pair<size_t, size_t> get_resolution() const noexcept;
 
   // P3 format of ppm file.
   void load_ppm3_image(const std::string_view name_image);

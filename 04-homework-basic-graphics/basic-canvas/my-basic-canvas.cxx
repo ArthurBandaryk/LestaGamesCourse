@@ -55,8 +55,20 @@ my_canvas::my_canvas(const size_t width, const size_t height)
   m_pixels.reserve(width * height);
 }
 
-std::vector<color> my_canvas::get_pixels() const {
+std::vector<color> my_canvas::get_pixels() const noexcept {
   return m_pixels;
+}
+
+size_t my_canvas::get_width() const noexcept {
+  return m_width;
+}
+
+size_t my_canvas::get_height() const noexcept {
+  return m_height;
+}
+
+std::pair<size_t, size_t> my_canvas::get_resolution() const noexcept {
+  return std::make_pair(get_width(), get_height());
 }
 
 void my_canvas::load_ppm3_image(const std::string_view name_image) {
@@ -155,6 +167,30 @@ void my_canvas::load_ppm3_image(const std::string_view name_image) {
       << "Error on closing '"
       << name_image
       << "' when reading";
+}
+
+void my_canvas::save_ppm3_image(const std::string_view name_file) const {
+  std::ofstream file{};
+  file.open(name_file.data(), std::ios_base::trunc);
+
+  CHECK(file.is_open())
+      << "Error on opening '" << name_file << "' for writing";
+
+  file << "P3\n";
+  file << m_width << " " << m_height << "\n";
+  file << 255 << "\n";
+  CHECK(file.good());
+
+  std::for_each(m_pixels.begin(), m_pixels.end(), [&file](const color& c) {
+    file << static_cast<int>(c.r) << " "
+         << static_cast<int>(c.g) << " "
+         << static_cast<int>(c.b) << "\n";
+    CHECK(file.good());
+  });
+  CHECK(file.good());
+
+  file.close();
+  CHECK(file.good()) << "Error on closing '" << name_file << "' for writing";
 }
 
 ///////////////////////////////////////////////////////////////////////////////
