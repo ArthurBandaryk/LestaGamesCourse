@@ -69,6 +69,17 @@ void my_canvas::fill_all_with_color(const color& some_color) {
   });
 }
 
+void my_canvas::set_color_for_pixel(
+    const size_t i,
+    const size_t j,
+    const color& color) {
+  const size_t index = m_width * j + i;
+  CHECK(index < m_pixels.size())
+      << "Incorrect index for setting color";
+
+  m_pixels[index] = color;
+}
+
 size_t my_canvas::get_width() const noexcept {
   return m_width;
 }
