@@ -25,3 +25,4 @@ target_compile_options(
   INTERFACE "$<${gcc_like_cxx}:$<BUILD_INTERFACE:-Wall;-Wextra>>")
 
 add_subdirectory(basic-canvas)
+add_subdirectory(basic-line)
