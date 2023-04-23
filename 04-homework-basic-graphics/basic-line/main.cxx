@@ -20,7 +20,6 @@ int main(int, char** argv) {
   render.render_line({0, 390}, {399, 390}, {0, 255, 255});
   render.render_line({399, 399}, {0, 399}, {0, 255, 255});
 
-
   // Vertical lines.
   render.render_line({10, 0}, {10, 399}, {255, 102, 255});
   render.render_line({20, 0}, {20, 399}, {255, 102, 255});

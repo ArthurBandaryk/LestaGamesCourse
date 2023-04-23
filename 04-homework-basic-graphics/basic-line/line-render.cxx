@@ -13,7 +13,7 @@ namespace arci {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-line_render::line_render(my_canvas& canvas, algorithm type)
+line_render::line_render(my_canvas& canvas, const algorithm type)
   : m_canvas{canvas},
     m_algorithm{type} {}
 
@@ -39,14 +39,12 @@ void line_render::render_line(
       break;
   }
 
-  if (!pixels.empty()) {
-    std::for_each(
-        pixels.begin(),
-        pixels.end(),
-        [this, &color](const pixel_point& point) {
-          set_pixel(point, color);
-        });
-  }
+  std::for_each(
+      pixels.begin(),
+      pixels.end(),
+      [this, &color](const pixel_point& point) {
+        set_pixel(point, color);
+      });
 }
 
 std::vector<pixel_point> line_render::get_pixels_for_line_dda(

@@ -24,7 +24,7 @@ class line_render : public irender {
   line_render(line_render&&) = default;
   line_render& operator=(const line_render&) = delete;
   line_render& operator=(line_render&&) = default;
-  line_render(my_canvas&, algorithm type = algorithm::bresenham);
+  line_render(my_canvas&, const algorithm type = algorithm::bresenham);
 
   void set_pixel(const pixel_point& pixel, const color& color) override;
   void render_line(
