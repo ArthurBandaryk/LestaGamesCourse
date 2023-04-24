@@ -77,8 +77,7 @@ int main(int, char** argv) {
         render.render_line(line.from, line.to, line.color);
       });
 
-  // canvas.save_ppm_image("resources/bresenham-algorithm.ppm");
-  canvas.save_ppm_image("/home/arc1/LestaGames/LestaGamesCourse/04-homework-basic-graphics/basic-line/resources/bresenham-algorithm.ppm");
+  canvas.save_ppm_image("resources/bresenham-algorithm.ppm");
 
   return EXIT_SUCCESS;
 }
