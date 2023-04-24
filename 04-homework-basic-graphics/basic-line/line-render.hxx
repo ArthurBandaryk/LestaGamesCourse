@@ -16,7 +16,6 @@ class line_render : public irender {
   enum class algorithm {
     dda,
     bresenham,
-    vu,
   };
 
   line_render() = delete;
@@ -26,6 +25,7 @@ class line_render : public irender {
   line_render& operator=(line_render&&) = default;
   line_render(my_canvas&, const algorithm type = algorithm::bresenham);
 
+  void set_algorithm(const algorithm type);
   void set_pixel(const pixel_point& pixel, const color& color) override;
   void render_line(
       const pixel_point& from,
@@ -33,6 +33,8 @@ class line_render : public irender {
       const color& color);
 
  private:
+  void check_point(const pixel_point& point) const;
+
   // DDA algorithm for grabbing pixels to render line.
   // Remember: since this algo uses floats - it's slow.
   std::vector<pixel_point> get_pixels_for_line_dda(
@@ -41,11 +43,6 @@ class line_render : public irender {
 
   // Bresenham algorithm for grabbing pixels to render line.
   std::vector<pixel_point> get_pixels_for_line_bresenham(
-      const pixel_point& from,
-      const pixel_point& to);
-
-  // Vu algorithm for grabbing pixels to render line.
-  std::vector<pixel_point> get_pixels_for_line_vu(
       const pixel_point& from,
       const pixel_point& to);
 
