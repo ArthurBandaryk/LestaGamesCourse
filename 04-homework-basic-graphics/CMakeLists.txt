@@ -27,3 +27,4 @@ target_compile_options(
 add_subdirectory(basic-canvas)
 add_subdirectory(basic-line)
 add_subdirectory(basic-triangle)
+add_subdirectory(triangles-indexed)
