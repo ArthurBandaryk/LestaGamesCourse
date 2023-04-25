@@ -21,6 +21,10 @@ void line_render::set_pixel(const pixel_point& pixel, const color& color) {
   m_canvas.set_color_for_pixel(pixel.x, pixel.y, color);
 }
 
+void line_render::clear_all_with_color(const color& color) {
+  m_canvas.fill_all_with_color(color);
+}
+
 void line_render::set_algorithm(const algorithm type) {
   m_algorithm = type;
 }

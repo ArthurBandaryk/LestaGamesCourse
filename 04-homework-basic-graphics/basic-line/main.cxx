@@ -14,6 +14,8 @@ int main(int, char** argv) {
   FLAGS_logtostderr = true;
   google::InitGoogleLogging(argv[0]);
 
+  constexpr size_t width{400}, height{400};
+
   struct line {
     arci::pixel_point from;
     arci::pixel_point to;
@@ -52,30 +54,29 @@ int main(int, char** argv) {
       {{89, 250}, {69, 389}, {255, 128, 0}},
   };
 
-  arci::my_canvas canvas{400, 400, "P6"};
+  arci::my_canvas canvas{width, height, "P6"};
 
   canvas.fill_all_with_color({0, 0, 0});
 
   arci::line_render render(canvas, arci::line_render::algorithm::dda);
 
-  std::for_each(
-      lines.begin(),
-      lines.end(),
-      [&render](const line& line) {
-        render.render_line(line.from, line.to, line.color);
-      });
+  auto draw_lines = [&render, &lines]() {
+    std::for_each(
+        lines.begin(),
+        lines.end(),
+        [&render](const line& line) {
+          render.render_line(line.from, line.to, line.color);
+        });
+  };
+
+  draw_lines();
 
   canvas.save_ppm_image("resources/dda-algorithm.ppm");
 
-  canvas.fill_all_with_color({0, 0, 0});
+  render.clear_all_with_color({0, 0, 0});
   render.set_algorithm(arci::line_render::algorithm::bresenham);
 
-  std::for_each(
-      lines.begin(),
-      lines.end(),
-      [&render](const line& line) {
-        render.render_line(line.from, line.to, line.color);
-      });
+  draw_lines();
 
   canvas.save_ppm_image("resources/bresenham-algorithm.ppm");
 

@@ -27,6 +27,7 @@ class line_render : public irender {
 
   void set_algorithm(const algorithm type);
   void set_pixel(const pixel_point& pixel, const color& color) override;
+  void clear_all_with_color(const color& color) override;
   void render_line(
       const pixel_point& from,
       const pixel_point& to,

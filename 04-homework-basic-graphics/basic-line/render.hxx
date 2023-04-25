@@ -23,6 +23,7 @@ struct pixel_point {
 class irender {
  public:
   virtual ~irender() = default;
+  virtual void clear_all_with_color(const color& color) = 0;
   virtual void set_pixel(const pixel_point& pixel, const color& color) = 0;
 };
 
