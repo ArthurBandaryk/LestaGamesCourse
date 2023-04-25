@@ -17,8 +17,8 @@ int main(int, char** argv) {
   constexpr size_t width{400}, height{400};
 
   struct line {
-    arci::pixel_point from;
-    arci::pixel_point to;
+    arci::point from;
+    arci::point to;
     arci::color color;
   };
 
@@ -65,7 +65,7 @@ int main(int, char** argv) {
         lines.begin(),
         lines.end(),
         [&render](const line& line) {
-          render.render_line(line.from, line.to, line.color);
+          render.render(line.from, line.to, line.color);
         });
   };
 

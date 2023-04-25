@@ -6,11 +6,11 @@ namespace arci {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-bool pixel_point::operator==(const pixel_point& point) {
+bool point::operator==(const point& point) {
   return x == point.x && y == point.y;
 }
 
-std::ostream& operator<<(std::ostream& os, const pixel_point& point) {
+std::ostream& operator<<(std::ostream& os, const point& point) {
   os << "(x, y): " << point.x << ", " << point.y;
   return os;
 }
