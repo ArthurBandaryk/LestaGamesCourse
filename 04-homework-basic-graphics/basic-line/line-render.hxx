@@ -34,7 +34,7 @@ class line_render : public irender {
       const point& to,
       const color& color);
 
- private:
+ protected:
   my_canvas& m_canvas;
   algorithm m_algorithm{};
 };
