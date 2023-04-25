@@ -168,6 +168,8 @@ std::vector<point> bresenham::get_pixels_for_slope_greater_than_one(
   return result;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
 std::vector<point> dda::get_pixels(const point& from, const point& to) {
   std::vector<point> result{};
 
