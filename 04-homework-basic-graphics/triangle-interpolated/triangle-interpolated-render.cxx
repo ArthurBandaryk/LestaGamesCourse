@@ -39,6 +39,8 @@ static vertex get_interpolated_vertex(
 triangle_interpolated_render::triangle_interpolated_render(my_canvas& canvas)
   : line_render(canvas) {}
 
+///////////////////////////////////////////////////////////////////////////////
+
 void triangle_interpolated_render::render(
     const std::vector<vertex>& vertices,
     const std::vector<uint32_t>& indices) {
@@ -70,6 +72,8 @@ void triangle_interpolated_render::render(
     }
   }
 }
+
+///////////////////////////////////////////////////////////////////////////////
 
 std::vector<vertex> triangle_interpolated_render::get_rasterized_triangle(
     std::array<vertex, 3>& triangle) {
@@ -147,10 +151,12 @@ std::vector<vertex> triangle_interpolated_render::get_rasterized_triangle(
   return result;
 }
 
-std::vector<vertex> triangle_interpolated_render::
-    get_rasterized_horizontal_line(
-        const vertex& left,
-        const vertex& right) {
+///////////////////////////////////////////////////////////////////////////////
+
+std::vector<vertex>
+triangle_interpolated_render::get_rasterized_horizontal_line(
+    const vertex& left,
+    const vertex& right) {
   std::vector<vertex> result{};
 
   const size_t num_vertices = std::lround(std::abs(left.x - right.x)) + 1;
@@ -164,10 +170,12 @@ std::vector<vertex> triangle_interpolated_render::
   return result;
 }
 
-std::vector<vertex> triangle_interpolated_render::
-    get_rasterized_vertical_line(
-        const vertex& top,
-        const vertex& bottom) {
+///////////////////////////////////////////////////////////////////////////////
+
+std::vector<vertex>
+triangle_interpolated_render::get_rasterized_vertical_line(
+    const vertex& top,
+    const vertex& bottom) {
   std::vector<vertex> result{};
 
   const size_t num_vertices = std::lround(std::abs(top.y - bottom.y)) + 1;
@@ -181,8 +189,11 @@ std::vector<vertex> triangle_interpolated_render::
   return result;
 }
 
-std::vector<vertex> triangle_interpolated_render::
-    get_rasterized_half_triangle(std::array<vertex, 3>& triangle) {
+///////////////////////////////////////////////////////////////////////////////
+
+std::vector<vertex>
+triangle_interpolated_render::get_rasterized_half_triangle(
+    std::array<vertex, 3>& triangle) {
   std::vector<vertex> result{};
 
   // Sort all vertices by y.
@@ -254,8 +265,11 @@ std::vector<vertex> triangle_interpolated_render::
   return result;
 }
 
-std::vector<vertex> triangle_interpolated_render::
-    get_rasterized_default_triangle(std::array<vertex, 3>& triangle) {
+///////////////////////////////////////////////////////////////////////////////
+
+std::vector<vertex>
+triangle_interpolated_render::get_rasterized_default_triangle(
+    std::array<vertex, 3>& triangle) {
   std::vector<vertex> result{};
 
   const vertex& top = triangle.at(0);
