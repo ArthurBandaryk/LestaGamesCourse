@@ -46,6 +46,10 @@ class triangle_interpolated_render : public line_render {
   std::vector<vertex> get_rasterized_vertical_line(
       const vertex& top,
       const vertex& bottom);
+  std::vector<vertex> get_rasterized_half_triangle(
+      std::array<vertex, 3>& triangle);
+  std::vector<vertex> get_rasterized_default_triangle(
+      std::array<vertex, 3>& triangle);
 };
 
 ///////////////////////////////////////////////////////////////////////////////

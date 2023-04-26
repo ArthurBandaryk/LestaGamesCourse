@@ -127,6 +127,23 @@ std::vector<vertex> triangle_interpolated_render::get_rasterized_triangle(
     return result;
   }
 
+  /* top.y = middle.y (the base of triangle is parallel to X-axis).
+    ________         /\
+    \      /        /  \
+     \    /        /    \
+      \  /        /      \
+       \/        /________\
+  */
+  if (((top.y == middle.y) && (top.y != bottom.y))
+      || ((middle.y == bottom.y) && (top.y != middle.y))) {
+    return get_rasterized_half_triangle(triangle);
+  }
+  // We have a default triangle. So try to split it on 2 triangles,
+  // which have bases parallel to X-axis.
+  else {
+    return get_rasterized_default_triangle(triangle);
+  }
+
   return result;
 }
 
@@ -160,6 +177,146 @@ std::vector<vertex> triangle_interpolated_render::
     const vertex v = get_interpolated_vertex(top, bottom, tau);
     result.push_back(v);
   }
+
+  return result;
+}
+
+std::vector<vertex> triangle_interpolated_render::
+    get_rasterized_half_triangle(std::array<vertex, 3>& triangle) {
+  std::vector<vertex> result{};
+
+  // Sort all vertices by y.
+  std::sort(
+      triangle.begin(),
+      triangle.end(),
+      [](const vertex& vertex1, const vertex& vertex2) {
+        return vertex1.y < vertex2.y;
+      });
+
+  const vertex& top = triangle.at(0);
+  const vertex& middle = triangle.at(1);
+  const vertex& bottom = triangle.at(2);
+
+  const size_t num_lines =
+      std::lround(std::abs(triangle.at(0).y - triangle.at(2).y));
+
+  // TODO(arci): find a better way to grab correct left, right and top triangle
+  // vertexes.
+  vertex left{}, right{}, top_edge{};
+  if (static_cast<int32_t>(std::round(top.y))
+      == static_cast<int32_t>(std::round(middle.y))) {
+    if (static_cast<int32_t>(std::round(top.x))
+        < static_cast<int32_t>(std::round(middle.x))) {
+      left = top;
+      right = middle;
+    } else {
+      left = middle;
+      right = top;
+    }
+    top_edge = bottom;
+  }
+
+  // TODO(arci): find a better way to grab correct left, right and top triangle
+  // vertexes.
+  if (static_cast<int32_t>(std::round(middle.y))
+      == static_cast<int32_t>(std::round(bottom.y))) {
+    if (static_cast<int32_t>(std::round(middle.x))
+        < static_cast<int32_t>(std::round(bottom.x))) {
+      left = middle;
+      right = bottom;
+    } else {
+      left = bottom;
+      right = middle;
+    }
+    top_edge = top;
+  }
+
+  CHECK(num_lines);
+
+  for (size_t i = 0; i <= num_lines; ++i) {
+    const float tau = static_cast<float>(i) / num_lines;
+    const vertex left_interpolated = get_interpolated_vertex(
+        left,
+        top_edge,
+        tau);
+    const vertex right_interpolated = get_interpolated_vertex(
+        right,
+        top_edge,
+        tau);
+    const std::vector<vertex> rasterized_horizontal_line =
+        get_rasterized_horizontal_line(left_interpolated, right_interpolated);
+    result.insert(
+        result.end(),
+        rasterized_horizontal_line.begin(),
+        rasterized_horizontal_line.end());
+  }
+
+  return result;
+}
+
+std::vector<vertex> triangle_interpolated_render::
+    get_rasterized_default_triangle(std::array<vertex, 3>& triangle) {
+  std::vector<vertex> result{};
+
+  const vertex& top = triangle.at(0);
+  const vertex& middle = triangle.at(1);
+  const vertex& bottom = triangle.at(2);
+
+  const point start_biggest_edge{
+      static_cast<int32_t>(std::round(top.x)),
+      static_cast<int32_t>(std::round(top.y))};
+
+  const point end_biggest_edge{
+      static_cast<int32_t>(std::round(bottom.x)),
+      static_cast<int32_t>(std::round(bottom.y))};
+
+  const float y_split = middle.y;
+
+  const std::vector<point> biggest_edge =
+      get_pixels(start_biggest_edge, end_biggest_edge);
+
+  const auto iter_split = std::find_if(
+      biggest_edge.begin(),
+      biggest_edge.end(),
+      [y_split](const point& p) {
+        return p.y == static_cast<int32_t>(std::round(y_split));
+      });
+
+  CHECK(iter_split != biggest_edge.end());
+
+  float biggest_edge_length = (start_biggest_edge - end_biggest_edge).length();
+  float top_middle_length = (*iter_split - start_biggest_edge).length();
+  float tau = top_middle_length / biggest_edge_length;
+
+  vertex split_vertex = get_interpolated_vertex(top, bottom, tau);
+
+  std::array<vertex, 3> triangle_low{
+      middle,
+      split_vertex,
+      bottom,
+  };
+
+  std::array<vertex, 3> triangle_high{
+      split_vertex,
+      top,
+      middle,
+  };
+
+  const std::vector<vertex> rasterized_part_1 =
+      get_rasterized_half_triangle(triangle_low);
+
+  const std::vector<vertex> rasterized_part_2 =
+      get_rasterized_half_triangle(triangle_high);
+
+  result.insert(
+      result.end(),
+      rasterized_part_1.begin(),
+      rasterized_part_1.end());
+
+  result.insert(
+      result.end(),
+      rasterized_part_2.begin(),
+      rasterized_part_2.end());
 
   return result;
 }

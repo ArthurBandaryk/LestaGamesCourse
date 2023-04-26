@@ -14,7 +14,9 @@ namespace arci {
 struct point {
   int32_t x{};
   int32_t y{};
+  float length() const;
   bool operator==(const point& point);
+  friend point operator-(const point& point1, const point& poin2);
   friend std::ostream& operator<<(std::ostream& os, const point& point);
 };
 
