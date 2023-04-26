@@ -71,14 +71,14 @@ int main(int, char** argv) {
 
   draw_lines();
 
-  canvas.save_ppm_image("resources/dda-algorithm.ppm");
+  canvas.save_ppm_image("dda-algorithm.ppm");
 
   render.clear_all_with_color({0, 0, 0});
   render.set_algorithm(arci::line_render::algorithm::bresenham);
 
   draw_lines();
 
-  canvas.save_ppm_image("resources/bresenham-algorithm.ppm");
+  canvas.save_ppm_image("bresenham-algorithm.ppm");
 
   return EXIT_SUCCESS;
 }

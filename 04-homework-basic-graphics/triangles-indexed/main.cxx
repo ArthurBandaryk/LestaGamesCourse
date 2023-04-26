@@ -13,6 +13,7 @@ int main(int, char** argv) {
   FLAGS_logtostderr = true;
   google::InitGoogleLogging(argv[0]);
 
+  // A star figure from 6 triangles.
   std::vector<arci::point> vertices{
       {150, 0},
       {100, 100},
@@ -59,7 +60,7 @@ int main(int, char** argv) {
 
   render.render(vertices, indices, {255, 255, 50});
 
-  canvas.save_ppm_image("resources/triangles-indexed.ppm");
+  canvas.save_ppm_image("triangles-indexed.ppm");
 
   return EXIT_SUCCESS;
 }

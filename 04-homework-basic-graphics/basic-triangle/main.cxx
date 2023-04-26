@@ -24,7 +24,7 @@ int main(int, char** argv) {
 
   render.render(vertices1, 3, {255, 255, 50});
 
-  canvas.save_ppm_image("resources/basic-triangle.ppm");
+  canvas.save_ppm_image("basic-triangle.ppm");
 
   render.clear_all_with_color({0, 0, 0});
 
@@ -62,7 +62,7 @@ int main(int, char** argv) {
 
   render.render(vertices2, 18, {0, 255, 0});
 
-  canvas.save_ppm_image("resources/figure.ppm");
+  canvas.save_ppm_image("figure.ppm");
 
   return 0;
 }

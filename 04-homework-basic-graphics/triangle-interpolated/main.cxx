@@ -32,7 +32,7 @@ int main(int, char** argv) {
 
   render.render(vertices1, indices1);
 
-  canvas.save_ppm_image("resources/horizontal-interpolated-lines.ppm");
+  canvas.save_ppm_image("horizontal-interpolated-lines.ppm");
 
   ///////////////////////////////////////////////////////////////////////////////
 
@@ -52,7 +52,7 @@ int main(int, char** argv) {
 
   render.render(vertices2, indices2);
 
-  canvas.save_ppm_image("resources/vertical-interpolated-lines.ppm");
+  canvas.save_ppm_image("vertical-interpolated-lines.ppm");
 
   ///////////////////////////////////////////////////////////////////////////////
 
@@ -69,7 +69,7 @@ int main(int, char** argv) {
 
   render.render(vertices3, indices3);
 
-  canvas.save_ppm_image("resources/triangle-interpolated.ppm");
+  canvas.save_ppm_image("triangle-interpolated.ppm");
 
   ///////////////////////////////////////////////////////////////////////////////
 
@@ -89,12 +89,13 @@ int main(int, char** argv) {
 
   render.render(vertices4, indices4);
 
-  canvas.save_ppm_image("resources/square-interpolated.ppm");
+  canvas.save_ppm_image("square-interpolated.ppm");
 
   ///////////////////////////////////////////////////////////////////////////////
 
   render.clear_all_with_color({0, 0, 0});
 
+  // Create a star figure from 6 triangles.
   std::vector<arci::vertex> vertices5{
       {150.f, 0.f, 0.f, 0.f, 255.f},
       {100.f, 100.f, 0.f, 255.f, 0.f},
@@ -135,7 +136,7 @@ int main(int, char** argv) {
 
   render.render(vertices5, indices5);
 
-  canvas.save_ppm_image("resources/star-interpolated.ppm");
+  canvas.save_ppm_image("star-interpolated.ppm");
 
   return EXIT_SUCCESS;
 }

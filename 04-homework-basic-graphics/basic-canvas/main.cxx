@@ -17,7 +17,7 @@ int main(int, char** argv) {
 
   arci::my_canvas canvas{400, 400, "P3"};
 
-  constexpr std::string_view blue_ppm3_image{"resources/saved-ppm3-blue-image.ppm"};
+  constexpr std::string_view blue_ppm3_image{"saved-ppm3-blue-image.ppm"};
 
   constexpr arci::color blue{0, 102, 102};
 
@@ -35,9 +35,9 @@ int main(int, char** argv) {
   ///////////////////////////////////////////////////////////////////////////////
 
   constexpr std::string_view ppm3_img_to_load_1{
-      "resources/ppm3-image-for-loading-1.ppm"};
+      "ppm3-image-for-loading-1.ppm"};
   constexpr std::string_view ppm3_img_to_save_1{
-      "resources/saved-ppm3-image-1.ppm"};
+      "saved-ppm3-image-1.ppm"};
 
   std::vector<arci::color> test_ppm3_1{
       {255, 0, 0},
@@ -80,9 +80,9 @@ int main(int, char** argv) {
   ///////////////////////////////////////////////////////////////////////////////
 
   constexpr std::string_view ppm3_img_to_load_2{
-      "resources/ppm3-image-for-loading-2.ppm"};
+      "ppm3-image-for-loading-2.ppm"};
   constexpr std::string_view ppm3_img_to_save_2{
-      "resources/saved-ppm3-image-2.ppm"};
+      "saved-ppm3-image-2.ppm"};
 
   std::vector<arci::color> test_ppm3_2{
       {255, 0, 0},
@@ -105,8 +105,8 @@ int main(int, char** argv) {
 
   ///////////////////////////////////////////////////////////////////////////////
 
-  constexpr std::string_view ppm6_img_to_load{"resources/arci-for-load.ppm"};
-  constexpr std::string_view ppm6_img_to_save{"resources/saved-ppm6-arci.ppm"};
+  constexpr std::string_view ppm6_img_to_load{"arci-for-load.ppm"};
+  constexpr std::string_view ppm6_img_to_save{"saved-ppm6-arci.ppm"};
   canvas.load_ppm_image(ppm6_img_to_load);
   CHECK_EQ(2560u, canvas.get_width());
   CHECK_EQ(2560u, canvas.get_height());
