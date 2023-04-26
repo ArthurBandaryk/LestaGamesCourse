@@ -34,6 +34,8 @@ class line_render : public irender {
       const point& to,
       const color& color);
 
+  std::vector<point> get_pixels(const point& from, const point& to) const;
+
  protected:
   my_canvas& m_canvas;
   algorithm m_algorithm{};

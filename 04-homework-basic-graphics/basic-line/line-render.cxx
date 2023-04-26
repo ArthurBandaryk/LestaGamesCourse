@@ -35,8 +35,19 @@ void line_render::render(
     const point& from,
     const point& to,
     const color& color) {
-  std::vector<point> pixels{};
+  std::vector<point> pixels = get_pixels(from, to);
 
+  std::for_each(
+      pixels.begin(),
+      pixels.end(),
+      [this, &color](const point& point) {
+        set_pixel(point, color);
+      });
+}
+
+std::vector<point> line_render::get_pixels(
+    const point& from,
+    const point& to) const {
   // Algorithm for drawing lines (bresenham, dda).
   std::unique_ptr<ialgorithm> algorithm{nullptr};
 
@@ -52,14 +63,7 @@ void line_render::render(
   }
 
   CHECK_NOTNULL(algorithm);
-  pixels = algorithm->get_pixels(from, to);
-
-  std::for_each(
-      pixels.begin(),
-      pixels.end(),
-      [this, &color](const point& point) {
-        set_pixel(point, color);
-      });
+  return algorithm->get_pixels(from, to);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

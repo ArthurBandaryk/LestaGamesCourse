@@ -1,5 +1,4 @@
 #include "triangle-indexed-render.hxx"
-#include "helper.hxx"
 
 //
 #include <glog/logging.h>
@@ -27,29 +26,16 @@ void triangle_indexed_render::render(
 
   std::vector<point> all_pixels{};
 
-  std::unique_ptr<ialgorithm> algorithm{nullptr};
-
-  switch (m_algorithm) {
-    case algorithm::bresenham:
-      algorithm = std::make_unique<bresenham>();
-      break;
-    case algorithm::dda:
-      algorithm = std::make_unique<dda>();
-      break;
-    default:
-      break;
-  }
-
   auto get_pixels_for_triangle =
-      [&algorithm](const std::array<std::pair<point, point>, 3>& triangle_edges) {
+      [this](const std::array<std::pair<point, point>, 3>& triangle_edges) {
         std::vector<point> result{};
 
         std::for_each(
             triangle_edges.begin(),
             triangle_edges.end(),
-            [&result, &algorithm](const std::pair<point, point>& vertex) {
+            [&result, this](const std::pair<point, point>& vertex) {
               std::vector<point> all_pixels_for_edge =
-                  algorithm->get_pixels(vertex.first, vertex.second);
+                  get_pixels(vertex.first, vertex.second);
               result.insert(
                   result.end(),
                   all_pixels_for_edge.begin(),
