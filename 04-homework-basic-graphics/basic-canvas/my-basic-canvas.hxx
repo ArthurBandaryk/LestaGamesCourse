@@ -39,12 +39,14 @@ class my_canvas final {
   my_canvas& operator=(const my_canvas& other) = default;
   my_canvas& operator=(my_canvas&& other) = default;
 
-  std::vector<color> get_pixels() const noexcept;
+  std::vector<color>& get_pixels() noexcept;
   void fill_all_with_color(const color& color);
   void set_color_for_pixel(
       const size_t i,
       const size_t j,
       const color& color);
+
+  void set_resolution(const std::pair<size_t, size_t>& resolution);
 
   size_t get_width() const noexcept;
   size_t get_height() const noexcept;

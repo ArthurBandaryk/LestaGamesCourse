@@ -1,5 +1,8 @@
 #pragma once
 
+#include "triangle-interpolated-render.hxx"
+
+//
 #include <optional>
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -63,15 +66,9 @@ class iengine {
   virtual ~iengine() = default;
   virtual void init() = 0;
   virtual bool process_input(event& event) = 0;
-  virtual void render_rectangle(
-      float left,
-      float top,
-      float width,
-      float height,
-      unsigned char r,
-      unsigned char g,
-      unsigned char b,
-      unsigned char a) = 0;
+  virtual void render(
+      const std::vector<vertex>& vertices,
+      const std::vector<uint32_t>& indices) = 0;
   virtual void uninit() = 0;
 };
 

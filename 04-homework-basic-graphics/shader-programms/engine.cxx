@@ -1,4 +1,5 @@
 #include "engine.hxx"
+#include "my-basic-canvas.hxx"
 
 //
 #include <SDL3/SDL.h>
@@ -87,18 +88,23 @@ class engine_using_sdl final : public iengine {
 
     LOG(INFO) << "Current video driver: " << SDL_GetCurrentVideoDriver();
 
+    constexpr size_t k_width{800}, k_height{600};
+
     // Window setup.
     m_window = std::unique_ptr<SDL_Window, void (*)(SDL_Window*)>(
         SDL_CreateWindow(
             "Demonstrating shader programms",
-            1024,
-            768,
+            k_width,
+            k_height,
             SDL_WINDOW_OPENGL),
         SDL_DestroyWindow);
 
     CHECK(m_window)
         << "`SDL_CreateWindow()` failed with the following error: "
         << SDL_GetError();
+
+    m_canvas.set_resolution({k_width, k_height});
+    m_canvas.fill_all_with_color({0, 255, 0});
 
     CHECK_EQ(
         SDL_SetWindowPosition(
@@ -116,8 +122,33 @@ class engine_using_sdl final : public iengine {
             SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC),
         SDL_DestroyRenderer);
 
-    CHECK_NOTNULL(m_renderer);
+    CHECK(m_renderer)
+        << "`SDL_CreateRenderer()` failed with the following error: "
+        << SDL_GetError();
+
+    m_surface = std::unique_ptr<SDL_Surface, void (*)(SDL_Surface*)>(
+        SDL_CreateSurfaceFrom(
+            m_canvas.get_pixels().data(),
+            m_canvas.get_width(),
+            m_canvas.get_height(),
+            m_canvas.get_width() * sizeof(color),
+            SDL_PIXELFORMAT_RGB24),
+        SDL_DestroySurface);
+
+    CHECK(m_surface)
+        << "`SDL_CreateSurfaceFrom()` failed with the following error: "
+        << SDL_GetError();
+
+    m_texture = std::unique_ptr<SDL_Texture, void (*)(SDL_Texture*)>(
+        SDL_CreateTextureFromSurface(m_renderer.get(), m_surface.get()),
+        SDL_DestroyTexture);
+
+    CHECK(m_texture)
+        << "`SDL_CreateTextureFromSurface()` failed with the following error: "
+        << SDL_GetError();
   }
+
+  ///////////////////////////////////////////////////////////////////////////////
 
   bool process_input(event& event) override {
     bool continue_event_processing{true};
@@ -134,8 +165,6 @@ class engine_using_sdl final : public iengine {
           event.device = event_from_device::keyboard;
           keyboard_key_for_event = get_keyboard_key_for_event(sdl_event);
           if (keyboard_key_for_event) {
-            LOG(INFO) << "Button '" << keyboard_key_for_event->key_name
-                      << "' has been released";
             event.keyboard_info = keyboard_key_for_event->button_released;
           }
           break;
@@ -144,9 +173,18 @@ class engine_using_sdl final : public iengine {
           event.device = event_from_device::keyboard;
           keyboard_key_for_event = get_keyboard_key_for_event(sdl_event);
           if (keyboard_key_for_event) {
-            LOG(INFO) << "Button '" << keyboard_key_for_event->key_name
-                      << "' has been pressed";
             event.keyboard_info = keyboard_key_for_event->button_pressed;
+
+            const unsigned char r{
+                static_cast<unsigned char>(std::rand() % 256)};
+            const unsigned char g{
+                static_cast<unsigned char>(std::rand() % 256)};
+            const unsigned char b{
+                static_cast<unsigned char>(std::rand() % 256)};
+
+            color c{r, g, b};
+            m_canvas.fill_all_with_color(c);
+            update_texture();
           }
           break;
 
@@ -166,45 +204,26 @@ class engine_using_sdl final : public iengine {
     return continue_event_processing;
   }
 
-  void render_rectangle(
-      float left,
-      float top,
-      float width,
-      float height,
-      unsigned char r,
-      unsigned char g,
-      unsigned char b,
-      unsigned char a) override {
-    const SDL_FRect rect{left, top, width, height};
+  ///////////////////////////////////////////////////////////////////////////////
 
-    // Set color for background.
-    CHECK(!SDL_SetRenderDrawColor(m_renderer.get(), 0, 0, 0, 255))
-        << "`SDL_SetRenderDrawColor` for background"
-        << " failed with the following error: "
-        << SDL_GetError();
+  void render(
+      const std::vector<vertex>& vertices,
+      const std::vector<uint32_t>& indices) override {
+    triangle_interpolated_render render{m_canvas};
 
-    CHECK(!SDL_RenderClear(m_renderer.get()))
-        << "`SDL_RenderClear` failed with the following error: "
-        << SDL_GetError();
+    render.render(vertices, indices);
 
-    // Set color for target.
-    CHECK(!SDL_SetRenderDrawColor(m_renderer.get(), r, g, b, a))
-        << "`SDL_SetRenderDrawColor` for target"
-        << " failed with the following error: "
-        << SDL_GetError();
-
-    CHECK(!SDL_RenderFillRect(m_renderer.get(), &rect))
-        << "`SDL_RenderFillRect` failed with the following error: "
-        << SDL_GetError();
-
-    CHECK(!SDL_RenderPresent(m_renderer.get()))
-        << "`SDL_RenderPresent` failed with the following error: "
-        << SDL_GetError();
+    update_texture();
+    update_screen();
   }
+
+  ///////////////////////////////////////////////////////////////////////////////
 
   void uninit() override {
     SDL_Quit();
   }
+
+  ///////////////////////////////////////////////////////////////////////////////
 
  private:
   std::optional<keyboard_key> get_keyboard_key_for_event(
@@ -223,11 +242,60 @@ class engine_using_sdl final : public iengine {
     return {};
   }
 
+  ///////////////////////////////////////////////////////////////////////////////
+
+  void update_texture() {
+    SDL_Surface* new_surface = SDL_CreateSurfaceFrom(
+        m_canvas.get_pixels().data(),
+        m_canvas.get_width(),
+        m_canvas.get_height(),
+        m_canvas.get_width() * sizeof(color),
+        SDL_PIXELFORMAT_RGB24);
+    CHECK_NOTNULL(new_surface);
+    m_surface.reset(new_surface);
+
+    SDL_Texture* new_texture = SDL_CreateTextureFromSurface(
+        m_renderer.get(),
+        m_surface.get());
+    CHECK_NOTNULL(new_texture);
+    m_texture.reset(new_texture);
+  }
+
+  ///////////////////////////////////////////////////////////////////////////////
+
+  void update_screen() {
+    CHECK(!SDL_RenderClear(m_renderer.get()))
+        << "`SDL_RenderClear` failed with the following error: "
+        << SDL_GetError();
+
+    CHECK(!SDL_RenderTexture(
+        m_renderer.get(),
+        m_texture.get(),
+        nullptr,
+        nullptr))
+        << "`SDL_RenderTexture` failed with the following error: "
+        << SDL_GetError();
+
+    CHECK(!SDL_RenderPresent(m_renderer.get()))
+        << "`SDL_RenderPresent` failed with the following error: "
+        << SDL_GetError();
+  }
+
+  ///////////////////////////////////////////////////////////////////////////////
+
+  my_canvas m_canvas{};
+
   std::unique_ptr<SDL_Renderer, void (*)(SDL_Renderer*)>
       m_renderer{nullptr, nullptr};
 
   std::unique_ptr<SDL_Window, void (*)(SDL_Window*)>
       m_window{nullptr, nullptr};
+
+  std::unique_ptr<SDL_Texture, void (*)(SDL_Texture*)>
+      m_texture{nullptr, nullptr};
+
+  std::unique_ptr<SDL_Surface, void (*)(SDL_Surface*)>
+      m_surface{nullptr, nullptr};
 };
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -1,7 +1,38 @@
 #pragma once
 
+#include "triangle-interpolated-render.hxx"
+
 ///////////////////////////////////////////////////////////////////////////////
 
-namespace arci {}
+namespace arci {
+
+///////////////////////////////////////////////////////////////////////////////
+
+struct uniform {
+  float mouse_x{};
+  float mouse_y{};
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+class ishader_programm {
+ public:
+  virtual ~ishader_programm() = default;
+  virtual vertex get_vertex_transformed(const vertex& v_in) const = 0;
+  virtual color get_color_transformed(const vertex& v_in) const = 0;
+  void set_uniform(const uniform& uniform) noexcept {
+    m_uniform = uniform;
+  }
+  uniform get_uniform() const noexcept {
+    return m_uniform;
+  }
+
+ private:
+  uniform m_uniform{};
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+} // namespace arci
 
 ///////////////////////////////////////////////////////////////////////////////

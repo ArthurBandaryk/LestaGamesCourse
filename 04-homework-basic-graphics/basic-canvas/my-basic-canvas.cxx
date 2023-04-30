@@ -59,7 +59,7 @@ my_canvas::my_canvas(
   m_pixels.resize(width * height);
 }
 
-std::vector<color> my_canvas::get_pixels() const noexcept {
+std::vector<color>& my_canvas::get_pixels() noexcept {
   return m_pixels;
 }
 
@@ -78,6 +78,12 @@ void my_canvas::set_color_for_pixel(
       << "Incorrect index for setting color";
 
   m_pixels[index] = color;
+}
+
+void my_canvas::set_resolution(const std::pair<size_t, size_t>& resolution) {
+  m_width = resolution.first;
+  m_height = resolution.second;
+  m_pixels.resize(m_width * m_height);
 }
 
 size_t my_canvas::get_width() const noexcept {
