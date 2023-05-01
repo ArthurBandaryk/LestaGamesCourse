@@ -4,6 +4,7 @@
 
 //
 #include <optional>
+#include <utility>
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -70,6 +71,7 @@ class iengine {
       const std::vector<vertex>& vertices,
       const std::vector<uint32_t>& indices) = 0;
   virtual void uninit() = 0;
+  virtual std::pair<size_t, size_t> get_screen_resolution() const = 0;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

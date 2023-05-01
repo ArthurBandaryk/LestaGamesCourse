@@ -104,7 +104,7 @@ class engine_using_sdl final : public iengine {
         << SDL_GetError();
 
     m_canvas.set_resolution({k_width, k_height});
-    m_canvas.fill_all_with_color({0, 255, 0});
+    m_canvas.fill_all_with_color({0, 0, 0});
 
     CHECK_EQ(
         SDL_SetWindowPosition(
@@ -174,17 +174,6 @@ class engine_using_sdl final : public iengine {
           keyboard_key_for_event = get_keyboard_key_for_event(sdl_event);
           if (keyboard_key_for_event) {
             event.keyboard_info = keyboard_key_for_event->button_pressed;
-
-            const unsigned char r{
-                static_cast<unsigned char>(std::rand() % 256)};
-            const unsigned char g{
-                static_cast<unsigned char>(std::rand() % 256)};
-            const unsigned char b{
-                static_cast<unsigned char>(std::rand() % 256)};
-
-            color c{r, g, b};
-            m_canvas.fill_all_with_color(c);
-            update_texture();
           }
           break;
 
@@ -209,6 +198,8 @@ class engine_using_sdl final : public iengine {
   void render(
       const std::vector<vertex>& vertices,
       const std::vector<uint32_t>& indices) override {
+    m_canvas.fill_all_with_color({0, 0, 0});
+
     triangle_interpolated_render render{m_canvas};
 
     render.render(vertices, indices);
@@ -221,6 +212,10 @@ class engine_using_sdl final : public iengine {
 
   void uninit() override {
     SDL_Quit();
+  }
+
+  std::pair<size_t, size_t> get_screen_resolution() const override {
+    return m_canvas.get_resolution();
   }
 
   ///////////////////////////////////////////////////////////////////////////////
