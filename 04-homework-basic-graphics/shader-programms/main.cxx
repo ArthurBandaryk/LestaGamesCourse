@@ -47,15 +47,20 @@ class breath_shader : public arci::ishader_programm {
     float new_x{}, new_y{};
     static bool is_reducing{false};
 
+    // Distance from vertex to center of circle.
+    // Figure is in a circle, remember it.
     const float distance_vertex_circle_center =
         std::sqrt(
             std::pow(v_in.x - circle_center_x, 2.f)
             + std::pow(v_in.y - circle_center_y, 2.f));
 
+    // It's time to reduce figure.
     if (distance_vertex_circle_center > circle_radius) {
       is_reducing = true;
     }
 
+    // We've almost reached the center of a circle. It's time
+    // to make figure increase.
     if (distance_vertex_circle_center < 5.f) {
       is_reducing = false;
     }
@@ -67,18 +72,26 @@ class breath_shader : public arci::ishader_programm {
       delta_y *= -1.f;
     }
 
+    // Reverse order for steps.
     if (is_reducing) {
       delta_x *= -1.f;
       delta_y *= -1.f;
     }
 
+    // Vertex is changing only for OY axis.
     if (std::abs(v_in.x - circle_center_x) == 0) {
       new_x = v_in.x;
       new_y = v_in.y + delta_y;
-    } else if (std::abs(v_in.y - circle_center_y) == 0) {
+    }
+    // Vertex is changing only for OX axis.
+    else if (std::abs(v_in.y - circle_center_y) == 0) {
       new_x = v_in.x + delta_x;
       new_y = v_in.y;
     } else {
+      // First we increment x value for vertex.
+      // Then we can easily calculate y value
+      // basing on the school equation for lines.
+      // (x - x1) / (x2 - x1) = (y - y1) / (y2 - y1)
       new_x = v_in.x + delta_x;
       new_y = (new_x - circle_center_x)
               * (v_in.y - circle_center_y) / (v_in.x - circle_center_x)
