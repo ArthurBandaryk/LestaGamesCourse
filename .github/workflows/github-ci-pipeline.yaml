@@ -173,17 +173,29 @@ jobs:
       #     CXX=clang++ cmake -G Ninja -S 03-homework-sdl-loop/hot-reload-game-dll -B build/ && \
       #     CXX=clang++ cmake --build build/
 
-      - name: Basic graphics using GNU
+      # - name: Basic graphics using GNU
+      #   run: |
+      #     mkdir -p build && \
+      #     cmake -G Ninja -S 04-homework-basic-graphics/ -B build/ && \
+      #     cmake --build build/
+
+      # - name: Basic graphics using clang
+      #   run: |
+      #     rm -rf build/* && \
+      #     CXX=clang++ cmake -G Ninja -S 04-homework-basic-graphics/ -B build/ && \
+      #     CXX=clang++ cmake --build build/
+
+      - name: Basic opengl using GNU
         run: |
           mkdir -p build && \
-          cmake -G Ninja -S 04-homework-basic-graphics/ -B build/ && \
+          cmake -G Ninja -S 05-homework-opengl-basic/ -B build/ && \
           cmake --build build/
 
-      - name: Basic graphics using clang
+      - name: Basic opengl using clang
         run: |
           rm -rf build/* && \
-          CXX=clang++ cmake -G Ninja -S 04-homework-basic-graphics/ -B build/ && \
-          CXX=clang++ cmake --build build/
+          CXX=clang++ cmake -G Ninja -S 05-homework-opengl-basic/ -B build/ && \
+          CXX=clang++ cmake --build build/    
 
       - name: Debug using tmate (if failure)
         uses: mxschmitt/action-tmate@v3
