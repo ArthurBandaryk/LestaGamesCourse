@@ -10,6 +10,7 @@
 //
 #include <string_view>
 #include <algorithm>
+#include <array>
 #include <memory>
 #include <optional>
 #include <string>
