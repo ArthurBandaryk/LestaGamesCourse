@@ -33,7 +33,13 @@ int main(int, char** argv) {
       }
     }
 
-    engine->render({{-0.5f, -0.5f}, {0.5f, -0.5f}, {0.f, 0.5f}}, {0, 1, 2});
+    arci::triangle triangle{
+        {-0.5f, -0.5f, 0.f, 1.f, 0.f, 0.f},
+        {0.5f, -0.5f, 0.f, 0.f, 1.f, 0.f},
+        {0.f, 0.5f, 0.f, 0.f, 0.f, 1.f},
+    };
+
+    engine->render(triangle, {0, 1, 2});
 
     engine->swap_buffers();
   }

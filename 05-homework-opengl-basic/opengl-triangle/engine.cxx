@@ -14,6 +14,7 @@
 #include <fstream>
 #include <memory>
 #include <optional>
+#include <stdexcept>
 #include <string>
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -84,6 +85,14 @@ const std::array<keyboard_key, 6> keys{
 
 ///////////////////////////////////////////////////////////////////////////////
 
+triangle::triangle(const vertex& v0, const vertex& v1, const vertex& v2) {
+  vertices[0] = v0;
+  vertices[1] = v1;
+  vertices[2] = v2;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 class engine_using_sdl final : public iengine {
  public:
   engine_using_sdl() = default;
@@ -95,8 +104,8 @@ class engine_using_sdl final : public iengine {
   void init() override;
   bool process_input(event& event) override;
   void render(
-      [[maybe_unused]] const std::vector<vertex>& vertices,
-      [[maybe_unused]] const std::vector<uint32_t>& indices) override;
+      const triangle& triangle,
+      const std::vector<uint32_t>& indices) override;
   void swap_buffers() override;
   void uninit() override;
 
@@ -252,6 +261,9 @@ void engine_using_sdl::init() {
   glBindAttribLocation(m_programm_id, 0, "a_position");
   opengl_check();
 
+  glBindAttribLocation(m_programm_id, 1, "a_color");
+  opengl_check();
+
   glLinkProgram(m_programm_id);
   opengl_check();
 
@@ -277,6 +289,36 @@ void engine_using_sdl::init() {
     throw std::runtime_error{"Error on linking shader programm"};
   }
 
+  glValidateProgram(m_programm_id);
+  opengl_check();
+
+  GLint is_validated{};
+  glGetProgramiv(m_programm_id, GL_VALIDATE_STATUS, &is_validated);
+  opengl_check();
+
+  if (!is_validated) {
+    GLint log_length{};
+    glGetProgramiv(m_programm_id, GL_INFO_LOG_LENGTH, &log_length);
+    opengl_check();
+
+    if (log_length > 1) {
+      std::string log{};
+      log.resize(log_length);
+      glGetProgramInfoLog(m_programm_id, log_length, nullptr, log.data());
+      opengl_check();
+      LOG(ERROR) << log;
+    }
+
+    glDeleteProgram(m_programm_id);
+    throw std::runtime_error{"Error on validating shader programm"};
+  }
+
+  glDeleteShader(vertex_shader_id);
+  opengl_check();
+
+  glDeleteShader(fragment_shader_id);
+  opengl_check();
+
   glGenBuffers(1, &m_vbo);
   opengl_check();
 
@@ -292,6 +334,9 @@ void engine_using_sdl::init() {
   opengl_check();
 
   glEnableVertexAttribArray(0);
+  opengl_check();
+
+  glEnableVertexAttribArray(1);
   opengl_check();
 }
 
@@ -340,19 +385,30 @@ bool engine_using_sdl::process_input(event& event) {
 }
 
 void engine_using_sdl::render(
-    const std::vector<vertex>& vertices,
-    const std::vector<uint32_t>& indices) {
-  GLfloat v[] = {-0.5, -0.5, 0.5, -0.5, 0.0, 0.5};
-
-  glBufferData(GL_ARRAY_BUFFER, sizeof(v), v, GL_STATIC_DRAW);
+    const triangle& triangle,
+    [[maybe_unused]] const std::vector<uint32_t>& indices) {
+  glBufferData(
+      GL_ARRAY_BUFFER,
+      sizeof(triangle.vertices),
+      triangle.vertices.data(),
+      GL_STATIC_DRAW);
   opengl_check();
   glVertexAttribPointer(
       0,
-      2,
+      3,
       GL_FLOAT,
       GL_FALSE,
-      2 * sizeof(GLfloat),
+      sizeof(vertex),
       reinterpret_cast<void*>(0));
+  opengl_check();
+
+  glVertexAttribPointer(
+      1,
+      3,
+      GL_FLOAT,
+      GL_FALSE,
+      sizeof(vertex),
+      reinterpret_cast<void*>(3 * sizeof(float)));
   opengl_check();
 
   glDrawArrays(GL_TRIANGLES, 0, 3);

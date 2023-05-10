@@ -1,6 +1,7 @@
 #pragma once
 
 //
+#include <array>
 #include <cstdint>
 #include <optional>
 #include <utility>
@@ -65,6 +66,16 @@ struct event {
 struct vertex {
   float x{};
   float y{};
+  float z{};
+  float r{};
+  float g{};
+  float b{};
+};
+
+struct triangle {
+  triangle(const vertex& v0, const vertex& v1, const vertex& v2);
+
+  std::array<vertex, 3> vertices{};
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -75,7 +86,7 @@ class iengine {
   virtual void init() = 0;
   virtual bool process_input(event& event) = 0;
   virtual void render(
-      const std::vector<vertex>& vertices,
+      const triangle& triangle,
       const std::vector<uint32_t>& indices) = 0;
   virtual void uninit() = 0;
   virtual void swap_buffers() = 0;
