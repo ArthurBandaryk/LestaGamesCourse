@@ -285,6 +285,20 @@ namespace arci
 
         glUseProgram(m_program);
         opengl_check();
+
+        GLint location_center_x
+            = glGetUniformLocation(m_program, "u_helper.circle_center_x");
+        CHECK(location_center_x != -1);
+        opengl_check();
+        glUniform1f(location_center_x, 0.0f);
+        opengl_check();
+
+        GLint location_center_y
+            = glGetUniformLocation(m_program, "u_helper.circle_center_y");
+        CHECK(location_center_y != -1);
+        opengl_check();
+        glUniform1f(location_center_y, 0.0f);
+        opengl_check();
     }
 
     bool engine_using_sdl::process_input(event& event)
@@ -349,27 +363,13 @@ namespace arci
         last_time = elapsed_seconds.count();
         phase = std::fmod(phase + dt * speed, 1.0f);
         const float easing = ease_in_out_quart(phase);
-        float t = std::cos(2.0f * static_cast<float>(M_PI) * easing);
-
-        GLint location_center_x
-            = glGetUniformLocation(m_program, "u_helper.circle_center_x");
-        CHECK(location_center_x != -1);
-        opengl_check();
-        glUniform1f(location_center_x, 0.0f);
-        opengl_check();
-
-        GLint location_center_y
-            = glGetUniformLocation(m_program, "u_helper.circle_center_y");
-        CHECK(location_center_y != -1);
-        opengl_check();
-        glUniform1f(location_center_y, 0.0f);
-        opengl_check();
+        float new_phase = std::cos(2.0f * static_cast<float>(M_PI) * easing);
 
         GLint location_phase
             = glGetUniformLocation(m_program, "u_helper.phase");
         CHECK(location_phase != -1);
         opengl_check();
-        glUniform1f(location_phase, t);
+        glUniform1f(location_phase, new_phase);
         opengl_check();
 
         glBufferData(
