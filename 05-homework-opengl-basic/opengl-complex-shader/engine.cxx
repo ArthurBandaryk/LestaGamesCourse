@@ -216,7 +216,7 @@ namespace arci
         // Window setup.
         m_window = std::unique_ptr<SDL_Window, void (*)(SDL_Window*)>(
             SDL_CreateWindow(
-                "Basic opengl",
+                "Easing effect for opengl triangle",
                 m_screen_width,
                 m_screen_height,
                 SDL_WINDOW_OPENGL),
@@ -413,10 +413,10 @@ namespace arci
 
     void engine_using_sdl::uninit()
     {
-        SDL_Quit();
-
         glDeleteProgram(m_program);
         opengl_check();
+
+        SDL_Quit();
     }
 
     std::pair<size_t, size_t>
