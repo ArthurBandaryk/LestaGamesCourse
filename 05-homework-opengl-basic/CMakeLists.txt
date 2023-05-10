@@ -42,3 +42,4 @@ target_include_directories(glad-lib
 
 add_subdirectory(opengl-minimal)
 add_subdirectory(opengl-triangle)
+add_subdirectory(opengl-complex-shader)
