@@ -41,3 +41,4 @@ target_include_directories(glad-lib
                            PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/glad/include)
 
 add_subdirectory(morphing)
+add_subdirectory(load-texture)
