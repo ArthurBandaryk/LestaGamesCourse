@@ -14,6 +14,6 @@ add_library(
 target_link_libraries(engine-load-texture compiler-flags-lib glog::glog
                       SDL3::SDL3-shared glad-lib)
 
-add_executable(texture-loading-bin input-data.hxx main.cxx)
+add_executable(texture-loading-bin main.cxx)
 target_link_libraries(texture-loading-bin compiler-flags-lib glog::glog
                       engine-load-texture)
