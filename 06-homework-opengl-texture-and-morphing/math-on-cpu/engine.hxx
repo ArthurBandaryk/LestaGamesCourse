@@ -52,6 +52,10 @@ namespace arci
         down_button_released,
         space_button_pressed,
         space_button_released,
+        plus_button_pressed,
+        plus_button_released,
+        minus_button_pressed,
+        minus_button_released,
         escape_button_pressed,
         escape_button_released,
     };
@@ -68,6 +72,12 @@ namespace arci
 
     ///////////////////////////////////////////////////////////////////////////////
 
+    struct vector2d
+    {
+        float x {};
+        float y {};
+    };
+
     struct vertex
     {
         float x {};
@@ -82,6 +92,7 @@ namespace arci
 
     struct triangle
     {
+        triangle() = default;
         triangle(const vertex& v0, const vertex& v1, const vertex& v2);
 
         std::array<vertex, 3> vertices {};
@@ -119,6 +130,7 @@ namespace arci
         virtual void destroy_texture(const itexture* const texture) = 0;
         virtual void uninit() = 0;
         virtual void swap_buffers() = 0;
+        virtual std::pair<size_t, size_t> get_screen_resolution() const noexcept = 0;
     };
 
     ///////////////////////////////////////////////////////////////////////////////

@@ -40,7 +40,7 @@ namespace arci
 
     ///////////////////////////////////////////////////////////////////////////////
 
-    const std::array<keyboard_key, 6> keys {
+    const std::array<keyboard_key, 8> keys {
         keyboard_key {
             SDLK_LEFT,
             keyboard_event::left_button_pressed,
@@ -69,6 +69,18 @@ namespace arci
             SDLK_SPACE,
             keyboard_event::space_button_pressed,
             keyboard_event::space_button_released,
+            "space",
+        },
+        keyboard_key {
+            SDLK_KP_PLUS,
+            keyboard_event::plus_button_pressed,
+            keyboard_event::plus_button_released,
+            "space",
+        },
+        keyboard_key {
+            SDLK_KP_MINUS,
+            keyboard_event::minus_button_pressed,
+            keyboard_event::minus_button_released,
             "space",
         },
         keyboard_key {
@@ -133,8 +145,8 @@ namespace arci
         void destroy_texture(const itexture* const texture) override;
         void swap_buffers() override;
         void uninit() override;
+        std::pair<size_t, size_t> get_screen_resolution() const noexcept override;
 
-        std::pair<size_t, size_t> get_screen_resolution() const noexcept;
         std::uint64_t get_time_since_epoch() const;
 
     private:
@@ -281,8 +293,8 @@ namespace arci
         CHECK(opengl_major_version == 3) << "Invalid opengl major version";
         CHECK(opengl_minor_version == 2) << "Invalid opengl minor version";
 
-        m_screen_width = 800u;
-        m_screen_height = 600u;
+        m_screen_width = 1024u;
+        m_screen_height = 768u;
 
         // Window setup.
         m_window = std::unique_ptr<SDL_Window, void (*)(SDL_Window*)>(
@@ -399,7 +411,10 @@ namespace arci
                 break;
 
             case SDL_EVENT_MOUSE_BUTTON_UP:
-                // For now do nothing.
+                break;
+
+            default:
+                continue_event_processing = false;
                 break;
             }
         }
