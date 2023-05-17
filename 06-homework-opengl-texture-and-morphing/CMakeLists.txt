@@ -18,11 +18,22 @@ if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../submodules/sdl)
       "Make sure you've cloned this repo with '--recurse-submodules' option.")
 endif()
 
+# Check if `SDL` git submodule is initialized.
+if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../submodules/glm)
+  message(
+    FATAL_ERROR
+      "Submodule `glm` is not initialized. "
+      "Make sure you've cloned this repo with '--recurse-submodules' option.")
+endif()
+
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../submodules/glog
                  ${CMAKE_BINARY_DIR}/glog)
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../submodules/sdl
                  ${CMAKE_BINARY_DIR}/sdl)
+
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../submodules/glm
+                 ${CMAKE_BINARY_DIR}/glm)
 
 # Set clang, gcc compilers.
 set(gcc_like_cxx "$<COMPILE_LANG_AND_ID:CXX,Clang,GNU>")
@@ -42,3 +53,4 @@ target_include_directories(glad-lib
 
 add_subdirectory(morphing)
 add_subdirectory(load-texture)
+add_subdirectory(math-on-cpu)
