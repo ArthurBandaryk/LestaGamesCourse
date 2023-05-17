@@ -31,6 +31,10 @@ int main(int, char** argv)
         { 0.5f, -0.5f, 0.f, 0.f, 0.f, 0.f, 1.f, 1.f },
     };
 
+    std::unique_ptr<arci::itexture> texture {
+        engine->create_texture("ball.png")
+    };
+
     bool loop_continue { true };
 
     while (loop_continue)
@@ -53,8 +57,8 @@ int main(int, char** argv)
             }
         }
 
-        engine->render(triangle_low);
-        engine->render(triangle_high);
+        engine->render(triangle_low, texture.get());
+        engine->render(triangle_high, texture.get());
 
         engine->swap_buffers();
     }

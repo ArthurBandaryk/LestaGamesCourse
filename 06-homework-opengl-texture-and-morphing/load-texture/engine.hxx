@@ -1,6 +1,5 @@
 #pragma once
 
-//
 #include <array>
 #include <cstdint>
 #include <optional>
@@ -90,14 +89,35 @@ namespace arci
 
     ///////////////////////////////////////////////////////////////////////////////
 
+    class itexture
+    {
+    public:
+        virtual ~itexture() = default;
+        virtual void load(const std::string_view path) = 0;
+        virtual void bind() = 0;
+    };
+
+    ///////////////////////////////////////////////////////////////////////////////
+
     class iengine
     {
     public:
         virtual ~iengine() = default;
         virtual void init() = 0;
         virtual bool process_input(event& event) = 0;
+
+        // Render simple colored triangle.
         virtual void render(const triangle& triangle) = 0;
+
+        // Render textured triangle.
+        /* clang-format off */
+        virtual void render(const triangle& triangle,
+                            itexture* const texture) = 0;
+        /* clang-format on */
+
         virtual void load_texture(const std::string_view path) = 0;
+        virtual itexture* create_texture(const std::string_view path) = 0;
+        virtual void destroy_texture(const itexture* const texture) = 0;
         virtual void uninit() = 0;
         virtual void swap_buffers() = 0;
     };

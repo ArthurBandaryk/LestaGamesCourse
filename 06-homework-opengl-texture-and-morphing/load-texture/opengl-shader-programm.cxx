@@ -6,6 +6,7 @@
 
 //
 #include <algorithm>
+#include <filesystem>
 #include <fstream>
 #include <stdexcept>
 
@@ -25,6 +26,9 @@ namespace arci
                 glDeleteShader(shader_id);
                 opengl_check();
             });
+
+        glDeleteProgram(m_program);
+        opengl_check();
     }
 
     void opengl_shader_program::load_shader(
@@ -72,12 +76,18 @@ namespace arci
         m_shaders.push_back(shader_id);
     }
 
-    GLuint opengl_shader_program::get_prepared_program()
+    void opengl_shader_program::apply_shader_program()
+    {
+        glUseProgram(m_program);
+        opengl_check();
+    }
+
+    void opengl_shader_program::prepare_program()
     {
         attach_shaders();
         link_program();
         validate_program();
-        return m_program;
+        CHECK(m_program);
     }
 
     void opengl_shader_program::attach_shaders()
@@ -163,20 +173,12 @@ namespace arci
 
         CHECK(file.is_open()) << "Error on opening " << path;
 
-        file.seekg(0, std::ios_base::end);
-        CHECK(file.good())
-            << "Error on setting read position to the end of "
-            << path << " file";
+        const std::filesystem::path fs_path { path.data() };
 
-        std::streamsize bytes_to_read = file.tellg();
-        CHECK(file.good()) << "tellg() function failed in " << path;
+        std::streamsize bytes_to_read = std::filesystem::file_size(fs_path);
+
         CHECK(bytes_to_read);
         shader_code.resize(bytes_to_read);
-
-        file.seekg(0, std::ios_base::beg);
-        CHECK(file.good())
-            << "Error on setting read position to the begin of "
-            << path << " file";
 
         file.read(shader_code.data(), bytes_to_read);
         CHECK(file.good()) << "Error on reading " << path << " file";

@@ -29,13 +29,16 @@ namespace arci
             const std::string_view shader_path);
 
         // Attach all shaders, compile, link and validate program.
-        // Then return program id.
-        GLuint get_prepared_program();
+        void prepare_program();
+
+        // Use this shader for rendering objects.
+        void apply_shader_program();
 
     private:
         // IMPORTANT NOTE: it's assumed that the user specifies attribute
         // location directly in the shader source file by using `location`
-        // layout qualifier. Otherwise opengl app will not work.
+        // layout qualifier (opengl es 3.2). So, there is no need to call
+        // glBindAttributeLocation().
         void attach_shaders();
         void link_program() const;
         void validate_program() const;

@@ -90,6 +90,31 @@ namespace arci
 
     ///////////////////////////////////////////////////////////////////////////////
 
+    class opengl_texture : public itexture
+    {
+    public:
+        void bind() override
+        {
+            CHECK(m_texture_id);
+            glBindTexture(GL_TEXTURE_2D, m_texture_id);
+            opengl_check();
+        }
+
+        void load(const std::string_view path) override;
+
+        std::pair<unsigned long, unsigned long> get_texture_size() const
+        {
+            return { m_texture_width, m_texture_height };
+        }
+
+    private:
+        GLuint m_texture_id {};
+        unsigned long m_texture_width {};
+        unsigned long m_texture_height {};
+    };
+
+    ///////////////////////////////////////////////////////////////////////////////
+
     class engine_using_sdl final : public iengine
     {
     public:
@@ -103,6 +128,10 @@ namespace arci
         bool process_input(event& event) override;
         void load_texture(const std::string_view path) override;
         void render(const triangle& triangle) override;
+        void render(const triangle& triangle,
+                    itexture* const texture) override;
+        itexture* create_texture(const std::string_view path) override;
+        void destroy_texture(const itexture* const texture) override;
         void swap_buffers() override;
         void uninit() override;
 
@@ -119,12 +148,76 @@ namespace arci
         std::unique_ptr<void, int (*)(SDL_GLContext)>
             m_opengl_context { nullptr, nullptr };
 
+        opengl_shader_program m_colored_triangle_program {};
+        opengl_shader_program m_textured_triangle_program {};
+
         std::size_t m_screen_width {};
         std::size_t m_screen_height {};
-        GLuint m_program {};
         GLuint m_vbo {};
         GLuint m_vao {};
     };
+
+    void opengl_texture::load(const std::string_view path)
+    {
+        std::vector<unsigned char> raw_png_image {};
+
+        std::ifstream file { path.data(), std::ios::binary };
+
+        CHECK(file.is_open());
+
+        const std::filesystem::path fs_path { path.data() };
+
+        const std::size_t bytes_to_read {
+            std::filesystem::file_size(fs_path)
+        };
+
+        CHECK(bytes_to_read) << "Nothing to read";
+
+        raw_png_image.resize(bytes_to_read);
+
+        file.read(reinterpret_cast<char*>(raw_png_image.data()), bytes_to_read);
+        CHECK(file.good());
+
+        file.close();
+        CHECK(file.good());
+
+        std::vector<unsigned char> raw_pixels_after_decoding {};
+
+        const int decoding_status = decodePNG(raw_pixels_after_decoding,
+                                              m_texture_width,
+                                              m_texture_height,
+                                              raw_png_image.data(),
+                                              raw_png_image.size());
+
+        CHECK(decoding_status == 0)
+            << "Error on decoding " << path
+            << ". Error code: " << decoding_status;
+        CHECK(raw_pixels_after_decoding.size());
+
+        glGenTextures(1, &m_texture_id);
+        opengl_check();
+
+        glBindTexture(GL_TEXTURE_2D, m_texture_id);
+        opengl_check();
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        opengl_check();
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        opengl_check();
+
+        glTexImage2D(GL_TEXTURE_2D,
+                     0,
+                     GL_RGBA,
+                     m_texture_width,
+                     m_texture_height,
+                     0,
+                     GL_RGBA,
+                     GL_UNSIGNED_BYTE,
+                     raw_pixels_after_decoding.data());
+        opengl_check();
+        glGenerateMipmap(GL_TEXTURE_2D);
+        opengl_check();
+    }
 
     void engine_using_sdl::init()
     {
@@ -239,11 +332,17 @@ namespace arci
             nullptr,
             GL_TRUE);
 
-        opengl_shader_program program {};
-        program.load_shader(GL_VERTEX_SHADER, "triangle-vertex.shader");
-        program.load_shader(GL_FRAGMENT_SHADER, "triangle-fragment.shader");
-        m_program = program.get_prepared_program();
-        CHECK(m_program);
+        m_colored_triangle_program.load_shader(GL_VERTEX_SHADER,
+                                               "triangle-vertex.shader");
+        m_colored_triangle_program.load_shader(GL_FRAGMENT_SHADER,
+                                               "triangle-fragment.shader");
+        m_colored_triangle_program.prepare_program();
+
+        m_textured_triangle_program.load_shader(GL_VERTEX_SHADER,
+                                                "texture-vertex.shader");
+        m_textured_triangle_program.load_shader(GL_FRAGMENT_SHADER,
+                                                "texture-fragment.shader");
+        m_textured_triangle_program.prepare_program();
 
         glGenBuffers(1, &m_vbo);
         opengl_check();
@@ -254,20 +353,6 @@ namespace arci
         glGenVertexArrays(1, &m_vao);
         opengl_check();
         glBindVertexArray(m_vao);
-        opengl_check();
-
-        glEnableVertexAttribArray(0);
-        opengl_check();
-
-        glEnableVertexAttribArray(1);
-        opengl_check();
-
-        glEnableVertexAttribArray(2);
-        opengl_check();
-
-        load_texture("ball.png");
-
-        glUseProgram(m_program);
         opengl_check();
 
         glEnable(GL_BLEND);
@@ -325,6 +410,19 @@ namespace arci
         }
 
         return continue_event_processing;
+    }
+
+    itexture* engine_using_sdl::create_texture(const std::string_view path)
+    {
+        itexture* texture = new opengl_texture {};
+        texture->load(path);
+        return texture;
+    }
+
+    void engine_using_sdl::destroy_texture(const itexture* const texture)
+    {
+        CHECK_NOTNULL(texture);
+        delete texture;
     }
 
     void engine_using_sdl::load_texture(const std::string_view path)
@@ -392,6 +490,64 @@ namespace arci
 
     void engine_using_sdl::render(const triangle& triangle)
     {
+        glEnableVertexAttribArray(0);
+        opengl_check();
+
+        glEnableVertexAttribArray(1);
+        opengl_check();
+
+        m_colored_triangle_program.apply_shader_program();
+
+        glBufferData(
+            GL_ARRAY_BUFFER,
+            sizeof(triangle.vertices),
+            triangle.vertices.data(),
+            GL_STATIC_DRAW);
+        opengl_check();
+
+        glVertexAttribPointer(
+            0,
+            3,
+            GL_FLOAT,
+            GL_FALSE,
+            sizeof(vertex),
+            reinterpret_cast<void*>(0));
+        opengl_check();
+
+        glVertexAttribPointer(
+            1,
+            3,
+            GL_FLOAT,
+            GL_FALSE,
+            sizeof(vertex),
+            reinterpret_cast<void*>(3 * sizeof(float)));
+        opengl_check();
+
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+        opengl_check();
+
+        glDisableVertexAttribArray(0);
+        opengl_check();
+
+        glDisableVertexAttribArray(1);
+        opengl_check();
+    }
+
+    void engine_using_sdl::render(const triangle& triangle,
+                                  itexture* const texture)
+    {
+        glEnableVertexAttribArray(0);
+        opengl_check();
+
+        glEnableVertexAttribArray(1);
+        opengl_check();
+
+        glEnableVertexAttribArray(2);
+        opengl_check();
+
+        m_textured_triangle_program.apply_shader_program();
+        texture->bind();
+
         glBufferData(
             GL_ARRAY_BUFFER,
             sizeof(triangle.vertices),
@@ -428,6 +584,15 @@ namespace arci
 
         glDrawArrays(GL_TRIANGLES, 0, 3);
         opengl_check();
+
+        glDisableVertexAttribArray(0);
+        opengl_check();
+
+        glDisableVertexAttribArray(1);
+        opengl_check();
+
+        glDisableVertexAttribArray(2);
+        opengl_check();
     }
 
     void engine_using_sdl::swap_buffers()
@@ -442,9 +607,6 @@ namespace arci
 
     void engine_using_sdl::uninit()
     {
-        glDeleteProgram(m_program);
-        opengl_check();
-
         SDL_Quit();
     }
 
@@ -479,7 +641,7 @@ namespace arci
 
     ///////////////////////////////////////////////////////////////////////////////
 
-    class engine_instance
+    class engine_instance final
     {
     public:
         engine_instance() = delete;
