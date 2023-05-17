@@ -126,7 +126,6 @@ namespace arci
 
         void init() override;
         bool process_input(event& event) override;
-        void load_texture(const std::string_view path) override;
         void render(const triangle& triangle) override;
         void render(const triangle& triangle,
                     itexture* const texture) override;
@@ -423,69 +422,6 @@ namespace arci
     {
         CHECK_NOTNULL(texture);
         delete texture;
-    }
-
-    void engine_using_sdl::load_texture(const std::string_view path)
-    {
-        std::vector<unsigned char> raw_png_image {};
-
-        std::ifstream file { path.data(), std::ios::binary };
-
-        CHECK(file.is_open());
-
-        const std::filesystem::path fs_path { path.data() };
-
-        const std::size_t bytes_to_read {
-            std::filesystem::file_size(fs_path)
-        };
-
-        CHECK(bytes_to_read) << "Nothing to read";
-
-        raw_png_image.resize(bytes_to_read);
-
-        file.read(reinterpret_cast<char*>(raw_png_image.data()), bytes_to_read);
-        CHECK(file.good());
-
-        file.close();
-        CHECK(file.good());
-
-        std::vector<unsigned char> raw_pixels_after_decoding {};
-        unsigned long png_width {}, png_height {};
-
-        const int decoding_status = decodePNG(raw_pixels_after_decoding,
-                                              png_width, png_height,
-                                              raw_png_image.data(),
-                                              raw_png_image.size());
-
-        CHECK(decoding_status == 0)
-            << "Error on decoding " << path
-            << ". Error code: " << decoding_status;
-        CHECK(raw_pixels_after_decoding.size());
-
-        GLuint texture_id {};
-        glGenTextures(1, &texture_id);
-        opengl_check();
-
-        glBindTexture(GL_TEXTURE_2D, texture_id);
-        opengl_check();
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        opengl_check();
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        opengl_check();
-
-        glTexImage2D(GL_TEXTURE_2D,
-                     0,
-                     GL_RGBA,
-                     png_width,
-                     png_height,
-                     0,
-                     GL_RGBA,
-                     GL_UNSIGNED_BYTE,
-                     raw_pixels_after_decoding.data());
-        opengl_check();
-        glGenerateMipmap(GL_TEXTURE_2D);
-        opengl_check();
     }
 
     void engine_using_sdl::render(const triangle& triangle)

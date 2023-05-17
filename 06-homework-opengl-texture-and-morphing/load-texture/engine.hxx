@@ -115,7 +115,6 @@ namespace arci
                             itexture* const texture) = 0;
         /* clang-format on */
 
-        virtual void load_texture(const std::string_view path) = 0;
         virtual itexture* create_texture(const std::string_view path) = 0;
         virtual void destroy_texture(const itexture* const texture) = 0;
         virtual void uninit() = 0;
