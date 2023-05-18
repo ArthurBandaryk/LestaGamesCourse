@@ -6,7 +6,6 @@
 
 //
 #include <algorithm>
-#include <chrono>
 #include <cmath>
 #include <memory>
 
@@ -24,11 +23,7 @@ arci::triangle get_transformed_triangle(
 
                       v.x = v_pos_result[0];
                       v.y = v_pos_result[1];
-
-                      LOG(INFO) << v.x << " " << v.y;
                   });
-
-    LOG(INFO) << "=======================================";
 
     return result;
 }
@@ -70,18 +65,14 @@ int main(int, char** argv)
 
     constexpr float pi { 3.14159 };
     float worm_direction { 0.f };
+    float reflection_y { 1.f };
     float speed_x { 0.01f }, speed_y { 0.01f };
-    const auto start_time = std::chrono::steady_clock::now();
-    auto cur_time = std::chrono::steady_clock::now();
 
     bool loop_continue { true };
 
     while (loop_continue)
     {
         arci::event event {};
-        cur_time = std::chrono::steady_clock::now();
-        std::chrono::duration<float> elapsed_seconds = cur_time - start_time;
-        const float dt { elapsed_seconds.count() };
 
         while (engine->process_input(event))
         {
@@ -109,26 +100,34 @@ int main(int, char** argv)
                     else if (*event.keyboard_info
                              == arci::keyboard_event::left_button_pressed)
                     {
-                        worm_pos[0] -= speed_x * dt;
+                        worm_direction = 0.f;
+                        reflection_y = 1.f;
+                        worm_pos[0] -= speed_x;
                     }
                     else if (*event.keyboard_info
                              == arci::keyboard_event::right_button_pressed)
                     {
-                        worm_pos[0] += speed_x * dt;
+                        worm_direction = 0.f;
+                        reflection_y = -1.f;
+                        worm_pos[0] += speed_x;
                     }
                     else if (*event.keyboard_info
                              == arci::keyboard_event::up_button_pressed)
                     {
-                        worm_pos[1] += speed_y * dt;
+                        worm_direction = 0.f;
+                        worm_pos[1] += speed_y;
                     }
                     else if (*event.keyboard_info
                              == arci::keyboard_event::down_button_pressed)
                     {
-                        worm_pos[1] -= speed_y * dt;
+                        worm_direction = pi / 2.f;
+                        reflection_y = 1.f;
+                        worm_pos[1] -= speed_y;
                     }
                     else if (*event.keyboard_info
                              == arci::keyboard_event::space_button_pressed)
                     {
+                        reflection_y = 1.f;
                         worm_direction += 0.1f;
                     }
                 }
@@ -171,6 +170,10 @@ int main(int, char** argv)
             1.f
         };
 
+        const glm::mediump_mat3 reflection_matrix {
+            reflection_y, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 1.f
+        };
+
         const glm::mediump_mat3x3 move_matrix {
             1.f, 0.f, 0.f,
             0.f, 1.f, 0.f,
@@ -179,7 +182,7 @@ int main(int, char** argv)
 
         const glm::mediump_mat3 result_matrix
             = aspect_matrix * move_matrix * scale_matrix
-            * rotation_matrix;
+            * rotation_matrix * reflection_matrix;
 
         arci::triangle triangle_low_transformed
             = get_transformed_triangle(
