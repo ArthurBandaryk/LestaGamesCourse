@@ -18,6 +18,6 @@ add_library(engine-math-on-cpu opengl-debug.hxx opengl-shader-programm.hxx
 target_link_libraries(engine-math-on-cpu compiler-flags-lib glog::glog
                       SDL3::SDL3-shared glad-lib)
 
-add_executable(math-on-cpu-bin main.cxx glm-math.hxx)
+add_executable(math-on-cpu-bin main.cxx)
 target_link_libraries(math-on-cpu-bin compiler-flags-lib glm::glm glog::glog
                       engine-math-on-cpu)
