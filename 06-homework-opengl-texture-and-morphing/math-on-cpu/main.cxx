@@ -13,7 +13,7 @@
 
 arci::triangle get_transformed_triangle(
     const arci::triangle& t,
-    const glm::mediump_mat3x2& aspect_matrix,
+    const glm::mediump_mat3x3& aspect_matrix,
     const glm::mediump_mat3x3& scale_matrix,
     const glm::mediump_mat3x3& rotation_matrix,
     const glm::mediump_mat3x3& move_matrix,
@@ -27,22 +27,9 @@ arci::triangle get_transformed_triangle(
                   [&](arci::vertex& v) {
                       glm::vec3 v_pos_source { v.x, v.y, 1.f };
 
-                      const glm::mediump_mat3x3 move_to_origin {
-                          1.f, 0.f, 0.f,
-                          0.f, 1.f, 0.f,
-                          -v.x, -v.y, 1.f
-                      };
-
-                      const glm::mediump_mat3x3 move_back {
-                          1.f, 0.f, 0.f,
-                          0.f, 1.f, 0.f,
-                          v.x, v.y, 1.f
-                      };
-
                       glm::mediump_mat3 result_matrix
-                          = aspect_matrix * scale_matrix
-                          * move_to_origin * rotation_matrix
-                          * move_back * move_matrix;
+                          = aspect_matrix * move_matrix * scale_matrix
+                          * rotation_matrix;
 
                       glm::vec3 v_pos_result = result_matrix * v_pos_source;
 
