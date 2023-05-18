@@ -1,5 +1,4 @@
 #include "engine.hxx"
-// #include "glm-math.hxx"
 
 //
 #include <glm/ext/matrix_float2x2_precision.hpp>
@@ -13,12 +12,7 @@
 
 arci::triangle get_transformed_triangle(
     const arci::triangle& t,
-    const glm::mediump_mat3x3& aspect_matrix,
-    const glm::mediump_mat3x3& scale_matrix,
-    const glm::mediump_mat3x3& rotation_matrix,
-    const glm::mediump_mat3x3& move_matrix,
-    const glm::vec3& worm_pos,
-    const float worm_direction)
+    const glm::mediump_mat3& result_matrix)
 {
     arci::triangle result { t };
 
@@ -26,11 +20,6 @@ arci::triangle get_transformed_triangle(
                   result.vertices.end(),
                   [&](arci::vertex& v) {
                       glm::vec3 v_pos_source { v.x, v.y, 1.f };
-
-                      glm::mediump_mat3 result_matrix
-                          = aspect_matrix * move_matrix * scale_matrix
-                          * rotation_matrix;
-
                       glm::vec3 v_pos_result = result_matrix * v_pos_source;
 
                       v.x = v_pos_result[0];
@@ -120,7 +109,6 @@ int main(int, char** argv)
                     else if (*event.keyboard_info
                              == arci::keyboard_event::left_button_pressed)
                     {
-                        worm_direction = 0.f;
                         worm_pos[0] -= speed_x * dt;
                     }
                     else if (*event.keyboard_info
@@ -189,24 +177,18 @@ int main(int, char** argv)
             worm_pos[0], worm_pos[1], 1.f
         };
 
+        const glm::mediump_mat3 result_matrix
+            = aspect_matrix * move_matrix * scale_matrix
+            * rotation_matrix;
+
         arci::triangle triangle_low_transformed
             = get_transformed_triangle(
                 triangle_low,
-                aspect_matrix,
-                scale_matrix,
-                rotation_matrix,
-                move_matrix,
-                worm_pos,
-                worm_direction);
+                result_matrix);
         arci::triangle triangle_high_transformed
             = get_transformed_triangle(
                 triangle_high,
-                aspect_matrix,
-                scale_matrix,
-                rotation_matrix,
-                move_matrix,
-                worm_pos,
-                worm_direction);
+                result_matrix);
 
         engine->render(triangle_low_transformed, texture.get());
         engine->render(triangle_high_transformed, texture.get());
