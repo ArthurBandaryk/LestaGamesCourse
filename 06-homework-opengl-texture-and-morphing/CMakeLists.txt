@@ -54,3 +54,4 @@ target_include_directories(glad-lib
 add_subdirectory(morphing)
 add_subdirectory(load-texture)
 add_subdirectory(math-on-cpu)
+add_subdirectory(math-on-gpu)
