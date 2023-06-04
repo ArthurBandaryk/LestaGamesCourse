@@ -62,57 +62,45 @@ int main(int, char** argv)
                 loop_continue = false;
                 break;
             }
-            else
-            {
-                if (event.keyboard_info)
-                {
-                    if (*event.keyboard_info
-                        == arci::keyboard_event::plus_button_pressed)
-                    {
-                        worm_scale[0] += 0.1;
-                        worm_scale[1] += 0.1;
-                    }
-                    else if (*event.keyboard_info
-                             == arci::keyboard_event::minus_button_pressed)
-                    {
-                        worm_scale[0] -= 0.1;
-                        worm_scale[1] -= 0.1;
-                    }
-                    else if (*event.keyboard_info
-                             == arci::keyboard_event::left_button_pressed)
-                    {
-                        worm_direction = 0.f;
-                        reflection_y = 1.f;
-                        worm_pos[0] -= speed_x;
-                    }
-                    else if (*event.keyboard_info
-                             == arci::keyboard_event::right_button_pressed)
-                    {
-                        worm_direction = 0.f;
-                        reflection_y = -1.f;
-                        worm_pos[0] += speed_x;
-                    }
-                    else if (*event.keyboard_info
-                             == arci::keyboard_event::up_button_pressed)
-                    {
-                        worm_direction = 0.f;
-                        worm_pos[1] += speed_y;
-                    }
-                    else if (*event.keyboard_info
-                             == arci::keyboard_event::down_button_pressed)
-                    {
-                        worm_direction = pi / 2.f;
-                        reflection_y = 1.f;
-                        worm_pos[1] -= speed_y;
-                    }
-                    else if (*event.keyboard_info
-                             == arci::keyboard_event::space_button_pressed)
-                    {
-                        reflection_y = 1.f;
-                        worm_direction += 0.1f;
-                    }
-                }
-            }
+        }
+
+        if (engine->key_down(arci::keys::magnify))
+        {
+            worm_scale[0] += 0.1;
+            worm_scale[1] += 0.1;
+        }
+        else if (engine->key_down(arci::keys::reduce))
+        {
+            worm_scale[0] -= 0.1;
+            worm_scale[1] -= 0.1;
+        }
+        else if (engine->key_down(arci::keys::left))
+        {
+            worm_direction = 0.f;
+            reflection_y = 1.f;
+            worm_pos[0] -= speed_x;
+        }
+        else if (engine->key_down(arci::keys::right))
+        {
+            worm_direction = 0.f;
+            reflection_y = -1.f;
+            worm_pos[0] += speed_x;
+        }
+        else if (engine->key_down(arci::keys::up))
+        {
+            worm_direction = 0.f;
+            worm_pos[1] += speed_y;
+        }
+        else if (engine->key_down(arci::keys::down))
+        {
+            worm_direction = pi / 2.f;
+            reflection_y = 1.f;
+            worm_pos[1] -= speed_y;
+        }
+        else if (engine->key_down(arci::keys::button1))
+        {
+            reflection_y = 1.f;
+            worm_direction += 0.1f;
         }
 
         const glm::mediump_mat3x3 aspect_matrix {

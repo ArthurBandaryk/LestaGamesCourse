@@ -30,64 +30,73 @@ namespace arci
 
     ///////////////////////////////////////////////////////////////////////////////
 
-    struct keyboard_key
+    struct bind_key
     {
-        SDL_KeyCode key_code;
-        keyboard_event button_pressed;
-        keyboard_event button_released;
         std::string_view key_name {};
+        SDL_KeyCode key_code;
+        key_event button_pressed;
+        key_event button_released;
+        arci::keys key;
     };
 
     ///////////////////////////////////////////////////////////////////////////////
 
-    const std::array<keyboard_key, 8> keys {
-        keyboard_key {
-            SDLK_LEFT,
-            keyboard_event::left_button_pressed,
-            keyboard_event::left_button_released,
+    const std::array<bind_key, 8> keys {
+        bind_key {
             "left",
+            SDLK_LEFT,
+            key_event::left_button_pressed,
+            key_event::left_button_released,
+            keys::left,
         },
-        keyboard_key {
-            SDLK_RIGHT,
-            keyboard_event::right_button_pressed,
-            keyboard_event::right_button_released,
+        bind_key {
             "right",
+            SDLK_RIGHT,
+            key_event::right_button_pressed,
+            key_event::right_button_released,
+            keys::right,
         },
-        keyboard_key {
-            SDLK_UP,
-            keyboard_event::up_button_pressed,
-            keyboard_event::up_button_released,
+        bind_key {
             "up",
+            SDLK_UP,
+            key_event::up_button_pressed,
+            key_event::up_button_released,
+            keys::up,
         },
-        keyboard_key {
-            SDLK_DOWN,
-            keyboard_event::down_button_pressed,
-            keyboard_event::down_button_released,
+        bind_key {
             "down",
+            SDLK_DOWN,
+            key_event::down_button_pressed,
+            key_event::down_button_released,
+            keys::down,
         },
-        keyboard_key {
+        bind_key {
+            "space",
             SDLK_SPACE,
-            keyboard_event::space_button_pressed,
-            keyboard_event::space_button_released,
-            "space",
+            key_event::button1_pressed,
+            key_event::button1_released,
+            keys::button1,
         },
-        keyboard_key {
+        bind_key {
+            "+",
             SDLK_KP_PLUS,
-            keyboard_event::plus_button_pressed,
-            keyboard_event::plus_button_released,
-            "space",
+            key_event::button2_pressed,
+            key_event::button2_released,
+            keys::magnify,
         },
-        keyboard_key {
+        bind_key {
+            "-",
             SDLK_KP_MINUS,
-            keyboard_event::minus_button_pressed,
-            keyboard_event::minus_button_released,
-            "space",
+            key_event::button3_pressed,
+            key_event::button3_released,
+            keys::reduce,
         },
-        keyboard_key {
-            SDLK_ESCAPE,
-            keyboard_event::escape_button_pressed,
-            keyboard_event::escape_button_released,
+        bind_key {
             "escape",
+            SDLK_ESCAPE,
+            key_event::escape_button_pressed,
+            key_event::escape_button_released,
+            keys::exit,
         },
     };
 
@@ -138,6 +147,7 @@ namespace arci
 
         void init() override;
         bool process_input(event& event) override;
+        bool key_down(const enum keys key) override;
         void render(const triangle& triangle) override;
         void render(const triangle& triangle,
                     itexture* const texture) override;
@@ -153,7 +163,7 @@ namespace arci
         std::uint64_t get_time_since_epoch() const;
 
     private:
-        std::optional<keyboard_key> get_keyboard_key_for_event(
+        std::optional<bind_key> get_key_for_event(
             const SDL_Event& sdl_event);
 
         std::unique_ptr<SDL_Window, void (*)(SDL_Window*)>
@@ -378,9 +388,8 @@ namespace arci
 
     bool engine_using_sdl::process_input(event& event)
     {
-        bool continue_event_processing { true };
         SDL_Event sdl_event {};
-        std::optional<keyboard_key> keyboard_key_for_event {};
+        std::optional<bind_key> key_for_event {};
 
         if (SDL_PollEvent(&sdl_event))
         {
@@ -392,19 +401,19 @@ namespace arci
 
             case SDL_EVENT_KEY_UP:
                 event.device = event_from_device::keyboard;
-                keyboard_key_for_event = get_keyboard_key_for_event(sdl_event);
-                if (keyboard_key_for_event)
+                key_for_event = get_key_for_event(sdl_event);
+                if (key_for_event)
                 {
-                    event.keyboard_info = keyboard_key_for_event->button_released;
+                    event.key_info = key_for_event->button_released;
                 }
                 break;
 
             case SDL_EVENT_KEY_DOWN:
                 event.device = event_from_device::keyboard;
-                keyboard_key_for_event = get_keyboard_key_for_event(sdl_event);
-                if (keyboard_key_for_event)
+                key_for_event = get_key_for_event(sdl_event);
+                if (key_for_event)
                 {
-                    event.keyboard_info = keyboard_key_for_event->button_pressed;
+                    event.key_info = key_for_event->button_pressed;
                 }
                 break;
 
@@ -417,16 +426,33 @@ namespace arci
                 break;
 
             default:
-                continue_event_processing = false;
                 break;
             }
-        }
-        else
-        {
-            continue_event_processing = false;
+
+            return true;
         }
 
-        return continue_event_processing;
+        return false;
+    }
+
+    bool engine_using_sdl::key_down(const enum keys key)
+    {
+        const auto iter = std::find_if(
+            keys.begin(),
+            keys.end(),
+            [key](const bind_key& bind) {
+                return bind.key == key;
+            });
+
+        if (iter != keys.end())
+        {
+            const Uint8* state = SDL_GetKeyboardState(nullptr);
+            const SDL_Scancode sdl_scan_code
+                = SDL_GetScancodeFromKey(iter->key_code);
+            return state[sdl_scan_code];
+        }
+
+        return false;
     }
 
     itexture* engine_using_sdl::create_texture(const std::string_view path)
@@ -634,13 +660,13 @@ namespace arci
         return std::chrono::system_clock::now().time_since_epoch().count();
     }
 
-    std::optional<keyboard_key> engine_using_sdl::get_keyboard_key_for_event(
+    std::optional<bind_key> engine_using_sdl::get_key_for_event(
         const SDL_Event& sdl_event)
     {
         const auto iter = std::find_if(
             keys.begin(),
             keys.end(),
-            [&sdl_event](const keyboard_key& k) {
+            [&sdl_event](const bind_key& k) {
                 return sdl_event.key.keysym.sym == k.key_code;
             });
 

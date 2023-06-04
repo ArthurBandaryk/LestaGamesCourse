@@ -42,7 +42,7 @@ namespace arci
 
     ///////////////////////////////////////////////////////////////////////////////
 
-    enum class keyboard_event
+    enum class key_event
     {
         left_button_pressed,
         left_button_released,
@@ -52,14 +52,28 @@ namespace arci
         up_button_released,
         down_button_pressed,
         down_button_released,
-        space_button_pressed,
-        space_button_released,
-        plus_button_pressed,
-        plus_button_released,
-        minus_button_pressed,
-        minus_button_released,
+        button1_pressed,
+        button1_released,
+        button2_pressed,
+        button2_released,
+        button3_pressed,
+        button3_released,
         escape_button_pressed,
         escape_button_released,
+    };
+
+    enum class keys
+    {
+        left,
+        right,
+        down,
+        up,
+        select,
+        magnify,
+        reduce,
+        button1,
+        button2,
+        exit
     };
 
     ///////////////////////////////////////////////////////////////////////////////
@@ -68,7 +82,7 @@ namespace arci
     {
         event_from_device device;
         std::optional<mouse_event> mouse_info;
-        std::optional<keyboard_event> keyboard_info;
+        std::optional<key_event> key_info;
         bool is_quitting { false };
     };
 
@@ -112,6 +126,7 @@ namespace arci
         virtual ~iengine() = default;
         virtual void init() = 0;
         virtual bool process_input(event& event) = 0;
+        virtual bool key_down(const enum keys key) = 0;
 
         // Render simple colored triangle.
         virtual void render(const triangle& triangle) = 0;
