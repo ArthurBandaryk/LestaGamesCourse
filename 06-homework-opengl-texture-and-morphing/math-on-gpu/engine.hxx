@@ -108,6 +108,31 @@ namespace arci
         std::array<vertex, 3> vertices {};
     };
 
+    struct quad
+    {
+        quad(const triangle& first, const triangle& second);
+        std::array<triangle, 2> quad_;
+    };
+
+    ///////////////////////////////////////////////////////////////////////////////
+
+    class ivertex_buffer
+    {
+    public:
+        virtual ~ivertex_buffer() = default;
+        virtual void bind() = 0;
+        virtual std::size_t get_vertices_number() const = 0;
+    };
+
+    class i_index_buffer
+    {
+    public:
+        virtual ~i_index_buffer() = default;
+        virtual void bind() = 0;
+        virtual uint32_t* data() = 0;
+        virtual std::size_t get_indices_number() const = 0;
+    };
+
     ///////////////////////////////////////////////////////////////////////////////
 
     class itexture
@@ -132,6 +157,7 @@ namespace arci
         virtual void render(const triangle& triangle) = 0;
 
         // Render textured triangle. All math is calculated on cpu.
+
         /* clang-format off */
         virtual void render(const triangle& triangle,
                             itexture* const texture) = 0;
@@ -142,9 +168,32 @@ namespace arci
         virtual void render(const triangle& triangle,
                             itexture* const texture, 
                             const glm::mediump_mat3& matrix) = 0;
+        virtual void render(ivertex_buffer* vertex_buffer,
+                            itexture* const texture,
+                            const glm::mediump_mat3& matrix) = 0;
+        virtual void render(ivertex_buffer* vertex_buffer,
+                            i_index_buffer* ebo,    
+                            itexture* const texture,
+                            const glm::mediump_mat3& matrix) = 0;                    
+
+        virtual ivertex_buffer* create_vertex_buffer(
+            const std::vector<triangle>& triangles) = 0;
+
+        virtual ivertex_buffer* create_vertex_buffer(
+            const std::vector<vertex>& vertices) = 0;
+
+        virtual void destroy_vertex_buffer(
+            ivertex_buffer* buffer) = 0;
+
+        virtual i_index_buffer* create_ebo(
+            const std::vector<uint32_t>& indices) = 0;
+
+        virtual void destroy_ebo(i_index_buffer* buffer) = 0;
+
+        virtual itexture* create_texture(
+            const std::string_view path) = 0;
         /* clang-format on */
 
-        virtual itexture* create_texture(const std::string_view path) = 0;
         virtual void destroy_texture(const itexture* const texture) = 0;
         virtual void uninit() = 0;
         virtual void swap_buffers() = 0;

@@ -12,3 +12,4 @@ void main() {
     vec3 result_pos = u_matrix * vec3(a_position, 1.0);
     gl_Position = vec4(result_pos, 1.0);
 }
+rr

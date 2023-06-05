@@ -111,6 +111,24 @@ namespace arci
         opengl_check();
     }
 
+    void opengl_shader_program::set_uniform(
+        const std::string_view texture_attribute_name)
+    {
+        const GLint location = glGetUniformLocation(
+            m_program,
+            texture_attribute_name.data());
+        opengl_check();
+
+        CHECK(location != -1)
+            << "Error on getting location for texture uniform name";
+
+        const GLint texture_unit { 0 };
+        glActiveTexture(GL_TEXTURE0 + texture_unit);
+        opengl_check();
+        glUniform1i(location, 0 + texture_unit);
+        opengl_check();
+    }
+
     void opengl_shader_program::prepare_program()
     {
         attach_shaders();

@@ -111,6 +111,131 @@ namespace arci
 
     ///////////////////////////////////////////////////////////////////////////////
 
+    class vertex_buffer final : public ivertex_buffer
+    {
+    public:
+        vertex_buffer(const std::vector<triangle>& triangles)
+        {
+            m_num_vertices = triangles.size() * 3;
+
+            glGenVertexArrays(1, &m_vao_id);
+            opengl_check();
+            glGenBuffers(1, &m_vbo_id);
+            opengl_check();
+
+            bind();
+
+            glBufferData(
+                GL_ARRAY_BUFFER,
+                triangles.size() * 3 * sizeof(vertex),
+                triangles.data()->vertices.data(),
+                GL_STATIC_DRAW);
+            opengl_check();
+        }
+
+        vertex_buffer(const std::vector<vertex>& vertices)
+        {
+            m_num_vertices = vertices.size();
+
+            glGenVertexArrays(1, &m_vao_id);
+            opengl_check();
+            glGenBuffers(1, &m_vbo_id);
+            opengl_check();
+
+            bind();
+
+            glBufferData(GL_ARRAY_BUFFER,
+                         m_num_vertices * sizeof(vertex),
+                         vertices.data(),
+                         GL_STATIC_DRAW);
+            opengl_check();
+        }
+
+        ~vertex_buffer()
+        {
+            glBindVertexArray(0);
+            opengl_check();
+            glDeleteVertexArrays(1, &m_vao_id);
+            opengl_check();
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
+            opengl_check();
+            glDeleteBuffers(1, &m_vbo_id);
+            opengl_check();
+        }
+
+        void bind() override
+        {
+            glBindVertexArray(m_vao_id);
+            opengl_check();
+            glBindBuffer(GL_ARRAY_BUFFER, m_vbo_id);
+            opengl_check();
+        }
+
+        std::size_t get_vertices_number() const override
+        {
+            return m_num_vertices;
+        }
+
+    private:
+        GLuint m_vbo_id {};
+        GLuint m_vao_id {};
+        std::size_t m_num_vertices {};
+    };
+
+    class index_buffer : public i_index_buffer
+    {
+    public:
+        index_buffer(const std::vector<uint32_t>& indices)
+        {
+            m_num_indices = indices.size();
+
+            m_indices.resize(m_num_indices);
+            std::copy(indices.begin(), indices.end(), m_indices.begin());
+
+            glGenBuffers(1, &m_ebo_id);
+            opengl_check();
+
+            bind();
+
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+                         m_num_indices * sizeof(uint32_t),
+                         indices.data(),
+                         GL_STATIC_DRAW);
+            opengl_check();
+        }
+
+        ~index_buffer()
+        {
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+            opengl_check();
+            glDeleteBuffers(1, &m_ebo_id);
+            opengl_check();
+        }
+
+        void bind() override
+        {
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo_id);
+            opengl_check();
+        }
+
+        uint32_t* data() override
+        {
+            return m_indices.data();
+        }
+
+        std::size_t get_indices_number() const
+        {
+            return m_num_indices;
+        }
+
+    private:
+        std::vector<uint32_t> m_indices {};
+        GLuint m_ebo_id {};
+        std::size_t m_num_indices {};
+    };
+
+    ///////////////////////////////////////////////////////////////////////////////
+
     class opengl_texture : public itexture
     {
     public:
@@ -154,11 +279,27 @@ namespace arci
         void render(const triangle& triangle,
                     itexture* const texture,
                     const glm::mediump_mat3& matrix) override;
+        void render(ivertex_buffer* vertex_buffer,
+                    itexture* const texture,
+                    const glm::mediump_mat3& matrix) override;
+        void render(ivertex_buffer* vertex_buffer,
+                    i_index_buffer* ebo,
+                    itexture* const texture,
+                    const glm::mediump_mat3& matrix) override;
         itexture* create_texture(const std::string_view path) override;
         void destroy_texture(const itexture* const texture) override;
+        ivertex_buffer* create_vertex_buffer(
+            const std::vector<triangle>& triangles) override;
+        ivertex_buffer* create_vertex_buffer(
+            const std::vector<vertex>& vertices) override;
+        void destroy_vertex_buffer(ivertex_buffer* buffer) override;
+        i_index_buffer* create_ebo(
+            const std::vector<uint32_t>& indices) override;
+        void destroy_ebo(i_index_buffer* buffer) override;
         void swap_buffers() override;
         void uninit() override;
-        std::pair<size_t, size_t> get_screen_resolution() const noexcept override;
+        std::pair<size_t, size_t>
+        get_screen_resolution() const noexcept override;
 
         std::uint64_t get_time_since_epoch() const;
 
@@ -468,6 +609,35 @@ namespace arci
         delete texture;
     }
 
+    ivertex_buffer* engine_using_sdl::create_vertex_buffer(
+        const std::vector<triangle>& triangles)
+    {
+        return new vertex_buffer { triangles };
+    }
+
+    ivertex_buffer* engine_using_sdl::create_vertex_buffer(
+        const std::vector<vertex>& vertices)
+    {
+        return new vertex_buffer { vertices };
+    }
+
+    void engine_using_sdl::destroy_vertex_buffer(ivertex_buffer* buffer)
+    {
+        CHECK_NOTNULL(buffer);
+        delete buffer;
+    }
+
+    i_index_buffer* engine_using_sdl::create_ebo(const std::vector<uint32_t>& indices)
+    {
+        return new index_buffer { indices };
+    }
+
+    void engine_using_sdl::destroy_ebo(i_index_buffer* buffer)
+    {
+        CHECK_NOTNULL(buffer);
+        delete buffer;
+    }
+
     void engine_using_sdl::render(const triangle& triangle)
     {
         glEnableVertexAttribArray(0);
@@ -577,7 +747,9 @@ namespace arci
                                   const glm::mediump_mat3& matrix)
     {
         m_textured_triangle_program.apply_shader_program();
+
         m_textured_triangle_program.set_uniform("u_matrix", matrix);
+        m_textured_triangle_program.set_uniform("s_texture");
 
         texture->bind();
 
@@ -623,6 +795,128 @@ namespace arci
 
         glDrawArrays(GL_TRIANGLES, 0, 3);
         opengl_check();
+
+        glDisableVertexAttribArray(0);
+        opengl_check();
+
+        glDisableVertexAttribArray(1);
+        opengl_check();
+
+        glDisableVertexAttribArray(2);
+        opengl_check();
+    }
+
+    void engine_using_sdl::render(ivertex_buffer* vertex_buffer,
+                                  itexture* const texture,
+                                  const glm::mediump_mat3& matrix)
+    {
+        m_textured_triangle_program.apply_shader_program();
+
+        m_textured_triangle_program.set_uniform("u_matrix", matrix);
+        m_textured_triangle_program.set_uniform("s_texture");
+
+        texture->bind();
+        vertex_buffer->bind();
+
+        glVertexAttribPointer(
+            0,
+            2,
+            GL_FLOAT,
+            GL_FALSE,
+            sizeof(vertex),
+            reinterpret_cast<void*>(0));
+        opengl_check();
+        glEnableVertexAttribArray(0);
+        opengl_check();
+
+        glVertexAttribPointer(
+            1,
+            3,
+            GL_FLOAT,
+            GL_FALSE,
+            sizeof(vertex),
+            reinterpret_cast<void*>(3 * sizeof(float)));
+        opengl_check();
+        glEnableVertexAttribArray(1);
+        opengl_check();
+
+        glVertexAttribPointer(
+            2,
+            2,
+            GL_FLOAT,
+            GL_FALSE,
+            sizeof(vertex),
+            reinterpret_cast<void*>(6 * sizeof(float)));
+        opengl_check();
+        glEnableVertexAttribArray(2);
+        opengl_check();
+
+        glDrawArrays(GL_TRIANGLES, 0, vertex_buffer->get_vertices_number());
+        opengl_check();
+
+        glDisableVertexAttribArray(0);
+        opengl_check();
+
+        glDisableVertexAttribArray(1);
+        opengl_check();
+
+        glDisableVertexAttribArray(2);
+        opengl_check();
+    }
+
+    void engine_using_sdl::render(ivertex_buffer* vertex_buffer,
+                                  i_index_buffer* ebo,
+                                  itexture* const texture,
+                                  const glm::mediump_mat3& matrix)
+    {
+        m_textured_triangle_program.apply_shader_program();
+
+        m_textured_triangle_program.set_uniform("u_matrix", matrix);
+        m_textured_triangle_program.set_uniform("s_texture");
+
+        texture->bind();
+        vertex_buffer->bind();
+        ebo->bind();
+
+        glVertexAttribPointer(
+            0,
+            2,
+            GL_FLOAT,
+            GL_FALSE,
+            sizeof(vertex),
+            reinterpret_cast<void*>(0));
+        opengl_check();
+        glEnableVertexAttribArray(0);
+        opengl_check();
+
+        glVertexAttribPointer(
+            1,
+            3,
+            GL_FLOAT,
+            GL_FALSE,
+            sizeof(vertex),
+            reinterpret_cast<void*>(3 * sizeof(float)));
+        opengl_check();
+        glEnableVertexAttribArray(1);
+        opengl_check();
+
+        glVertexAttribPointer(
+            2,
+            2,
+            GL_FLOAT,
+            GL_FALSE,
+            sizeof(vertex),
+            reinterpret_cast<void*>(6 * sizeof(float)));
+        opengl_check();
+        glEnableVertexAttribArray(2);
+        opengl_check();
+
+        glDrawElements(GL_TRIANGLES,
+                       ebo->get_indices_number(),
+                       GL_UNSIGNED_INT,
+                       0);
+        opengl_check();
+        LOG(INFO) << ebo->get_indices_number();
 
         glDisableVertexAttribArray(0);
         opengl_check();

@@ -22,24 +22,22 @@ int main(int, char** argv)
 
     engine->init();
 
-    std::unique_ptr<arci::itexture> texture {
-        engine->create_texture("worm.png")
-    };
-
     const auto [screen_width, screen_height]
         = engine->get_screen_resolution();
 
-    arci::triangle triangle_low {
+    arci::itexture* texture = engine->create_texture("worm.png");
+
+    std::vector<arci::vertex> vertices {
         { -0.3f, -0.3f, 0.f, 0.f, 0.f, 0.f, 0.f, 1.f },
         { 0.3f, -0.3f, 0.f, 0.f, 0.f, 0.f, 1.f, 1.f },
         { -0.3f, 0.3f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f },
+        { 0.3f, 0.3f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f },
     };
 
-    arci::triangle triangle_high {
-        { -0.3f, 0.3f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f },
-        { 0.3f, 0.3f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f },
-        { 0.3f, -0.3f, 0.f, 0.f, 0.f, 0.f, 1.f, 1.f },
-    };
+    std::vector<uint32_t> indices { 0, 1, 2, 2, 3, 1 };
+
+    arci::ivertex_buffer* vertex_buffer = engine->create_vertex_buffer(vertices);
+    arci::i_index_buffer* index_buffer = engine->create_ebo(indices);
 
     glm::vec3 worm_pos { 0.f, 0.f, 1.f };
     glm::vec2 worm_scale { 1.f, 1.f };
@@ -137,13 +135,15 @@ int main(int, char** argv)
             = aspect_matrix * move_matrix * scale_matrix
             * rotation_matrix * reflection_matrix;
 
-        engine->render(triangle_low, texture.get(), result_matrix);
-        engine->render(triangle_high, texture.get(), result_matrix);
+        engine->render(vertex_buffer, index_buffer, texture, result_matrix);
 
         engine->swap_buffers();
     }
 
     engine->uninit();
+    engine->destroy_texture(texture);
+    engine->destroy_vertex_buffer(vertex_buffer);
+    engine->destroy_ebo(index_buffer);
 
     return EXIT_SUCCESS;
 }

@@ -35,6 +35,8 @@ namespace arci
         void set_uniform(const std::string_view matrix_attribute_name,
                          const glm::mediump_mat3& result_matrix);
 
+        void set_uniform(const std::string_view texture_attribute_name);
+
         // Use this shader for rendering objects.
         void apply_shader_program();
 
