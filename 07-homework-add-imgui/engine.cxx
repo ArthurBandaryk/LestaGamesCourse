@@ -229,7 +229,7 @@ namespace arci
             return m_indices.data();
         }
 
-        std::size_t get_indices_number() const
+        std::size_t get_indices_number() const override
         {
             return m_num_indices;
         }
