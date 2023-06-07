@@ -12,7 +12,17 @@
 #include <cmath>
 #include <memory>
 
-void show_menu(const std::size_t width, const std::size_t height)
+enum class game_status
+{
+    main_menu,
+    game_start,
+    game_over,
+    exit
+};
+
+void main_menu(const std::size_t width,
+               const std::size_t height,
+               game_status& status)
 {
     const ImGuiViewport* main_viewport = ImGui::GetMainViewport();
     ImGui::SetNextWindowPos(ImVec2(main_viewport->WorkPos.x,
@@ -29,12 +39,47 @@ void show_menu(const std::size_t width, const std::size_t height)
     ImGui::Begin("Main menu", nullptr, window_flags);
 
     // Game name text label.
-    const std::string game_name { "Arcanoid" };
+    const char game_name[] { "ARCANOID" };
     const float game_name_offset_y { height / 10.f };
-    const float text_width = ImGui::CalcTextSize(game_name.c_str()).x;
-    ImGui::SetCursorPosX((width - text_width) * 0.5f);
+    const float game_text_width = ImGui::CalcTextSize(game_name).x;
+    const float game_text_height = ImGui::CalcTextSize(game_name).y;
+    ImGui::SetCursorPosX((width - game_text_width) * 0.5f);
     ImGui::SetCursorPosY(game_name_offset_y);
-    ImGui::Text(game_name.c_str());
+    ImGui::Text(game_name);
+
+    // Start game button.
+    const char start_button_name[] { "START" };
+    const float start_button_width { game_text_width * 2.f };
+    const float start_button_height { game_text_height * 2.f };
+    ImGui::SetCursorPosX((width - start_button_width) * 0.5f);
+    ImGui::SetCursorPosY(game_name_offset_y
+                         + game_text_height
+                         + game_name_offset_y / 2.f);
+    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(255.f, 128.f, 0.f, 255.f));
+    if (ImGui::Button(start_button_name,
+                      ImVec2(start_button_width, start_button_height)))
+    {
+        status = game_status::game_start;
+    }
+    ImGui::PopStyleColor();
+
+    // Exit button.
+    const char exit_button_name[] { "EXIT" };
+    const float exit_button_width { start_button_width };
+    const float exit_button_height { start_button_height };
+    ImGui::SetCursorPosX((width - exit_button_width) * 0.5f);
+    ImGui::SetCursorPosY(game_name_offset_y
+                         + game_text_height
+                         + game_name_offset_y / 2.f
+                         + start_button_height
+                         + game_name_offset_y / 2.f);
+    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(255.f, 0.f, 0.f, 255.f));
+    if (ImGui::Button(exit_button_name,
+                      ImVec2(exit_button_width, exit_button_height)))
+    {
+        status = game_status::exit;
+    }
+    ImGui::PopStyleColor();
 
     ImGui::End();
 }
@@ -45,15 +90,6 @@ int main(int, char** argv)
 {
     FLAGS_logtostderr = true;
     google::InitGoogleLogging(argv[0]);
-
-    enum class game_status
-    {
-        main_menu,
-        game_start,
-        game_over
-    };
-
-    game_status status = game_status::game_start;
 
     // Create engine.
     std::unique_ptr<arci::iengine, void (*)(arci::iengine*)> engine {
@@ -80,6 +116,8 @@ int main(int, char** argv)
 
     arci::ivertex_buffer* vertex_buffer = engine->create_vertex_buffer(vertices);
     arci::i_index_buffer* index_buffer = engine->create_ebo(indices);
+
+    game_status status = game_status::main_menu;
 
     glm::vec3 worm_pos { 0.f, 0.f, 1.f };
     glm::vec2 worm_scale { 1.f, 1.f };
@@ -179,15 +217,23 @@ int main(int, char** argv)
 
         if (status == game_status::game_start)
         {
+            engine->render(vertex_buffer, index_buffer, texture, result_matrix);
+        }
+        else if (status == game_status::exit)
+        {
+            loop_continue = false;
+            break;
+        }
+        else if (status == game_status::game_over)
+        {
+        }
+        else if (status == game_status::main_menu)
+        {
             engine->imgui_new_frame();
 
-            show_menu(screen_width, screen_height);
+            main_menu(screen_width, screen_height, status);
 
             engine->imgui_render();
-        }
-        else
-        {
-            engine->render(vertex_buffer, index_buffer, texture, result_matrix);
         }
 
         engine->swap_buffers();
