@@ -185,16 +185,28 @@ jobs:
       #     CXX=clang++ cmake -G Ninja -S 04-homework-basic-graphics/ -B build/ && \
       #     CXX=clang++ cmake --build build/
 
-      - name: Basic opengl using GNU
+      # - name: Basic opengl using GNU
+      #   run: |
+      #     mkdir -p build && \
+      #     cmake -G Ninja -S 05-homework-opengl-basic/ -B build/ && \
+      #     cmake --build build/
+
+      # - name: Basic opengl using clang
+      #   run: |
+      #     rm -rf build/* && \
+      #     CXX=clang++ cmake -G Ninja -S 05-homework-opengl-basic/ -B build/ && \
+      #     CXX=clang++ cmake --build build/
+
+      - name: Add imgui using GNU
         run: |
           mkdir -p build && \
-          cmake -G Ninja -S 05-homework-opengl-basic/ -B build/ && \
+          cmake -G Ninja -S 07-homework-add-imgui/ -B build/ && \
           cmake --build build/
 
-      - name: Basic opengl using clang
+      - name: Add imgui using GNU clang
         run: |
           rm -rf build/* && \
-          CXX=clang++ cmake -G Ninja -S 05-homework-opengl-basic/ -B build/ && \
+          CXX=clang++ cmake -G Ninja -S 07-homework-add-imgui/ -B build/ && \
           CXX=clang++ cmake --build build/    
 
       - name: Debug using tmate (if failure)
