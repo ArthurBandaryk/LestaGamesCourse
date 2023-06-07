@@ -44,10 +44,6 @@ list(
   "imgui/backends/imgui_impl_sdl3.cpp"
   "imgui/backends/imgui_impl_opengl3.cpp")
 
-add_library(imgui-lib STATIC ${IMGUI_HEADERS} ${IMGUI_SOURCES})
-target_include_directories(imgui-lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/imgui)
-set_property(TARGET imgui-lib PROPERTY POSITION_INDEPENDENT_CODE ON)
-
 # Check if `glog` git submodule is initialized.
 if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../submodules/glog)
   message(
@@ -80,6 +76,11 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../submodules/sdl
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../submodules/glm
                  ${CMAKE_BINARY_DIR}/glm)
+
+add_library(imgui-lib STATIC ${IMGUI_HEADERS} ${IMGUI_SOURCES})
+target_link_libraries(imgui-lib PRIVATE SDL3::SDL3-shared)
+target_include_directories(imgui-lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/imgui)
+set_property(TARGET imgui-lib PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 # Set clang, gcc compilers.
 set(gcc_like_cxx "$<COMPILE_LANG_AND_ID:CXX,Clang,GNU>")
