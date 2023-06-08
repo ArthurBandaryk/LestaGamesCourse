@@ -1,6 +1,3 @@
-# Visual Studio files.
-.vscode
-
 # Cmake build directory.
 .build
 build
