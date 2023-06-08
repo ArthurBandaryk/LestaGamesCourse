@@ -1,0 +1,53 @@
+// https://learn.microsoft.com/en-us/cpp/build/tasks-vs-json-schema-reference-cpp?view=msvc-170
+{
+    "version": "2.0.0",
+    "tasks": [
+        // Clean Build Folder
+        {
+            "label": "clean",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "command": "cd .build && rm -rf .* && rm -rf *" 
+        },
+        // Configure
+        {
+            "label": "Cofigure Debug",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "command": "cmake -B .build -S arcanoid -G\"Ninja\" -DCMAKE_BUILD_TYPE=Debug -DPLATFORM=Linux"
+        },
+        // Build
+        {
+            "label": "Build Debug",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "command": "ninja -C .build/",
+            "dependsOn":[
+                "Cofigure Debug"
+            ]
+        },
+        // ReBuild
+        {
+            "label": "ReBuild Debug (with clean)",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "command": "ninja -C .build/",
+            "dependsOn":[
+                "clean",
+                "Cofigure Debug"
+            ]
+        }
+    ]
+}
