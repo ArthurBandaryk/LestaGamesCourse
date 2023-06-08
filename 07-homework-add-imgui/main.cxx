@@ -84,7 +84,35 @@ void main_menu(const std::size_t width,
     ImGui::End();
 }
 
-void show_game_over();
+void game_over_menu(const std::size_t width,
+                    const std::size_t height)
+{
+    const ImGuiViewport* main_viewport = ImGui::GetMainViewport();
+    ImGui::SetNextWindowPos(ImVec2(main_viewport->WorkPos.x,
+                                   main_viewport->WorkPos.y),
+                            ImGuiCond_Always);
+    ImGui::SetNextWindowSize(ImVec2(width, height), ImGuiCond_Always);
+    ImGuiWindowFlags window_flags = 0;
+    window_flags |= ImGuiWindowFlags_NoTitleBar;
+    window_flags |= ImGuiWindowFlags_NoResize;
+
+    ImGuiStyle& style = ImGui::GetStyle();
+    style.WindowBorderSize = 0.0f;
+
+    ImGui::Begin("Main menu", nullptr, window_flags);
+
+    // Game over text label.
+    const char title[] { "GAME OVER!" };
+    const float title_offset_y { height / 2.f };
+    const float title_text_width = ImGui::CalcTextSize(title).x;
+    ImGui::SetCursorPosX((width - title_text_width) * 0.5f);
+    ImGui::SetCursorPosY(title_offset_y);
+    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(255.f, 0.f, 0.f, 255.f));
+    ImGui::Text(title);
+    ImGui::PopStyleColor();
+
+    ImGui::End();
+}
 
 int main(int, char** argv)
 {
@@ -117,7 +145,7 @@ int main(int, char** argv)
     arci::ivertex_buffer* vertex_buffer = engine->create_vertex_buffer(vertices);
     arci::i_index_buffer* index_buffer = engine->create_ebo(indices);
 
-    game_status status = game_status::main_menu;
+    game_status status = game_status::game_over;
 
     glm::vec3 worm_pos { 0.f, 0.f, 1.f };
     glm::vec2 worm_scale { 1.f, 1.f };
@@ -226,6 +254,11 @@ int main(int, char** argv)
         }
         else if (status == game_status::game_over)
         {
+            engine->imgui_new_frame();
+
+            game_over_menu(screen_width, screen_height);
+
+            engine->imgui_render();
         }
         else if (status == game_status::main_menu)
         {
