@@ -268,7 +268,6 @@ namespace arci
     ///////////////////////////////////////////////////////////////////////////////
 
     static std::mutex audio_mutex {};
-    void sdl_audio_callback(void* userdata, Uint8* stream, int len);
 
     struct audio_buffer : public iaudio_buffer
     {
