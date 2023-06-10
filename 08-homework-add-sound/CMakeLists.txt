@@ -47,3 +47,4 @@ target_compile_options(
   INTERFACE "$<${gcc_like_cxx}:$<BUILD_INTERFACE:-Wall;-Wextra>>")
 
 add_subdirectory(sound-and-sdl)
+add_subdirectory(add-sound-to-engine)
