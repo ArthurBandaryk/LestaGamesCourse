@@ -145,6 +145,21 @@ namespace arci
 
     ///////////////////////////////////////////////////////////////////////////////
 
+    struct iaudio_buffer
+    {
+        virtual ~iaudio_buffer() = default;
+
+        enum class running_mode
+        {
+            once,
+            for_ever
+        };
+
+        virtual void play(const running_mode mode) = 0;
+    };
+
+    ///////////////////////////////////////////////////////////////////////////////
+
     class iengine
     {
     public:
@@ -164,10 +179,8 @@ namespace arci
         /* clang-format off */
         virtual void render(const triangle& triangle,
                             itexture* const texture) = 0;
-        /* clang-format on */
 
         // Render textured triangle. Math is calculated on gpu.
-        /* clang-format off */
         virtual void render(const triangle& triangle,
                             itexture* const texture, 
                             const glm::mediump_mat3& matrix) = 0;
@@ -181,23 +194,24 @@ namespace arci
 
         virtual ivertex_buffer* create_vertex_buffer(
             const std::vector<triangle>& triangles) = 0;
-
         virtual ivertex_buffer* create_vertex_buffer(
             const std::vector<vertex>& vertices) = 0;
-
         virtual void destroy_vertex_buffer(
             ivertex_buffer* buffer) = 0;
 
         virtual i_index_buffer* create_ebo(
             const std::vector<uint32_t>& indices) = 0;
-
         virtual void destroy_ebo(i_index_buffer* buffer) = 0;
 
         virtual itexture* create_texture(
             const std::string_view path) = 0;
+        virtual void destroy_texture(const itexture* const texture) = 0;
+
+        virtual iaudio_buffer* create_audio_buffer(
+            const std::string_view audio_file_name) = 0;
+        virtual void destroy_audio_buffer(iaudio_buffer* buffer) = 0;
         /* clang-format on */
 
-        virtual void destroy_texture(const itexture* const texture) = 0;
         virtual void uninit() = 0;
         virtual void imgui_uninit() = 0;
         virtual void swap_buffers() = 0;

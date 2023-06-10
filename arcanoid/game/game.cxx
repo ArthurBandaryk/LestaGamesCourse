@@ -144,6 +144,11 @@ int main(int, char** argv)
 
     arci::ivertex_buffer* vertex_buffer = engine->create_vertex_buffer(vertices);
     arci::i_index_buffer* index_buffer = engine->create_ebo(indices);
+    arci::iaudio_buffer* background_music
+        = engine->create_audio_buffer("music.wav");
+    arci::iaudio_buffer* hit_sound = engine->create_audio_buffer("hit.wav");
+
+    background_music->play(arci::iaudio_buffer::running_mode::for_ever);
 
     game_status status = game_status::main_menu;
 
@@ -174,6 +179,7 @@ int main(int, char** argv)
         {
             worm_scale[0] += 0.1;
             worm_scale[1] += 0.1;
+            hit_sound->play(arci::iaudio_buffer::running_mode::once);
         }
         else if (engine->key_down(arci::keys::reduce))
         {
@@ -277,6 +283,8 @@ int main(int, char** argv)
     engine->destroy_texture(texture);
     engine->destroy_vertex_buffer(vertex_buffer);
     engine->destroy_ebo(index_buffer);
+    engine->destroy_audio_buffer(background_music);
+    engine->destroy_audio_buffer(hit_sound);
 
     return EXIT_SUCCESS;
 }

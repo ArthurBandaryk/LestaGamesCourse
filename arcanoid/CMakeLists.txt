@@ -9,13 +9,17 @@ list(
   "${CMAKE_CURRENT_SOURCE_DIR}/engine/shaders/triangle-fragment.shader"
   "${CMAKE_CURRENT_SOURCE_DIR}/engine/shaders/texture-vertex.shader"
   "${CMAKE_CURRENT_SOURCE_DIR}/engine/shaders/texture-fragment.shader")
-list(APPEND IMAGES "${CMAKE_CURRENT_SOURCE_DIR}/resources/worm.png")
 file(COPY ${SHADERS} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+
+list(APPEND IMAGES "${CMAKE_CURRENT_SOURCE_DIR}/resources/worm.png")
 file(COPY ${IMAGES} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 list(APPEND IMGUI_FONTS
      "${CMAKE_CURRENT_SOURCE_DIR}/engine/imgui/fonts/Roboto-Medium.ttf")
 file(COPY ${IMGUI_FONTS} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+
+list(APPEND MUSIC_WAVS "resources/sounds/music.wav" "resources/sounds/hit.wav")
+file(COPY ${MUSIC_WAVS} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 list(
   APPEND
@@ -98,8 +102,10 @@ target_include_directories(
   glad-lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/engine/glad/include)
 
 add_library(
-  engine engine/opengl-debug.hxx engine/opengl-shader-programm.hxx
-         engine/opengl-shader-programm.cxx engine/engine.hxx engine/engine.cxx)
+  engine
+  engine/opengl-debug.hxx engine/opengl-shader-programm.hxx
+  engine/opengl-shader-programm.cxx engine/engine.hxx engine/engine.cxx
+  engine/picopng.hxx)
 target_link_libraries(
   engine
   compiler-flags-lib

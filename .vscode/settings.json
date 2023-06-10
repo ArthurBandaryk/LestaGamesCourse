@@ -67,7 +67,7 @@
         "optional": "cpp",
         "codecvt": "cpp"
     },
-    "cmake.sourceDirectory": "/home/arc1/LestaGames/LestaGamesCourse/08-homework-add-sound",
+    "cmake.sourceDirectory": "/home/arc1/LestaGames/LestaGamesCourse/arcanoid",
     "cSpell.words": [
         "arci",
         "GLES",

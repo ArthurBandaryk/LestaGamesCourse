@@ -6,7 +6,6 @@
 
 //
 #include <SDL3/SDL.h>
-//#include <SDL3/SDL_opengl.h>
 
 //
 #include <backends/imgui_impl_opengl3.h>
@@ -24,6 +23,7 @@
 #include <filesystem>
 #include <fstream>
 #include <memory>
+#include <mutex>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -267,6 +267,35 @@ namespace arci
 
     ///////////////////////////////////////////////////////////////////////////////
 
+    static std::mutex audio_mutex {};
+    void sdl_audio_callback(void* userdata, Uint8* stream, int len);
+
+    struct audio_buffer : public iaudio_buffer
+    {
+        Uint8* buffer { nullptr };
+        Uint32 size {};
+        std::size_t current_position {};
+        running_mode mode { running_mode::once };
+        bool is_running { false };
+
+        audio_buffer(const std::string_view audio_file_name,
+                     const SDL_AudioSpec& desired_audio_spec);
+        ~audio_buffer()
+        {
+            SDL_free(buffer);
+        }
+
+        void play(const running_mode mode) override
+        {
+            std::lock_guard<std::mutex> lock { audio_mutex };
+            current_position = 0;
+            is_running = true;
+            this->mode = mode;
+        }
+    };
+
+    ///////////////////////////////////////////////////////////////////////////////
+
     class engine_using_sdl final : public iengine
     {
     public:
@@ -305,6 +334,9 @@ namespace arci
         i_index_buffer* create_ebo(
             const std::vector<uint32_t>& indices) override;
         void destroy_ebo(i_index_buffer* buffer) override;
+        iaudio_buffer* create_audio_buffer(
+            const std::string_view audio_file_name) override;
+        void destroy_audio_buffer(iaudio_buffer* buffer) override;
         void swap_buffers() override;
         void uninit() override;
         void imgui_uninit() override;
@@ -312,6 +344,7 @@ namespace arci
         get_screen_resolution() const noexcept override;
 
         std::uint64_t get_time_since_epoch() const;
+        static void sdl_audio_callback(void* userdata, Uint8* stream, int len);
 
     private:
         std::optional<bind_key> get_key_for_event(
@@ -325,6 +358,11 @@ namespace arci
 
         opengl_shader_program m_colored_triangle_program {};
         opengl_shader_program m_textured_triangle_program {};
+
+        // Desired audio spec for all sounds.
+        std::vector<audio_buffer*> m_sounds {};
+        SDL_AudioSpec m_desired_audio_spec {};
+        SDL_AudioDeviceID m_audio_device_id {};
 
         std::size_t m_screen_width {};
         std::size_t m_screen_height {};
@@ -392,6 +430,50 @@ namespace arci
         opengl_check();
         glGenerateMipmap(GL_TEXTURE_2D);
         opengl_check();
+    }
+
+    audio_buffer::audio_buffer(const std::string_view audio_file_name,
+                               const SDL_AudioSpec& desired_audio_spec)
+    {
+        SDL_RWops* rwop_ptr_file = SDL_RWFromFile(audio_file_name.data(),
+                                                  "rb");
+        CHECK(rwop_ptr_file) << SDL_GetError();
+
+        SDL_AudioSpec audio_spec {};
+
+        // Load the audio data of a WAVE file into memory.
+        SDL_AudioSpec* music_spec = SDL_LoadWAV_RW(rwop_ptr_file,
+                                                   1,
+                                                   &audio_spec,
+                                                   &buffer,
+                                                   &size);
+
+        CHECK(music_spec) << SDL_GetError();
+
+        if (audio_spec.freq != desired_audio_spec.freq
+            || audio_spec.channels != desired_audio_spec.channels
+            || audio_spec.format != desired_audio_spec.format)
+        {
+            Uint8* new_converted_buffer { nullptr };
+            int new_length {};
+            const int status = SDL_ConvertAudioSamples(audio_spec.format,
+                                                       audio_spec.channels,
+                                                       audio_spec.freq,
+                                                       buffer,
+                                                       size,
+                                                       desired_audio_spec.format,
+                                                       desired_audio_spec.channels,
+                                                       desired_audio_spec.freq,
+                                                       &new_converted_buffer,
+                                                       &new_length);
+
+            CHECK(status == 0) << SDL_GetError();
+            CHECK_NOTNULL(new_converted_buffer);
+
+            SDL_free(buffer);
+            buffer = new_converted_buffer;
+            size = new_length;
+        }
     }
 
     void engine_using_sdl::init()
@@ -463,7 +545,7 @@ namespace arci
         // Window setup.
         m_window = std::unique_ptr<SDL_Window, void (*)(SDL_Window*)>(
             SDL_CreateWindow(
-                "Adding imgui",
+                "Adding sound",
                 m_screen_width,
                 m_screen_height,
                 SDL_WINDOW_OPENGL),
@@ -535,6 +617,44 @@ namespace arci
 
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         opengl_check();
+
+        SDL_memset(&m_desired_audio_spec, 0, sizeof(m_desired_audio_spec));
+        m_desired_audio_spec.freq = 48000;
+        m_desired_audio_spec.format = AUDIO_S16LSB;
+        m_desired_audio_spec.channels = 1;
+        m_desired_audio_spec.samples = 4096;
+        m_desired_audio_spec.callback = sdl_audio_callback;
+        m_desired_audio_spec.userdata = this;
+
+        const char* default_audio_device { nullptr };
+
+        SDL_AudioSpec returned_from_open_audio_device {};
+
+        m_audio_device_id
+            = SDL_OpenAudioDevice(default_audio_device,
+                                  0,
+                                  &m_desired_audio_spec,
+                                  &returned_from_open_audio_device,
+                                  SDL_AUDIO_ALLOW_ANY_CHANGE);
+
+        CHECK(m_audio_device_id != 0) << SDL_GetError();
+
+        CHECK(m_desired_audio_spec.freq
+              == returned_from_open_audio_device.freq)
+            << "Desired frequency differs from returned frequency"
+            << " from SDL_OpenAudioDevice()";
+
+        CHECK(m_desired_audio_spec.channels
+              == returned_from_open_audio_device.channels)
+            << "Desired number of channels differs from returned number"
+            << " from SDL_OpenAudioDevice()";
+
+        CHECK(m_desired_audio_spec.format
+              == returned_from_open_audio_device.format)
+            << "Desired format differs from returned format"
+            << " from SDL_OpenAudioDevice()";
+
+        SDL_PlayAudioDevice(m_audio_device_id);
     }
 
     void engine_using_sdl::init_imgui()
@@ -665,6 +785,27 @@ namespace arci
     }
 
     void engine_using_sdl::destroy_ebo(i_index_buffer* buffer)
+    {
+        CHECK_NOTNULL(buffer);
+        delete buffer;
+    }
+
+    iaudio_buffer* engine_using_sdl::create_audio_buffer(
+        const std::string_view audio_file_name)
+    {
+        audio_buffer* buffer = new audio_buffer {
+            audio_file_name, m_desired_audio_spec
+        };
+
+        {
+            std::lock_guard<std::mutex> lock { audio_mutex };
+            m_sounds.push_back(buffer);
+        }
+
+        return buffer;
+    }
+
+    void engine_using_sdl::destroy_audio_buffer(iaudio_buffer* buffer)
     {
         CHECK_NOTNULL(buffer);
         delete buffer;
@@ -984,6 +1125,8 @@ namespace arci
 
     void engine_using_sdl::uninit()
     {
+        CHECK(SDL_PauseAudioDevice(m_audio_device_id) == 0) << SDL_GetError();
+        SDL_CloseAudioDevice(m_audio_device_id);
         SDL_Quit();
     }
 
@@ -1021,6 +1164,62 @@ namespace arci
         }
 
         return {};
+    }
+
+    void engine_using_sdl::sdl_audio_callback(void* userdata, Uint8* stream, int len)
+    {
+        std::lock_guard<std::mutex> lock { audio_mutex };
+
+        std::memset(stream, 0, len);
+
+        engine_using_sdl* engine = static_cast<engine_using_sdl*>(userdata);
+
+        for (audio_buffer* sound : engine->m_sounds)
+        {
+            if (sound->is_running)
+            {
+                std::size_t stream_len { static_cast<std::size_t>(len) };
+
+                const Uint8* start_buffer
+                    = sound->buffer
+                    + sound->current_position;
+
+                const std::size_t bytes_left_in_buffer
+                    = sound->size
+                    - sound->current_position;
+
+                if (bytes_left_in_buffer <= stream_len)
+                {
+                    SDL_MixAudioFormat(stream,
+                                       start_buffer,
+                                       AUDIO_S16LSB,
+                                       bytes_left_in_buffer,
+                                       SDL_MIX_MAXVOLUME);
+                    sound->current_position += bytes_left_in_buffer;
+                }
+                else
+                {
+                    SDL_MixAudioFormat(stream,
+                                       start_buffer,
+                                       AUDIO_S16LSB,
+                                       stream_len,
+                                       SDL_MIX_MAXVOLUME);
+                    sound->current_position += stream_len;
+                }
+
+                if (sound->current_position == sound->size)
+                {
+                    if (sound->mode == audio_buffer::running_mode::for_ever)
+                    {
+                        sound->current_position = 0;
+                    }
+                    else
+                    {
+                        sound->is_running = false;
+                    }
+                }
+            }
+        }
     }
 
     ///////////////////////////////////////////////////////////////////////////////
