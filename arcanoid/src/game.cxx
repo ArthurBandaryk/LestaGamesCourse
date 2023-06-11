@@ -1,6 +1,6 @@
-#include "engine.hxx"
+#include <engine.hxx>
+#include <imgui.h>
 
-//
 #include <glm/ext/matrix_float2x2_precision.hpp>
 
 #include <fmt/core.h>
@@ -131,7 +131,7 @@ int main(int, char**)
     const auto [screen_width, screen_height]
         = engine->get_screen_resolution();
 
-    arci::itexture* texture = engine->create_texture("worm.png");
+    arci::itexture* texture = engine->create_texture("res/worm.png");
 
     std::vector<arci::vertex> vertices {
         { -0.3f, -0.3f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f }, // Bottom left.
@@ -145,8 +145,8 @@ int main(int, char**)
     arci::ivertex_buffer* vertex_buffer = engine->create_vertex_buffer(vertices);
     arci::i_index_buffer* index_buffer = engine->create_ebo(indices);
     arci::iaudio_buffer* background_music
-        = engine->create_audio_buffer("music.wav");
-    arci::iaudio_buffer* hit_sound = engine->create_audio_buffer("hit.wav");
+        = engine->create_audio_buffer("res/music.wav");
+    arci::iaudio_buffer* hit_sound = engine->create_audio_buffer("res/hit.wav");
 
     background_music->play(arci::iaudio_buffer::running_mode::for_ever);
 

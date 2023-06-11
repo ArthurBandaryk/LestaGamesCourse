@@ -32,14 +32,16 @@ namespace arci
 
     void opengl_shader_program::load_shader(
         const GLenum shader_type,
-        const std::string_view shader_path)
+        std::string_view shader_name)
     {
         GLuint shader_id = glCreateShader(shader_type);
         opengl_check();
 
         CHECK(shader_id);
 
-        const std::string shader_code_string = get_shader_code_from_file(shader_path);
+        std::string path("engine/shaders/");
+        path.append(shader_name);
+        const std::string shader_code_string = get_shader_code_from_file(path);
         const char* shader_code = shader_code_string.data();
 
         glShaderSource(shader_id, 1, &shader_code, nullptr);

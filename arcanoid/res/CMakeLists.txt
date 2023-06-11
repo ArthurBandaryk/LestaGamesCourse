@@ -1,0 +1,9 @@
+
+
+set(RESOURCE_FILES
+    "${CMAKE_CURRENT_SOURCE_DIR}/worm.png"
+    "${CMAKE_CURRENT_SOURCE_DIR}/fonts/Roboto-Medium.ttf"
+    "${CMAKE_CURRENT_SOURCE_DIR}/sounds/music.wav"
+    "${CMAKE_CURRENT_SOURCE_DIR}/sounds/hit.wav")
+
+file(COPY ${RESOURCE_FILES} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})

@@ -553,7 +553,7 @@ bool ImGui_ImplSdlGL3_Init(SDL_Window* window)
 
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
 
-    io.Fonts->AddFontFromFileTTF("Roboto-Medium.ttf", 50.f);
+    io.Fonts->AddFontFromFileTTF("res/Roboto-Medium.ttf", 50.f);
 
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();
