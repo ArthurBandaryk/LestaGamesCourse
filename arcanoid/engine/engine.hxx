@@ -135,11 +135,6 @@ namespace arci
     public:
         virtual ~itexture() = default;
         virtual void load(const std::string_view path) = 0;
-        /* clang-format off */
-        virtual void load(const void* pixels,
-                          const std::size_t width,
-                          const std::size_t height) = 0;
-        /* clang-format on */
         virtual void bind() = 0;
     };
 

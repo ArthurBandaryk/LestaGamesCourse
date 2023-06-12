@@ -252,9 +252,6 @@ namespace arci
         }
 
         void load(const std::string_view path) override;
-        void load(const void* pixels,
-                  const std::size_t width,
-                  const std::size_t height) override;
 
         std::pair<unsigned long, unsigned long> get_texture_size() const
         {
@@ -315,12 +312,6 @@ namespace arci
                     i_index_buffer* ebo,
                     itexture* const texture,
                     const glm::mediump_mat3& matrix) override;
-        void render_imgui(ivertex_buffer* vertex_buffer,
-                          i_index_buffer* ebo,
-                          itexture* const texture,
-                          const uint32_t* start_index,
-                          const size_t vertices_number,
-                          const glm::mediump_mat3& matrix);
         itexture* create_texture(const std::string_view path) override;
         void destroy_texture(const itexture* const texture) override;
         ivertex_buffer* create_vertex_buffer(
@@ -352,8 +343,6 @@ namespace arci
 
         std::unique_ptr<void, int (*)(SDL_GLContext)>
             m_opengl_context { nullptr, nullptr };
-
-        std::chrono::time_point<std::chrono::steady_clock> m_imgui_time {};
 
         opengl_shader_program m_textured_triangle_program {};
 
@@ -428,37 +417,6 @@ namespace arci
         opengl_check();
         glGenerateMipmap(GL_TEXTURE_2D);
         opengl_check();
-    }
-
-    void opengl_texture::load(const void* pixels,
-                              const std::size_t width,
-                              const std::size_t height)
-    {
-        m_texture_width = width;
-        m_texture_height = height;
-        glGenTextures(1, &m_texture_id);
-        opengl_check();
-
-        glBindTexture(GL_TEXTURE_2D, m_texture_id);
-        opengl_check();
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        opengl_check();
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        opengl_check();
-
-        glTexImage2D(GL_TEXTURE_2D,
-                     0,
-                     GL_RGBA,
-                     width,
-                     height,
-                     0,
-                     GL_RGBA,
-                     GL_UNSIGNED_BYTE,
-                     pixels);
-        opengl_check();
-        // glGenerateMipmap(GL_TEXTURE_2D);
-        // opengl_check();
     }
 
     audio_buffer::audio_buffer(const std::string_view audio_file_name,
