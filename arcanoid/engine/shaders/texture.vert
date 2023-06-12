@@ -6,7 +6,8 @@ uniform mat3 u_matrix;
 out vec4 v_color;
 out vec2 v_texture;
 
-void main() {
+void main()
+{
     v_color = a_color;
     v_texture = a_texture;
     vec3 result_pos = u_matrix * vec3(a_position, 1.0);

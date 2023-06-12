@@ -2,13 +2,8 @@ cmake_minimum_required(VERSION 3.22)
 
 project(imgui)
 
-list(
-  APPEND
-  SHADERS
-  "${CMAKE_CURRENT_SOURCE_DIR}/engine/shaders/triangle-vertex.shader"
-  "${CMAKE_CURRENT_SOURCE_DIR}/engine/shaders/triangle-fragment.shader"
-  "${CMAKE_CURRENT_SOURCE_DIR}/engine/shaders/texture-vertex.shader"
-  "${CMAKE_CURRENT_SOURCE_DIR}/engine/shaders/texture-fragment.shader")
+list(APPEND SHADERS "${CMAKE_CURRENT_SOURCE_DIR}/engine/shaders/texture.vert"
+     "${CMAKE_CURRENT_SOURCE_DIR}/engine/shaders/texture.frag")
 file(COPY ${SHADERS} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 list(APPEND IMAGES "${CMAKE_CURRENT_SOURCE_DIR}/resources/worm.png")
@@ -30,9 +25,8 @@ list(
   "engine/imgui/imstb_rectpack.h"
   "engine/imgui/imstb_textedit.h"
   "engine/imgui/imstb_truetype.h"
-  "engine/imgui/backends/imgui_impl_sdl3.h"
-  "engine/imgui/backends/imgui_impl_opengl3.h"
-  "engine/imgui/backends/imgui_impl_opengl3_loader.h")
+  "engine/imgui/imgui_impl_opengl.hxx"
+  "engine/opengl-debug.hxx")
 
 list(
   APPEND
@@ -42,8 +36,7 @@ list(
   "engine/imgui/imgui_tables.cpp"
   "engine/imgui/imgui_widgets.cpp"
   "engine/imgui/imgui.cpp"
-  "engine/imgui/backends/imgui_impl_sdl3.cpp"
-  "engine/imgui/backends/imgui_impl_opengl3.cpp")
+  "engine/imgui/imgui_impl_opengl.cpp")
 
 # Check if `glog` git submodule is initialized.
 if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../submodules/glog)
@@ -78,12 +71,6 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../submodules/sdl
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../submodules/glm
                  ${CMAKE_BINARY_DIR}/glm)
 
-add_library(imgui-lib STATIC ${IMGUI_HEADERS} ${IMGUI_SOURCES})
-target_link_libraries(imgui-lib PRIVATE SDL3::SDL3-shared)
-target_include_directories(imgui-lib
-                           PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/engine/imgui)
-set_property(TARGET imgui-lib PROPERTY POSITION_INDEPENDENT_CODE ON)
-
 # Set clang, gcc compilers.
 set(gcc_like_cxx "$<COMPILE_LANG_AND_ID:CXX,Clang,GNU>")
 
@@ -101,6 +88,12 @@ add_library(
 target_include_directories(
   glad-lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/engine/glad/include)
 
+add_library(imgui-lib STATIC ${IMGUI_HEADERS} ${IMGUI_SOURCES})
+target_link_libraries(imgui-lib PRIVATE glad-lib glog::glog SDL3::SDL3-shared)
+target_include_directories(imgui-lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/imgui
+                                            ${CMAKE_CURRENT_SOURCE_DIR}/engine)
+set_property(TARGET imgui-lib PROPERTY POSITION_INDEPENDENT_CODE ON)
+
 add_library(
   engine
   engine/opengl-debug.hxx engine/opengl-shader-programm.hxx
@@ -114,7 +107,9 @@ target_link_libraries(
   SDL3::SDL3-shared
   glad-lib
   imgui-lib)
+target_include_directories(
+  engine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/engine
+                ${CMAKE_CURRENT_SOURCE_DIR}/engine/imgui)
 
 add_executable(arcanoid game/game.cxx)
 target_link_libraries(arcanoid compiler-flags-lib glm::glm glog::glog engine)
-target_include_directories(arcanoid PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/engine)

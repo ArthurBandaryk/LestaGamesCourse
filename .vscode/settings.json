@@ -67,7 +67,7 @@
         "optional": "cpp",
         "codecvt": "cpp"
     },
-    "cmake.sourceDirectory": "/home/arc1/LestaGames/LestaGamesCourse/09-homework-imgui-via-engine-api",
+    "cmake.sourceDirectory": "/home/arc1/LestaGames/LestaGamesCourse/arcanoid",
     "cSpell.words": [
         "arci",
         "GLES",

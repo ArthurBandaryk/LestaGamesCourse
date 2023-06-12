@@ -96,6 +96,7 @@ namespace arci
         float r {};
         float g {};
         float b {};
+        float a {};
         float tx {};
         float ty {};
     };
@@ -106,12 +107,6 @@ namespace arci
         triangle(const vertex& v0, const vertex& v1, const vertex& v2);
 
         std::array<vertex, 3> vertices {};
-    };
-
-    struct quad
-    {
-        quad(const triangle& first, const triangle& second);
-        std::array<triangle, 2> quad_;
     };
 
     ///////////////////////////////////////////////////////////////////////////////
@@ -140,6 +135,11 @@ namespace arci
     public:
         virtual ~itexture() = default;
         virtual void load(const std::string_view path) = 0;
+        /* clang-format off */
+        virtual void load(const void* pixels,
+                          const std::size_t width,
+                          const std::size_t height) = 0;
+        /* clang-format on */
         virtual void bind() = 0;
     };
 
@@ -165,28 +165,12 @@ namespace arci
     public:
         virtual ~iengine() = default;
         virtual void init() = 0;
-        virtual void init_imgui() = 0;
         virtual bool process_input(event& event) = 0;
         virtual bool key_down(const enum keys key) = 0;
         virtual void imgui_new_frame() = 0;
         virtual void imgui_render() = 0;
 
-        // Render simple colored triangle.
-        virtual void render(const triangle& triangle) = 0;
-
-        // Render textured triangle. All math is calculated on cpu.
-
         /* clang-format off */
-        virtual void render(const triangle& triangle,
-                            itexture* const texture) = 0;
-
-        // Render textured triangle. Math is calculated on gpu.
-        virtual void render(const triangle& triangle,
-                            itexture* const texture, 
-                            const glm::mediump_mat3& matrix) = 0;
-        virtual void render(ivertex_buffer* vertex_buffer,
-                            itexture* const texture,
-                            const glm::mediump_mat3& matrix) = 0;
         virtual void render(ivertex_buffer* vertex_buffer,
                             i_index_buffer* ebo,    
                             itexture* const texture,

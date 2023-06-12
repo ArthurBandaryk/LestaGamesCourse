@@ -126,7 +126,6 @@ int main(int, char** argv)
     };
 
     engine->init();
-    engine->init_imgui();
 
     const auto [screen_width, screen_height]
         = engine->get_screen_resolution();
@@ -134,10 +133,10 @@ int main(int, char** argv)
     arci::itexture* texture = engine->create_texture("worm.png");
 
     std::vector<arci::vertex> vertices {
-        { -0.3f, -0.3f, 0.f, 0.f, 0.f, 0.f, 0.f, 1.f },
-        { 0.3f, -0.3f, 0.f, 0.f, 0.f, 0.f, 1.f, 1.f },
-        { -0.3f, 0.3f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f },
-        { 0.3f, 0.3f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f },
+        { -0.3f, -0.3f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 1.f },
+        { 0.3f, -0.3f, 0.f, 0.f, 0.f, 0.f, 1.f, 1.f, 1.f },
+        { -0.3f, 0.3f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f },
+        { 0.3f, 0.3f, 0.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f },
     };
 
     std::vector<uint32_t> indices { 0, 1, 2, 2, 3, 1 };
@@ -227,13 +226,13 @@ int main(int, char** argv)
             0.f, 0.f, 1.f
         };
 
-        const glm::mediump_mat3 rotation_matrix {
+        const glm::mediump_mat3x3 rotation_matrix {
             std::cos(worm_direction), std::sin(worm_direction), 0.f,
             -std::sin(worm_direction), std::cos(worm_direction), 0.f,
             0.f, 0.f, 1.f
         };
 
-        const glm::mediump_mat3 reflection_matrix {
+        const glm::mediump_mat3x3 reflection_matrix {
             reflection_y, 0.f, 0.f,
             0.f, 1.f, 0.f,
             0.f, 0.f, 1.f

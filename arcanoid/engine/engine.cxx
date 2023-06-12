@@ -8,9 +8,8 @@
 #include <SDL3/SDL.h>
 
 //
-#include <backends/imgui_impl_opengl3.h>
-#include <backends/imgui_impl_sdl3.h>
 #include <imgui.h>
+#include <imgui_impl_opengl.hxx>
 
 //
 #include <glog/logging.h>
@@ -253,6 +252,9 @@ namespace arci
         }
 
         void load(const std::string_view path) override;
+        void load(const void* pixels,
+                  const std::size_t width,
+                  const std::size_t height) override;
 
         std::pair<unsigned long, unsigned long> get_texture_size() const
         {
@@ -305,24 +307,20 @@ namespace arci
         engine_using_sdl& operator=(engine_using_sdl&&) = delete;
 
         void init() override;
-        void init_imgui() override;
         bool process_input(event& event) override;
         bool key_down(const enum keys key) override;
         void imgui_new_frame() override;
         void imgui_render() override;
-        void render(const triangle& triangle) override;
-        void render(const triangle& triangle,
-                    itexture* const texture) override;
-        void render(const triangle& triangle,
-                    itexture* const texture,
-                    const glm::mediump_mat3& matrix) override;
-        void render(ivertex_buffer* vertex_buffer,
-                    itexture* const texture,
-                    const glm::mediump_mat3& matrix) override;
         void render(ivertex_buffer* vertex_buffer,
                     i_index_buffer* ebo,
                     itexture* const texture,
                     const glm::mediump_mat3& matrix) override;
+        void render_imgui(ivertex_buffer* vertex_buffer,
+                          i_index_buffer* ebo,
+                          itexture* const texture,
+                          const uint32_t* start_index,
+                          const size_t vertices_number,
+                          const glm::mediump_mat3& matrix);
         itexture* create_texture(const std::string_view path) override;
         void destroy_texture(const itexture* const texture) override;
         ivertex_buffer* create_vertex_buffer(
@@ -355,7 +353,8 @@ namespace arci
         std::unique_ptr<void, int (*)(SDL_GLContext)>
             m_opengl_context { nullptr, nullptr };
 
-        opengl_shader_program m_colored_triangle_program {};
+        std::chrono::time_point<std::chrono::steady_clock> m_imgui_time {};
+
         opengl_shader_program m_textured_triangle_program {};
 
         // Desired audio spec for all sounds.
@@ -429,6 +428,37 @@ namespace arci
         opengl_check();
         glGenerateMipmap(GL_TEXTURE_2D);
         opengl_check();
+    }
+
+    void opengl_texture::load(const void* pixels,
+                              const std::size_t width,
+                              const std::size_t height)
+    {
+        m_texture_width = width;
+        m_texture_height = height;
+        glGenTextures(1, &m_texture_id);
+        opengl_check();
+
+        glBindTexture(GL_TEXTURE_2D, m_texture_id);
+        opengl_check();
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        opengl_check();
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        opengl_check();
+
+        glTexImage2D(GL_TEXTURE_2D,
+                     0,
+                     GL_RGBA,
+                     width,
+                     height,
+                     0,
+                     GL_RGBA,
+                     GL_UNSIGNED_BYTE,
+                     pixels);
+        opengl_check();
+        // glGenerateMipmap(GL_TEXTURE_2D);
+        // opengl_check();
     }
 
     audio_buffer::audio_buffer(const std::string_view audio_file_name,
@@ -544,7 +574,7 @@ namespace arci
         // Window setup.
         m_window = std::unique_ptr<SDL_Window, void (*)(SDL_Window*)>(
             SDL_CreateWindow(
-                "Adding sound",
+                "Arcanoid",
                 m_screen_width,
                 m_screen_height,
                 SDL_WINDOW_OPENGL),
@@ -588,16 +618,10 @@ namespace arci
             nullptr,
             GL_TRUE);
 
-        m_colored_triangle_program.load_shader(GL_VERTEX_SHADER,
-                                               "triangle-vertex.shader");
-        m_colored_triangle_program.load_shader(GL_FRAGMENT_SHADER,
-                                               "triangle-fragment.shader");
-        m_colored_triangle_program.prepare_program();
-
         m_textured_triangle_program.load_shader(GL_VERTEX_SHADER,
-                                                "texture-vertex.shader");
+                                                "texture.vert");
         m_textured_triangle_program.load_shader(GL_FRAGMENT_SHADER,
-                                                "texture-fragment.shader");
+                                                "texture.frag");
         m_textured_triangle_program.prepare_program();
 
         glGenBuffers(1, &m_vbo);
@@ -616,6 +640,11 @@ namespace arci
 
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         opengl_check();
+
+        glViewport(0, 0, m_screen_width, m_screen_height);
+        opengl_check();
+
+        ImGui_ImplSdlGL3_Init(m_window.get());
 
         SDL_memset(&m_desired_audio_spec, 0, sizeof(m_desired_audio_spec));
         m_desired_audio_spec.freq = 48000;
@@ -656,25 +685,6 @@ namespace arci
         SDL_PlayAudioDevice(m_audio_device_id);
     }
 
-    void engine_using_sdl::init_imgui()
-    {
-        IMGUI_CHECKVERSION();
-        ImGui::CreateContext();
-        ImGuiIO& io = ImGui::GetIO();
-        io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
-
-        io.Fonts->AddFontFromFileTTF("Roboto-Medium.ttf", 50.f);
-
-        // Setup Dear ImGui style
-        ImGui::StyleColorsDark();
-
-        // Setup Platform/Renderer backends
-        CHECK(m_window);
-        CHECK(m_opengl_context);
-        ImGui_ImplSDL3_InitForOpenGL(m_window.get(), m_opengl_context.get());
-        ImGui_ImplOpenGL3_Init("#version 100");
-    }
-
     bool engine_using_sdl::process_input(event& event)
     {
         SDL_Event sdl_event {};
@@ -683,7 +693,7 @@ namespace arci
 
         if (SDL_PollEvent(&sdl_event))
         {
-            ImGui_ImplSDL3_ProcessEvent(&sdl_event);
+            ImGui_ImplSdlGL3_ProcessEvent(&sdl_event);
 
             switch (sdl_event.type)
             {
@@ -812,241 +822,13 @@ namespace arci
 
     void engine_using_sdl::imgui_new_frame()
     {
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplSDL3_NewFrame();
-        ImGui::NewFrame();
+        ImGui_ImplSdlGL3_NewFrame(m_window.get());
     }
 
     void engine_using_sdl::imgui_render()
     {
         ImGui::Render();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-    }
-
-    void engine_using_sdl::render(const triangle& triangle)
-    {
-        glEnableVertexAttribArray(0);
-        opengl_check();
-
-        glEnableVertexAttribArray(1);
-        opengl_check();
-
-        m_colored_triangle_program.apply_shader_program();
-
-        glBufferData(
-            GL_ARRAY_BUFFER,
-            sizeof(triangle.vertices),
-            triangle.vertices.data(),
-            GL_STATIC_DRAW);
-        opengl_check();
-
-        glVertexAttribPointer(
-            0,
-            3,
-            GL_FLOAT,
-            GL_FALSE,
-            sizeof(vertex),
-            reinterpret_cast<void*>(0));
-        opengl_check();
-
-        glVertexAttribPointer(
-            1,
-            3,
-            GL_FLOAT,
-            GL_FALSE,
-            sizeof(vertex),
-            reinterpret_cast<void*>(3 * sizeof(float)));
-        opengl_check();
-
-        glDrawArrays(GL_TRIANGLES, 0, 3);
-        opengl_check();
-
-        glDisableVertexAttribArray(0);
-        opengl_check();
-
-        glDisableVertexAttribArray(1);
-        opengl_check();
-    }
-
-    void engine_using_sdl::render(const triangle& triangle,
-                                  itexture* const texture)
-    {
-        m_textured_triangle_program.apply_shader_program();
-        texture->bind();
-
-        glBufferData(
-            GL_ARRAY_BUFFER,
-            sizeof(triangle.vertices),
-            triangle.vertices.data(),
-            GL_STATIC_DRAW);
-        opengl_check();
-
-        glVertexAttribPointer(
-            0,
-            3,
-            GL_FLOAT,
-            GL_FALSE,
-            sizeof(vertex),
-            reinterpret_cast<void*>(0));
-        opengl_check();
-        glEnableVertexAttribArray(0);
-        opengl_check();
-
-        glVertexAttribPointer(
-            1,
-            3,
-            GL_FLOAT,
-            GL_FALSE,
-            sizeof(vertex),
-            reinterpret_cast<void*>(3 * sizeof(float)));
-        opengl_check();
-        glEnableVertexAttribArray(1);
-        opengl_check();
-
-        glVertexAttribPointer(
-            2,
-            2,
-            GL_FLOAT,
-            GL_FALSE,
-            sizeof(vertex),
-            reinterpret_cast<void*>(6 * sizeof(float)));
-        opengl_check();
-        glEnableVertexAttribArray(2);
-        opengl_check();
-
-        glDrawArrays(GL_TRIANGLES, 0, 3);
-        opengl_check();
-
-        glDisableVertexAttribArray(0);
-        opengl_check();
-
-        glDisableVertexAttribArray(1);
-        opengl_check();
-
-        glDisableVertexAttribArray(2);
-        opengl_check();
-    }
-
-    void engine_using_sdl::render(const triangle& triangle,
-                                  itexture* const texture,
-                                  const glm::mediump_mat3& matrix)
-    {
-        m_textured_triangle_program.apply_shader_program();
-
-        m_textured_triangle_program.set_uniform("u_matrix", matrix);
-        m_textured_triangle_program.set_uniform("s_texture");
-
-        texture->bind();
-
-        glBufferData(
-            GL_ARRAY_BUFFER,
-            sizeof(triangle.vertices),
-            triangle.vertices.data(),
-            GL_STATIC_DRAW);
-        opengl_check();
-
-        glVertexAttribPointer(
-            0,
-            2,
-            GL_FLOAT,
-            GL_FALSE,
-            sizeof(vertex),
-            reinterpret_cast<void*>(0));
-        opengl_check();
-        glEnableVertexAttribArray(0);
-        opengl_check();
-
-        glVertexAttribPointer(
-            1,
-            3,
-            GL_FLOAT,
-            GL_FALSE,
-            sizeof(vertex),
-            reinterpret_cast<void*>(3 * sizeof(float)));
-        opengl_check();
-        glEnableVertexAttribArray(1);
-        opengl_check();
-
-        glVertexAttribPointer(
-            2,
-            2,
-            GL_FLOAT,
-            GL_FALSE,
-            sizeof(vertex),
-            reinterpret_cast<void*>(6 * sizeof(float)));
-        opengl_check();
-        glEnableVertexAttribArray(2);
-        opengl_check();
-
-        glDrawArrays(GL_TRIANGLES, 0, 3);
-        opengl_check();
-
-        glDisableVertexAttribArray(0);
-        opengl_check();
-
-        glDisableVertexAttribArray(1);
-        opengl_check();
-
-        glDisableVertexAttribArray(2);
-        opengl_check();
-    }
-
-    void engine_using_sdl::render(ivertex_buffer* vertex_buffer,
-                                  itexture* const texture,
-                                  const glm::mediump_mat3& matrix)
-    {
-        m_textured_triangle_program.apply_shader_program();
-
-        m_textured_triangle_program.set_uniform("u_matrix", matrix);
-        m_textured_triangle_program.set_uniform("s_texture");
-
-        texture->bind();
-        vertex_buffer->bind();
-
-        glVertexAttribPointer(
-            0,
-            2,
-            GL_FLOAT,
-            GL_FALSE,
-            sizeof(vertex),
-            reinterpret_cast<void*>(0));
-        opengl_check();
-        glEnableVertexAttribArray(0);
-        opengl_check();
-
-        glVertexAttribPointer(
-            1,
-            3,
-            GL_FLOAT,
-            GL_FALSE,
-            sizeof(vertex),
-            reinterpret_cast<void*>(3 * sizeof(float)));
-        opengl_check();
-        glEnableVertexAttribArray(1);
-        opengl_check();
-
-        glVertexAttribPointer(
-            2,
-            2,
-            GL_FLOAT,
-            GL_FALSE,
-            sizeof(vertex),
-            reinterpret_cast<void*>(6 * sizeof(float)));
-        opengl_check();
-        glEnableVertexAttribArray(2);
-        opengl_check();
-
-        glDrawArrays(GL_TRIANGLES, 0, vertex_buffer->get_vertices_number());
-        opengl_check();
-
-        glDisableVertexAttribArray(0);
-        opengl_check();
-
-        glDisableVertexAttribArray(1);
-        opengl_check();
-
-        glDisableVertexAttribArray(2);
-        opengl_check();
+        ImGui_ImplSdlGL3_RenderDrawLists(ImGui::GetDrawData());
     }
 
     void engine_using_sdl::render(ivertex_buffer* vertex_buffer,
@@ -1063,6 +845,13 @@ namespace arci
         vertex_buffer->bind();
         ebo->bind();
 
+        glEnableVertexAttribArray(0);
+        opengl_check();
+        glEnableVertexAttribArray(1);
+        opengl_check();
+        glEnableVertexAttribArray(2);
+        opengl_check();
+
         glVertexAttribPointer(
             0,
             2,
@@ -1071,19 +860,15 @@ namespace arci
             sizeof(vertex),
             reinterpret_cast<void*>(0));
         opengl_check();
-        glEnableVertexAttribArray(0);
-        opengl_check();
 
         glVertexAttribPointer(
             1,
-            3,
+            4,
             GL_FLOAT,
             GL_FALSE,
             sizeof(vertex),
             reinterpret_cast<void*>(3 * sizeof(float)));
         opengl_check();
-        glEnableVertexAttribArray(1);
-        opengl_check();
 
         glVertexAttribPointer(
             2,
@@ -1091,9 +876,7 @@ namespace arci
             GL_FLOAT,
             GL_FALSE,
             sizeof(vertex),
-            reinterpret_cast<void*>(6 * sizeof(float)));
-        opengl_check();
-        glEnableVertexAttribArray(2);
+            reinterpret_cast<void*>(7 * sizeof(float)));
         opengl_check();
 
         glDrawElements(GL_TRIANGLES,
@@ -1131,9 +914,7 @@ namespace arci
 
     void engine_using_sdl::imgui_uninit()
     {
-        ImGui_ImplOpenGL3_Shutdown();
-        ImGui_ImplSDL3_Shutdown();
-        ImGui::DestroyContext();
+        ImGui_ImplSdlGL3_Shutdown();
     }
 
     std::pair<size_t, size_t>
@@ -1261,7 +1042,6 @@ namespace arci
     }
 
     ///////////////////////////////////////////////////////////////////////////////
-
 } // namespace arci
 
 ///////////////////////////////////////////////////////////////////////////////
