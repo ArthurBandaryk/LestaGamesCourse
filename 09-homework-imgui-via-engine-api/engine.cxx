@@ -8,9 +8,8 @@
 #include <SDL3/SDL.h>
 
 //
-// #include <backends/imgui_impl_opengl3.h>
-// #include <backends/imgui_impl_sdl3.h>
 #include <imgui.h>
+#include <imgui_impl_opengl.hxx>
 
 //
 #include <glog/logging.h>
@@ -308,20 +307,10 @@ namespace arci
         engine_using_sdl& operator=(engine_using_sdl&&) = delete;
 
         void init() override;
-        void init_imgui() override;
         bool process_input(event& event) override;
         bool key_down(const enum keys key) override;
         void imgui_new_frame() override;
         void imgui_render() override;
-        void render(const triangle& triangle) override;
-        void render(const triangle& triangle,
-                    itexture* const texture) override;
-        void render(const triangle& triangle,
-                    itexture* const texture,
-                    const glm::mediump_mat3& matrix) override;
-        void render(ivertex_buffer* vertex_buffer,
-                    itexture* const texture,
-                    const glm::mediump_mat3& matrix) override;
         void render(ivertex_buffer* vertex_buffer,
                     i_index_buffer* ebo,
                     itexture* const texture,
@@ -355,15 +344,6 @@ namespace arci
         static void sdl_audio_callback(void* userdata, Uint8* stream, int len);
 
     private:
-        bool imgui_impl_init();
-        void imgui_impl_shutdown();
-        void imgui_impl_new_frame();
-        bool imgui_impl_process_event(const SDL_Event* const sdl_event);
-        void imgui_impl_invalidate_device_objs();
-        bool imgui_impl_create_device_objs();
-        void imgui_impl_create_font_texture();
-        void imgui_impl_render_draw_data(ImDrawData* data);
-
         std::optional<bind_key> get_key_for_event(
             const SDL_Event& sdl_event);
 
@@ -458,6 +438,8 @@ namespace arci
                               const std::size_t width,
                               const std::size_t height)
     {
+        m_texture_width = width;
+        m_texture_height = height;
         glGenTextures(1, &m_texture_id);
         opengl_check();
 
@@ -479,8 +461,8 @@ namespace arci
                      GL_UNSIGNED_BYTE,
                      pixels);
         opengl_check();
-        glGenerateMipmap(GL_TEXTURE_2D);
-        opengl_check();
+        // glGenerateMipmap(GL_TEXTURE_2D);
+        // opengl_check();
     }
 
     audio_buffer::audio_buffer(const std::string_view audio_file_name,
@@ -672,7 +654,7 @@ namespace arci
         glViewport(0, 0, m_screen_width, m_screen_height);
         opengl_check();
 
-        CHECK(imgui_impl_init());
+        ImGui_ImplSdlGL3_Init(m_window.get());
 
         SDL_memset(&m_desired_audio_spec, 0, sizeof(m_desired_audio_spec));
         m_desired_audio_spec.freq = 48000;
@@ -713,11 +695,6 @@ namespace arci
         SDL_PlayAudioDevice(m_audio_device_id);
     }
 
-    void engine_using_sdl::init_imgui()
-    {
-        // CHECK(imgui_impl_init());
-    }
-
     bool engine_using_sdl::process_input(event& event)
     {
         SDL_Event sdl_event {};
@@ -726,8 +703,7 @@ namespace arci
 
         if (SDL_PollEvent(&sdl_event))
         {
-            // ImGui_ImplSDL3_ProcessEvent(&sdl_event);
-            imgui_impl_process_event(&sdl_event);
+            ImGui_ImplSdlGL3_ProcessEvent(&sdl_event);
 
             switch (sdl_event.type)
             {
@@ -856,241 +832,13 @@ namespace arci
 
     void engine_using_sdl::imgui_new_frame()
     {
-        // ImGui_ImplOpenGL3_NewFrame();
-        // ImGui_ImplSDL3_NewFrame();
-        imgui_impl_new_frame();
+        ImGui_ImplSdlGL3_NewFrame(m_window.get());
     }
 
     void engine_using_sdl::imgui_render()
     {
         ImGui::Render();
-        imgui_impl_render_draw_data(ImGui::GetDrawData());
-    }
-
-    void engine_using_sdl::render(const triangle& triangle)
-    {
-        glEnableVertexAttribArray(0);
-        opengl_check();
-
-        glEnableVertexAttribArray(1);
-        opengl_check();
-
-        m_colored_triangle_program.apply_shader_program();
-
-        glBufferData(
-            GL_ARRAY_BUFFER,
-            sizeof(triangle.vertices),
-            triangle.vertices.data(),
-            GL_STATIC_DRAW);
-        opengl_check();
-
-        glVertexAttribPointer(
-            0,
-            3,
-            GL_FLOAT,
-            GL_FALSE,
-            sizeof(vertex),
-            reinterpret_cast<void*>(0));
-        opengl_check();
-
-        glVertexAttribPointer(
-            1,
-            3,
-            GL_FLOAT,
-            GL_FALSE,
-            sizeof(vertex),
-            reinterpret_cast<void*>(3 * sizeof(float)));
-        opengl_check();
-
-        glDrawArrays(GL_TRIANGLES, 0, 3);
-        opengl_check();
-
-        glDisableVertexAttribArray(0);
-        opengl_check();
-
-        glDisableVertexAttribArray(1);
-        opengl_check();
-    }
-
-    void engine_using_sdl::render(const triangle& triangle,
-                                  itexture* const texture)
-    {
-        m_textured_triangle_program.apply_shader_program();
-        texture->bind();
-
-        glBufferData(
-            GL_ARRAY_BUFFER,
-            sizeof(triangle.vertices),
-            triangle.vertices.data(),
-            GL_STATIC_DRAW);
-        opengl_check();
-
-        glVertexAttribPointer(
-            0,
-            3,
-            GL_FLOAT,
-            GL_FALSE,
-            sizeof(vertex),
-            reinterpret_cast<void*>(0));
-        opengl_check();
-        glEnableVertexAttribArray(0);
-        opengl_check();
-
-        glVertexAttribPointer(
-            1,
-            3,
-            GL_FLOAT,
-            GL_FALSE,
-            sizeof(vertex),
-            reinterpret_cast<void*>(3 * sizeof(float)));
-        opengl_check();
-        glEnableVertexAttribArray(1);
-        opengl_check();
-
-        glVertexAttribPointer(
-            2,
-            2,
-            GL_FLOAT,
-            GL_FALSE,
-            sizeof(vertex),
-            reinterpret_cast<void*>(6 * sizeof(float)));
-        opengl_check();
-        glEnableVertexAttribArray(2);
-        opengl_check();
-
-        glDrawArrays(GL_TRIANGLES, 0, 3);
-        opengl_check();
-
-        glDisableVertexAttribArray(0);
-        opengl_check();
-
-        glDisableVertexAttribArray(1);
-        opengl_check();
-
-        glDisableVertexAttribArray(2);
-        opengl_check();
-    }
-
-    void engine_using_sdl::render(const triangle& triangle,
-                                  itexture* const texture,
-                                  const glm::mediump_mat3& matrix)
-    {
-        m_textured_triangle_program.apply_shader_program();
-
-        m_textured_triangle_program.set_uniform("u_matrix", matrix);
-        m_textured_triangle_program.set_uniform("s_texture");
-
-        texture->bind();
-
-        glBufferData(
-            GL_ARRAY_BUFFER,
-            sizeof(triangle.vertices),
-            triangle.vertices.data(),
-            GL_STATIC_DRAW);
-        opengl_check();
-
-        glVertexAttribPointer(
-            0,
-            2,
-            GL_FLOAT,
-            GL_FALSE,
-            sizeof(vertex),
-            reinterpret_cast<void*>(0));
-        opengl_check();
-        glEnableVertexAttribArray(0);
-        opengl_check();
-
-        glVertexAttribPointer(
-            1,
-            3,
-            GL_FLOAT,
-            GL_FALSE,
-            sizeof(vertex),
-            reinterpret_cast<void*>(3 * sizeof(float)));
-        opengl_check();
-        glEnableVertexAttribArray(1);
-        opengl_check();
-
-        glVertexAttribPointer(
-            2,
-            2,
-            GL_FLOAT,
-            GL_FALSE,
-            sizeof(vertex),
-            reinterpret_cast<void*>(6 * sizeof(float)));
-        opengl_check();
-        glEnableVertexAttribArray(2);
-        opengl_check();
-
-        glDrawArrays(GL_TRIANGLES, 0, 3);
-        opengl_check();
-
-        glDisableVertexAttribArray(0);
-        opengl_check();
-
-        glDisableVertexAttribArray(1);
-        opengl_check();
-
-        glDisableVertexAttribArray(2);
-        opengl_check();
-    }
-
-    void engine_using_sdl::render(ivertex_buffer* vertex_buffer,
-                                  itexture* const texture,
-                                  const glm::mediump_mat3& matrix)
-    {
-        m_textured_triangle_program.apply_shader_program();
-
-        m_textured_triangle_program.set_uniform("u_matrix", matrix);
-        m_textured_triangle_program.set_uniform("s_texture");
-
-        texture->bind();
-        vertex_buffer->bind();
-
-        glVertexAttribPointer(
-            0,
-            2,
-            GL_FLOAT,
-            GL_FALSE,
-            sizeof(vertex),
-            reinterpret_cast<void*>(0));
-        opengl_check();
-        glEnableVertexAttribArray(0);
-        opengl_check();
-
-        glVertexAttribPointer(
-            1,
-            3,
-            GL_FLOAT,
-            GL_FALSE,
-            sizeof(vertex),
-            reinterpret_cast<void*>(3 * sizeof(float)));
-        opengl_check();
-        glEnableVertexAttribArray(1);
-        opengl_check();
-
-        glVertexAttribPointer(
-            2,
-            2,
-            GL_FLOAT,
-            GL_FALSE,
-            sizeof(vertex),
-            reinterpret_cast<void*>(6 * sizeof(float)));
-        opengl_check();
-        glEnableVertexAttribArray(2);
-        opengl_check();
-
-        glDrawArrays(GL_TRIANGLES, 0, vertex_buffer->get_vertices_number());
-        opengl_check();
-
-        glDisableVertexAttribArray(0);
-        opengl_check();
-
-        glDisableVertexAttribArray(1);
-        opengl_check();
-
-        glDisableVertexAttribArray(2);
-        opengl_check();
+        ImGui_ImplSdlGL3_RenderDrawLists(ImGui::GetDrawData());
     }
 
     void engine_using_sdl::render(ivertex_buffer* vertex_buffer,
@@ -1107,71 +855,13 @@ namespace arci
         vertex_buffer->bind();
         ebo->bind();
 
-        glVertexAttribPointer(
-            0,
-            2,
-            GL_FLOAT,
-            GL_FALSE,
-            sizeof(vertex),
-            reinterpret_cast<void*>(0));
-        opengl_check();
         glEnableVertexAttribArray(0);
         opengl_check();
-
-        glVertexAttribPointer(
-            1,
-            3,
-            GL_FLOAT,
-            GL_FALSE,
-            sizeof(vertex),
-            reinterpret_cast<void*>(3 * sizeof(float)));
-        opengl_check();
         glEnableVertexAttribArray(1);
-        opengl_check();
-
-        glVertexAttribPointer(
-            2,
-            2,
-            GL_FLOAT,
-            GL_FALSE,
-            sizeof(vertex),
-            reinterpret_cast<void*>(6 * sizeof(float)));
         opengl_check();
         glEnableVertexAttribArray(2);
         opengl_check();
 
-        glDrawElements(GL_TRIANGLES,
-                       ebo->get_indices_number(),
-                       GL_UNSIGNED_INT,
-                       0);
-        opengl_check();
-
-        glDisableVertexAttribArray(0);
-        opengl_check();
-
-        glDisableVertexAttribArray(1);
-        opengl_check();
-
-        glDisableVertexAttribArray(2);
-        opengl_check();
-    }
-
-    void engine_using_sdl::render_imgui(ivertex_buffer* vertex_buffer,
-                                        i_index_buffer* ebo,
-                                        itexture* const texture,
-                                        const uint32_t* start_index,
-                                        const size_t vertices_number,
-                                        const glm::mediump_mat3& matrix)
-    {
-        m_textured_triangle_program.apply_shader_program();
-
-        m_textured_triangle_program.set_uniform("u_matrix", matrix);
-        m_textured_triangle_program.set_uniform("s_texture");
-
-        texture->bind();
-        vertex_buffer->bind();
-        ebo->bind();
-
         glVertexAttribPointer(
             0,
             2,
@@ -1179,8 +869,6 @@ namespace arci
             GL_FALSE,
             sizeof(vertex),
             reinterpret_cast<void*>(0));
-        opengl_check();
-        glEnableVertexAttribArray(0);
         opengl_check();
 
         glVertexAttribPointer(
@@ -1189,9 +877,7 @@ namespace arci
             GL_FLOAT,
             GL_FALSE,
             sizeof(vertex),
-            reinterpret_cast<void*>(4 * sizeof(float)));
-        opengl_check();
-        glEnableVertexAttribArray(1);
+            reinterpret_cast<void*>(3 * sizeof(float)));
         opengl_check();
 
         glVertexAttribPointer(
@@ -1200,15 +886,13 @@ namespace arci
             GL_FLOAT,
             GL_FALSE,
             sizeof(vertex),
-            reinterpret_cast<void*>(6 * sizeof(float)));
-        opengl_check();
-        glEnableVertexAttribArray(2);
+            reinterpret_cast<void*>(7 * sizeof(float)));
         opengl_check();
 
         glDrawElements(GL_TRIANGLES,
-                       vertices_number,
+                       ebo->get_indices_number(),
                        GL_UNSIGNED_INT,
-                       start_index);
+                       0);
         opengl_check();
 
         glDisableVertexAttribArray(0);
@@ -1240,10 +924,7 @@ namespace arci
 
     void engine_using_sdl::imgui_uninit()
     {
-        // ImGui_ImplOpenGL3_Shutdown();
-        // ImGui_ImplSDL3_Shutdown();
-        // ImGui::DestroyContext();
-        imgui_impl_shutdown();
+        ImGui_ImplSdlGL3_Shutdown();
     }
 
     std::pair<size_t, size_t>
@@ -1328,324 +1009,6 @@ namespace arci
                     }
                 }
             }
-        }
-    }
-
-    bool engine_using_sdl::imgui_impl_init()
-    {
-        IMGUI_CHECKVERSION();
-        ImGui::CreateContext();
-        ImGuiIO& io = ImGui::GetIO();
-        io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
-
-        io.Fonts->AddFontFromFileTTF("Roboto-Medium.ttf", 50.f);
-
-        // Setup Dear ImGui style
-        ImGui::StyleColorsDark();
-
-        // Setup Platform/Renderer backends
-        CHECK(m_window);
-
-        io.BackendPlatformName = "sdl_engine";
-
-        // Keyboard mapping. ImGui will use those indices to peek into the
-        // io.KeysDown[] array.
-        io.KeyMap[ImGuiKey_Tab] = SDL_SCANCODE_TAB;
-        io.KeyMap[ImGuiKey_LeftArrow] = SDL_SCANCODE_LEFT;
-        io.KeyMap[ImGuiKey_RightArrow] = SDL_SCANCODE_RIGHT;
-        io.KeyMap[ImGuiKey_UpArrow] = SDL_SCANCODE_UP;
-        io.KeyMap[ImGuiKey_DownArrow] = SDL_SCANCODE_DOWN;
-        io.KeyMap[ImGuiKey_PageUp] = SDL_SCANCODE_PAGEUP;
-        io.KeyMap[ImGuiKey_PageDown] = SDL_SCANCODE_PAGEDOWN;
-        io.KeyMap[ImGuiKey_Home] = SDL_SCANCODE_HOME;
-        io.KeyMap[ImGuiKey_End] = SDL_SCANCODE_END;
-        io.KeyMap[ImGuiKey_Insert] = SDL_SCANCODE_INSERT;
-        io.KeyMap[ImGuiKey_Delete] = SDL_SCANCODE_DELETE;
-        io.KeyMap[ImGuiKey_Backspace] = SDL_SCANCODE_BACKSPACE;
-        io.KeyMap[ImGuiKey_Space] = SDL_SCANCODE_SPACE;
-        io.KeyMap[ImGuiKey_Enter] = SDL_SCANCODE_RETURN;
-        io.KeyMap[ImGuiKey_Escape] = SDL_SCANCODE_ESCAPE;
-        io.KeyMap[ImGuiKey_A] = SDL_SCANCODE_A;
-        io.KeyMap[ImGuiKey_C] = SDL_SCANCODE_C;
-        io.KeyMap[ImGuiKey_V] = SDL_SCANCODE_V;
-        io.KeyMap[ImGuiKey_X] = SDL_SCANCODE_X;
-        io.KeyMap[ImGuiKey_Y] = SDL_SCANCODE_Y;
-        io.KeyMap[ImGuiKey_Z] = SDL_SCANCODE_Z;
-
-        io.ClipboardUserData = nullptr;
-
-        m_imgui_time = std::chrono::steady_clock::now();
-
-        return true;
-    }
-
-    void engine_using_sdl::imgui_impl_shutdown()
-    {
-        imgui_impl_invalidate_device_objs();
-        ImGui::DestroyContext();
-    }
-
-    void engine_using_sdl::imgui_impl_new_frame()
-    {
-        ImGuiIO& io = ImGui::GetIO();
-
-        if (io.Fonts->TexID == nullptr)
-        {
-            imgui_impl_create_device_objs();
-        }
-
-        std::chrono::time_point<std::chrono::steady_clock> current_time
-            = std::chrono::steady_clock::now();
-
-        const float delta_time = (current_time - m_imgui_time).count();
-
-        io.DeltaTime = delta_time;
-
-        if (io.DeltaTime < 0)
-        {
-            io.DeltaTime = 0.00001f;
-        }
-        m_imgui_time = current_time;
-
-        int width {}, height {}, width_pixels {}, height_pixels {};
-        CHECK(SDL_GetWindowSize(m_window.get(), &width, &height) == 0)
-            << SDL_GetError();
-        CHECK(SDL_GetWindowSizeInPixels(m_window.get(),
-                                        &width_pixels,
-                                        &height_pixels)
-              == 0)
-            << SDL_GetError();
-        io.DisplaySize = ImVec2(width, height);
-        io.DisplayFramebufferScale
-            = ImVec2(width > 0 ? static_cast<float>(width_pixels / width)
-                               : 0.f,
-                     height > 0 ? static_cast<float>(height_pixels / height)
-                                : 0.f);
-
-        float mx, my;
-        Uint32 mouseMask = SDL_GetMouseState(&mx, &my);
-        if (SDL_GetWindowFlags(m_window.get()) & SDL_WINDOW_MOUSE_FOCUS)
-            io.MousePos = ImVec2(mx, my);
-        else
-            io.MousePos = ImVec2(-FLT_MAX, -FLT_MAX);
-
-        io.MouseDown[0] = m_imgui_mouse_pressed[0]
-            || (mouseMask & SDL_BUTTON(SDL_BUTTON_LEFT)) != 0;
-
-        io.MouseDown[1] = m_imgui_mouse_pressed[1]
-            || (mouseMask & SDL_BUTTON(SDL_BUTTON_RIGHT)) != 0;
-        io.MouseDown[2] = m_imgui_mouse_pressed[2]
-            || (mouseMask & SDL_BUTTON(SDL_BUTTON_MIDDLE)) != 0;
-        m_imgui_mouse_pressed[0] = m_imgui_mouse_pressed[1]
-            = m_imgui_mouse_pressed[2] = false;
-
-        io.MouseWheel = m_imgui_mouse_wheel;
-        m_imgui_mouse_wheel = 0.0f;
-
-        ImGui::NewFrame();
-    }
-
-    bool engine_using_sdl::imgui_impl_process_event(
-        const SDL_Event* const sdl_event)
-    {
-        ImGuiIO& io = ImGui::GetIO();
-        switch (sdl_event->type)
-        {
-        case SDL_EVENT_MOUSE_WHEEL: {
-            if (sdl_event->wheel.y > 0)
-                m_imgui_mouse_wheel = 1;
-            if (sdl_event->wheel.y < 0)
-                m_imgui_mouse_wheel = -1;
-            return true;
-        }
-        case SDL_EVENT_MOUSE_BUTTON_DOWN: {
-            if (sdl_event->button.button == SDL_BUTTON_LEFT)
-                m_imgui_mouse_pressed[0] = true;
-            if (sdl_event->button.button == SDL_BUTTON_RIGHT)
-                m_imgui_mouse_pressed[1] = true;
-            if (sdl_event->button.button == SDL_BUTTON_MIDDLE)
-                m_imgui_mouse_pressed[2] = true;
-            return true;
-        }
-        case SDL_EVENT_KEY_DOWN:
-        case SDL_EVENT_KEY_UP: {
-            int key = sdl_event->key.keysym.sym & ~SDLK_SCANCODE_MASK;
-            io.KeysDown[key] = (sdl_event->type == SDL_EVENT_KEY_DOWN);
-            uint32_t mod_keys_mask = SDL_GetModState();
-            io.KeyShift = ((mod_keys_mask & SDL_KMOD_SHIFT) != 0);
-            io.KeyCtrl = ((mod_keys_mask & SDL_KMOD_CTRL) != 0);
-            io.KeyAlt = ((mod_keys_mask & SDL_KMOD_ALT) != 0);
-            io.KeySuper = ((mod_keys_mask & SDL_KMOD_GUI) != 0);
-            return true;
-        }
-        }
-        return false;
-    }
-
-    void engine_using_sdl::imgui_impl_invalidate_device_objs()
-    {
-        ImGuiIO& io = ImGui::GetIO();
-        void* font_text_id = io.Fonts->TexID;
-        destroy_texture(static_cast<opengl_texture*>(font_text_id));
-        m_imgui_program.reset();
-    }
-
-    bool engine_using_sdl::imgui_impl_create_device_objs()
-    {
-        m_imgui_program.load_shader(GL_VERTEX_SHADER, "imgui-vertex.shader");
-        m_imgui_program.load_shader(GL_FRAGMENT_SHADER,
-                                    "imgui-fragment.shader");
-        m_imgui_program.prepare_program();
-
-        imgui_impl_create_font_texture();
-
-        return true;
-    }
-
-    void engine_using_sdl::imgui_impl_create_font_texture()
-    {
-        ImGuiIO& io = ImGui::GetIO();
-        unsigned char* font_pixels = nullptr;
-        int font_width {}, font_height {};
-
-        io.Fonts->GetTexDataAsRGBA32(&font_pixels, &font_width, &font_height);
-
-        opengl_texture* font_texture = new opengl_texture {};
-        font_texture->load(font_pixels, font_width, font_height);
-        io.Fonts->TexID = font_texture;
-    }
-
-    void engine_using_sdl::imgui_impl_render_draw_data(ImDrawData* data)
-    {
-        ImGuiIO& io = ImGui::GetIO();
-        int fb_width = static_cast<int>(
-            io.DisplaySize.x * io.DisplayFramebufferScale.x);
-        int fb_height = static_cast<int>(
-            io.DisplaySize.y * io.DisplayFramebufferScale.y);
-
-        if (fb_width == 0 || fb_height == 0)
-        {
-            return;
-        }
-
-        data->ScaleClipRects(io.DisplayFramebufferScale);
-
-        opengl_texture* texture
-            = reinterpret_cast<opengl_texture*>(io.Fonts->TexID);
-        CHECK_NOTNULL(texture);
-
-        const glm::mediump_mat3x3 scale_matrix {
-            2.0f / io.DisplaySize.x, 0.f, 0.f,
-            0.f, -2.0f / io.DisplaySize.y, 0.f,
-            0.f, 0.f, 1.f
-        };
-
-        LOG(INFO) << "display_x = " << io.DisplaySize.x;
-        LOG(INFO) << "display_y = " << io.DisplaySize.y;
-
-        const glm::mediump_mat3x3 move_matrix {
-            1.f, 0.f, 0.f,
-            0.f, 1.f, 0.f,
-            -1.f, 1.f, 1.f
-        };
-
-        const glm::mediump_mat3x3 one_matrix {
-            1.f, 0.f, 0.f,
-            0.f, 1.f, 0.f,
-            0.f, 0.f, 1.f
-        };
-
-        const glm::mediump_mat3x3 orto_matrix = move_matrix * scale_matrix;
-        // const glm::mediump_mat3x3 orto_matrix = one_matrix;
-
-        // m_imgui_program.apply_shader_program();
-        // m_imgui_program.set_uniform("s_texture");
-        // m_imgui_program.set_uniform("u_matrix", orto_matrix);
-
-        for (int n = 0; n < data->CmdListsCount; n++)
-        {
-            const ImDrawList* cmd_list = data->CmdLists[n];
-            const uint32_t* idx_buffer_offset = nullptr;
-
-            const ImDrawVert* imgui_vertex_buffer = cmd_list->VtxBuffer.Data;
-            std::vector<vertex> vertex_buffer {};
-
-            // ImGui color is packed. So we should unpack it.
-            auto get_r = [](ImU32 rgba) -> float {
-                std::uint32_t r = (rgba & 0x000000FF) >> 0;
-                return r / 255.f;
-            };
-
-            auto get_g = [](ImU32 rgba) -> float {
-                std::uint32_t g = (rgba & 0x0000FF00) >> 8;
-                return g / 255.f;
-            };
-
-            auto get_b = [](ImU32 rgba) -> float {
-                std::uint32_t b = (rgba & 0x00FF0000) >> 16;
-                return b / 255.f;
-            };
-
-            auto get_a = [](ImU32 rgba) -> float {
-                std::uint32_t a_ = (rgba & 0xFF000000) >> 24;
-                return a_ / 255.f;
-            };
-
-            for (int i = 0; i < cmd_list->VtxBuffer.Size; ++i)
-            {
-                vertex v {};
-                v.x = imgui_vertex_buffer[i].pos.x;
-                v.y = imgui_vertex_buffer[i].pos.y;
-                v.r = get_r(imgui_vertex_buffer[i].col);
-                v.g = get_g(imgui_vertex_buffer[i].col);
-                v.b = get_b(imgui_vertex_buffer[i].col);
-                v.a = get_a(imgui_vertex_buffer[i].col);
-                LOG(INFO) << v.r;
-                LOG(INFO) << v.g;
-                LOG(INFO) << v.b;
-                LOG(INFO) << v.a;
-                LOG(INFO) << "==============";
-                // v.a = get_a(imgui_vertex_buffer[i].col);
-                v.tx = imgui_vertex_buffer[i].uv.x;
-                v.ty = imgui_vertex_buffer[i].uv.y;
-                vertex_buffer.push_back(v);
-            }
-
-            ivertex_buffer* vbo = create_vertex_buffer(vertex_buffer);
-
-            const std::uint16_t* indexes = cmd_list->IdxBuffer.Data;
-
-            size_t index_count = static_cast<size_t>(cmd_list->IdxBuffer.size());
-
-            std::vector<std::uint32_t> index_buffer {};
-            index_buffer.resize(index_count);
-
-            for (std::uint16_t i = 0; i < index_count; ++i)
-            {
-                index_buffer[i] = indexes[i];
-            }
-
-            i_index_buffer* ebo = create_ebo(index_buffer);
-
-            for (int cmd_i = 0; cmd_i < cmd_list->CmdBuffer.Size; cmd_i++)
-            {
-                const ImDrawCmd* pcmd = &cmd_list->CmdBuffer[cmd_i];
-
-                opengl_texture* texture
-                    = reinterpret_cast<opengl_texture*>(pcmd->TextureId);
-
-                render_imgui(vbo,
-                             ebo,
-                             texture,
-                             idx_buffer_offset,
-                             pcmd->ElemCount,
-                             orto_matrix);
-
-                idx_buffer_offset += pcmd->ElemCount;
-            }
-
-            destroy_vertex_buffer(vbo);
-            destroy_ebo(ebo);
         }
     }
 

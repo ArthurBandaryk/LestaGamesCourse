@@ -126,7 +126,6 @@ int main(int, char** argv)
     };
 
     engine->init();
-    engine->init_imgui();
 
     const auto [screen_width, screen_height]
         = engine->get_screen_resolution();
@@ -134,10 +133,10 @@ int main(int, char** argv)
     arci::itexture* texture = engine->create_texture("worm.png");
 
     std::vector<arci::vertex> vertices {
-        { -0.3f, -0.3f, 0.f, 0.f, 0.f, 0.f, 0.f, 1.f },
-        { 0.3f, -0.3f, 0.f, 0.f, 0.f, 0.f, 1.f, 1.f },
-        { -0.3f, 0.3f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f },
-        { 0.3f, 0.3f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f },
+        { -0.3f, -0.3f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 1.f },
+        { 0.3f, -0.3f, 0.f, 0.f, 0.f, 0.f, 1.f, 1.f, 1.f },
+        { -0.3f, 0.3f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f },
+        { 0.3f, 0.3f, 0.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f },
     };
 
     std::vector<uint32_t> indices { 0, 1, 2, 2, 3, 1 };
@@ -150,7 +149,7 @@ int main(int, char** argv)
 
     background_music->play(arci::iaudio_buffer::running_mode::for_ever);
 
-    game_status status = game_status::main_menu;
+    game_status status = game_status::game_over;
 
     glm::vec3 worm_pos { 0.f, 0.f, 1.f };
     glm::vec2 worm_scale { 1.f, 1.f };

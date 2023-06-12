@@ -109,12 +109,6 @@ namespace arci
         std::array<vertex, 3> vertices {};
     };
 
-    struct quad
-    {
-        quad(const triangle& first, const triangle& second);
-        std::array<triangle, 2> quad_;
-    };
-
     ///////////////////////////////////////////////////////////////////////////////
 
     class ivertex_buffer
@@ -171,28 +165,12 @@ namespace arci
     public:
         virtual ~iengine() = default;
         virtual void init() = 0;
-        virtual void init_imgui() = 0;
         virtual bool process_input(event& event) = 0;
         virtual bool key_down(const enum keys key) = 0;
         virtual void imgui_new_frame() = 0;
         virtual void imgui_render() = 0;
 
-        // Render simple colored triangle.
-        virtual void render(const triangle& triangle) = 0;
-
-        // Render textured triangle. All math is calculated on cpu.
-
         /* clang-format off */
-        virtual void render(const triangle& triangle,
-                            itexture* const texture) = 0;
-
-        // Render textured triangle. Math is calculated on gpu.
-        virtual void render(const triangle& triangle,
-                            itexture* const texture, 
-                            const glm::mediump_mat3& matrix) = 0;
-        virtual void render(ivertex_buffer* vertex_buffer,
-                            itexture* const texture,
-                            const glm::mediump_mat3& matrix) = 0;
         virtual void render(ivertex_buffer* vertex_buffer,
                             i_index_buffer* ebo,    
                             itexture* const texture,

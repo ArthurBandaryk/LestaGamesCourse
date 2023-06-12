@@ -35,9 +35,7 @@ list(
   "imgui/imstb_rectpack.h"
   "imgui/imstb_textedit.h"
   "imgui/imstb_truetype.h"
-  "imgui/backends/imgui_impl_sdl3.h"
-  "imgui/backends/imgui_impl_opengl3.h"
-  "imgui/backends/imgui_impl_opengl3_loader.h")
+  "imgui/imgui_impl_opengl.hxx")
 
 list(
   APPEND
@@ -47,8 +45,7 @@ list(
   "imgui/imgui_tables.cpp"
   "imgui/imgui_widgets.cpp"
   "imgui/imgui.cpp"
-  "imgui/backends/imgui_impl_sdl3.cpp"
-  "imgui/backends/imgui_impl_opengl3.cpp")
+  "imgui/imgui_impl_opengl.cpp")
 
 # Check if `glog` git submodule is initialized.
 if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../submodules/glog)
@@ -94,15 +91,16 @@ target_compile_options(
   compiler-flags-lib
   INTERFACE "$<${gcc_like_cxx}:$<BUILD_INTERFACE:-Wall;-Wextra>>")
 
-add_library(imgui-lib STATIC ${IMGUI_HEADERS} ${IMGUI_SOURCES})
-target_link_libraries(imgui-lib PRIVATE SDL3::SDL3-shared)
-target_include_directories(imgui-lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/imgui)
-set_property(TARGET imgui-lib PROPERTY POSITION_INDEPENDENT_CODE ON)
-
 add_library(glad-lib glad/include/glad/glad.h glad/include/KHR/khrplatform.h
                      glad/src/glad.c)
 target_include_directories(glad-lib
                            PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/glad/include)
+
+add_library(imgui-lib STATIC ${IMGUI_HEADERS} ${IMGUI_SOURCES})
+target_link_libraries(imgui-lib PRIVATE glad-lib glog::glog SDL3::SDL3-shared)
+target_include_directories(imgui-lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/imgui
+                                            ${CMAKE_CURRENT_SOURCE_DIR})
+set_property(TARGET imgui-lib PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 add_library(engine opengl-debug.hxx opengl-shader-programm.hxx
                    opengl-shader-programm.cxx engine.hxx engine.cxx picopng.hxx)
