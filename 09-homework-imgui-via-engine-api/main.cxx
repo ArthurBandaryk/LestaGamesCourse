@@ -149,7 +149,7 @@ int main(int, char** argv)
 
     background_music->play(arci::iaudio_buffer::running_mode::for_ever);
 
-    game_status status = game_status::game_over;
+    game_status status = game_status::main_menu;
 
     glm::vec3 worm_pos { 0.f, 0.f, 1.f };
     glm::vec2 worm_scale { 1.f, 1.f };

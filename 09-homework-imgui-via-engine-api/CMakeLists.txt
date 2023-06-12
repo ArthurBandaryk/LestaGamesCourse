@@ -8,9 +8,7 @@ list(
   "${CMAKE_CURRENT_SOURCE_DIR}/triangle-vertex.shader"
   "${CMAKE_CURRENT_SOURCE_DIR}/triangle-fragment.shader"
   "${CMAKE_CURRENT_SOURCE_DIR}/texture-vertex.shader"
-  "${CMAKE_CURRENT_SOURCE_DIR}/texture-fragment.shader"
-  "${CMAKE_CURRENT_SOURCE_DIR}/imgui-vertex.shader"
-  "${CMAKE_CURRENT_SOURCE_DIR}/imgui-fragment.shader")
+  "${CMAKE_CURRENT_SOURCE_DIR}/texture-fragment.shader")
 file(COPY ${SHADERS} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 list(APPEND IMAGES "${CMAKE_CURRENT_SOURCE_DIR}/worm.png")
