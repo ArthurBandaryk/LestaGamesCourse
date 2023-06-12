@@ -355,9 +355,7 @@ namespace arci
 
         std::chrono::time_point<std::chrono::steady_clock> m_imgui_time {};
 
-        opengl_shader_program m_colored_triangle_program {};
         opengl_shader_program m_textured_triangle_program {};
-        opengl_shader_program m_imgui_program {};
 
         // Desired audio spec for all sounds.
         std::vector<audio_buffer*> m_sounds {};
@@ -368,8 +366,6 @@ namespace arci
         std::size_t m_screen_height {};
         GLuint m_vbo {};
         GLuint m_vao {};
-        float m_imgui_mouse_wheel {};
-        float m_imgui_mouse_pressed[3] { false, false, false };
     };
 
     void opengl_texture::load(const std::string_view path)
@@ -621,12 +617,6 @@ namespace arci
             0,
             nullptr,
             GL_TRUE);
-
-        m_colored_triangle_program.load_shader(GL_VERTEX_SHADER,
-                                               "triangle-vertex.shader");
-        m_colored_triangle_program.load_shader(GL_FRAGMENT_SHADER,
-                                               "triangle-fragment.shader");
-        m_colored_triangle_program.prepare_program();
 
         m_textured_triangle_program.load_shader(GL_VERTEX_SHADER,
                                                 "texture-vertex.shader");
