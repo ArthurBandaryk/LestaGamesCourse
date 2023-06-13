@@ -361,7 +361,8 @@ namespace arci
         std::ifstream file { path.data(), std::ios::binary };
 
         std::ostringstream error_on_opening {};
-        error_on_opening << "Error on opening texture for path " << path;
+        error_on_opening << "Error on opening texture for path "
+                         << path << "\n";
         if (!file.is_open())
         {
             print_ostream_msg_and_exit(error_on_opening);
@@ -424,7 +425,7 @@ namespace arci
     {
         SDL_RWops* rwop_ptr_file = SDL_RWFromFile(audio_file_name.data(),
                                                   "rb");
-        CHECK(rwop_ptr_file);
+        CHECK_NOTNULL(rwop_ptr_file);
 
         SDL_AudioSpec audio_spec {};
 
@@ -509,7 +510,7 @@ namespace arci
                 SDL_WINDOW_OPENGL),
             SDL_DestroyWindow);
 
-        CHECK(m_window.get());
+        CHECK_NOTNULL(m_window.get());
 
         CHECK(SDL_SetWindowPosition(m_window.get(),
                                     SDL_WINDOWPOS_CENTERED,
@@ -954,7 +955,7 @@ namespace arci
 
     void engine_destroy(iengine* engine)
     {
-        CHECK(engine);
+        CHECK_NOTNULL(engine);
         delete engine;
     }
 

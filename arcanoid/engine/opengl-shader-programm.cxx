@@ -214,7 +214,7 @@ namespace arci
         std::ifstream file { path.data() };
 
         std::ostringstream error_on_opening {};
-        error_on_opening << "Error on opening " << path;
+        error_on_opening << "Error on opening " << path << "\n";
 
         if (!file.is_open())
         {
@@ -230,7 +230,7 @@ namespace arci
 
         file.read(shader_code.data(), bytes_to_read);
         std::ostringstream error_on_reading {};
-        error_on_reading << "Error on reading " << path;
+        error_on_reading << "Error on reading " << path << "\n";
         if (!file.good())
         {
             print_ostream_msg_and_exit(error_on_reading);
@@ -238,7 +238,7 @@ namespace arci
 
         file.close();
         std::ostringstream error_on_closing {};
-        error_on_closing << "Error on closing " << path;
+        error_on_closing << "Error on closing " << path << "\n";
         if (!file.good())
         {
             print_ostream_msg_and_exit(error_on_closing);
