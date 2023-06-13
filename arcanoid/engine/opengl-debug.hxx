@@ -1,11 +1,11 @@
 #pragma once
 
-#include "glad/glad.h"
+#include <helper.hxx>
 
-//
-#include <glog/logging.h>
+#include <glad/glad.h>
 
-//
+#include <fmt/core.h>
+
 #include <string>
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -29,19 +29,13 @@ namespace arci
         const GLchar* message,
         [[maybe_unused]] const void* userParam)
     {
-        CHECK(length < GL_MAX_DEBUG_MESSAGE_LENGTH)
-            << "Debug opengl message must be less"
-            << " than `GL_MAX_DEBUG_MESSAGE_LENGTH`";
+        CHECK(length < GL_MAX_DEBUG_MESSAGE_LENGTH);
 
-        std::string debug_msg_to_stderr {};
-        debug_msg_to_stderr.resize(GL_MAX_DEBUG_MESSAGE_LENGTH);
-        std::copy(message, message + length, debug_msg_to_stderr.begin());
-
-        LOG(ERROR) << "Message id: " << id;
-        LOG(ERROR) << source_msg_enum_to_string(source);
-        LOG(ERROR) << type_msg_enum_to_string(type);
-        LOG(ERROR) << severity_msg_enum_to_string(severity);
-        LOG(ERROR) << debug_msg_to_stderr;
+        fmt::print("Message id: {}\n", id);
+        fmt::print(source_msg_enum_to_string(source));
+        fmt::print(type_msg_enum_to_string(type));
+        fmt::print(severity_msg_enum_to_string(severity));
+        fmt::print(message);
     }
 
     static std::string source_msg_enum_to_string(const GLenum source_msg)
@@ -125,8 +119,8 @@ namespace arci
         switch (severity_msg)
         {
         case GL_DEBUG_SEVERITY_HIGH:
-            result += "HIGH. All OpenGL Errors, shader compilation/linking errors,"
-                      " or highly-dangerous undefined behavior\n";
+            result += "HIGH. All OpenGL Errors, shader compilation/linking"
+                      " errors, or highly-dangerous undefined behavior\n";
             break;
         case GL_DEBUG_SEVERITY_MEDIUM:
             result += "MEDIUM. Major performance warnings, "
@@ -138,7 +132,8 @@ namespace arci
                       "or unimportant undefined behavior\n";
             break;
         case GL_DEBUG_SEVERITY_NOTIFICATION:
-            result += "NOTIFICATION. Anything that isn't an error or performance issue\n";
+            result += "NOTIFICATION. Anything that isn't an error or"
+                      " performance issue\n";
             break;
         default:
             result += "UNKNOWN\n";
@@ -160,34 +155,35 @@ namespace arci
         switch (error)
         {
         case GL_INVALID_ENUM:
-            LOG(ERROR) << "An unacceptable value is specified"
-                       << " for an enumerated argument";
+            fmt::print("An unacceptable value is specified"
+                       " for an enumerated argument\n");
             break;
         case GL_INVALID_VALUE:
-            LOG(ERROR) << "A numeric argument is out of range";
+            fmt::print("A numeric argument is out of range\n");
             break;
         case GL_INVALID_OPERATION:
-            LOG(ERROR) << "The specified operation is not"
-                       << " allowed in the current state";
+            fmt::print("The specified operation is not"
+                       " allowed in the current state\n");
             break;
         case GL_INVALID_FRAMEBUFFER_OPERATION:
-            LOG(ERROR) << "The framebuffer object is not complete";
+            fmt::print("The framebuffer object is not complete\n");
             break;
         case GL_OUT_OF_MEMORY:
-            LOG(ERROR) << "There is not enough memory left to execute the command";
+            fmt::print("There is not enough memory left to execute"
+                       " the command\n");
             break;
         case GL_STACK_UNDERFLOW:
-            LOG(ERROR) << "An attempt has been made to perform"
-                       << " an operation that would cause an internal"
-                       << " stack to underflow";
+            fmt::print("An attempt has been made to perform"
+                       " an operation that would cause an internal"
+                       " stack to underflow\n");
             break;
         case GL_STACK_OVERFLOW:
-            LOG(ERROR) << "An attempt has been made to perform"
-                       << " an operation that would cause an internal"
-                       << " stack to overflow";
+            fmt::print("An attempt has been made to perform"
+                       " an operation that would cause an internal"
+                       " stack to overflow\n");
             break;
         default:
-            LOG(ERROR) << "Undefined opengl error type";
+            fmt::print("Undefined opengl error type\n");
             break;
         }
 

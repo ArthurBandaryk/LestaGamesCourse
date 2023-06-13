@@ -28,10 +28,10 @@
 
 #include <glad/glad.h>
 
+#include <chrono>
 #include <iostream>
 
 // Data
-// static double g_Time = 0.0f;
 static std::chrono::time_point<std::chrono::steady_clock> g_Time
     = std::chrono::steady_clock::now();
 static bool g_MousePressed[3] = { false, false, false };

@@ -26,7 +26,8 @@ list(
   "engine/imgui/imstb_textedit.h"
   "engine/imgui/imstb_truetype.h"
   "engine/imgui/imgui_impl_opengl.hxx"
-  "engine/opengl-debug.hxx")
+  "engine/opengl-debug.hxx"
+  "engine/helper.hxx")
 
 list(
   APPEND
@@ -38,11 +39,11 @@ list(
   "engine/imgui/imgui.cpp"
   "engine/imgui/imgui_impl_opengl.cpp")
 
-# Check if `glog` git submodule is initialized.
-if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../submodules/glog)
+# Check if `fmt` git submodule is initialized.
+if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../submodules/fmt)
   message(
     FATAL_ERROR
-      "Submodule `glog` is not initialized. "
+      "Submodule `fmt` is not initialized. "
       "Make sure you've cloned this repo with '--recurse-submodules' option.")
 endif()
 
@@ -62,8 +63,8 @@ if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../submodules/glm)
       "Make sure you've cloned this repo with '--recurse-submodules' option.")
 endif()
 
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../submodules/glog
-                 ${CMAKE_BINARY_DIR}/glog)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../submodules/fmt
+                 ${CMAKE_BINARY_DIR}/fmt)
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../submodules/sdl
                  ${CMAKE_BINARY_DIR}/sdl)
@@ -89,7 +90,7 @@ target_include_directories(
   glad-lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/engine/glad/include)
 
 add_library(imgui-lib STATIC ${IMGUI_HEADERS} ${IMGUI_SOURCES})
-target_link_libraries(imgui-lib PRIVATE glad-lib glog::glog SDL3::SDL3-shared)
+target_link_libraries(imgui-lib PRIVATE glad-lib fmt::fmt SDL3::SDL3-shared)
 target_include_directories(imgui-lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/imgui
                                             ${CMAKE_CURRENT_SOURCE_DIR}/engine)
 set_property(TARGET imgui-lib PROPERTY POSITION_INDEPENDENT_CODE ON)
@@ -103,7 +104,7 @@ target_link_libraries(
   engine
   compiler-flags-lib
   glm::glm
-  glog::glog
+  fmt::fmt
   SDL3::SDL3-shared
   glad-lib
   imgui-lib)
@@ -112,4 +113,4 @@ target_include_directories(
                 ${CMAKE_CURRENT_SOURCE_DIR}/engine/imgui)
 
 add_executable(arcanoid game/game.cxx)
-target_link_libraries(arcanoid compiler-flags-lib glm::glm glog::glog engine)
+target_link_libraries(arcanoid compiler-flags-lib glm::glm fmt::fmt engine)

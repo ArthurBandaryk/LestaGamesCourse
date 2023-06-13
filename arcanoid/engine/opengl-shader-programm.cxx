@@ -1,13 +1,12 @@
 #include "opengl-shader-programm.hxx"
 #include "opengl-debug.hxx"
 
-//
-#include <glog/logging.h>
+#include "helper.hxx"
 
-//
 #include <algorithm>
 #include <filesystem>
 #include <fstream>
+#include <sstream>
 #include <stdexcept>
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -38,7 +37,7 @@ namespace arci
         GLuint shader_id = glCreateShader(shader_type);
         opengl_check();
 
-        CHECK(shader_id) << "Error on creating " << shader_type << " shader";
+        CHECK(shader_id);
 
         const std::string shader_code_string = get_shader_code_from_file(shader_path);
         const char* shader_code = shader_code_string.data();
@@ -65,7 +64,7 @@ namespace arci
                 log.resize(log_length);
                 glGetShaderInfoLog(shader_id, log_length, nullptr, log.data());
                 opengl_check();
-                LOG(ERROR) << log;
+                fmt::print(log);
             }
 
             glDeleteShader(shader_id);
@@ -90,10 +89,7 @@ namespace arci
             m_program,
             static_cast<const GLchar*>(matrix_attribute_name.data()));
         opengl_check();
-        CHECK(uniform_location != -1)
-            << "Error on getting "
-            << matrix_attribute_name
-            << " location";
+        CHECK(uniform_location != -1);
 
         float m[9] = {
             result_matrix[0][0],
@@ -119,8 +115,7 @@ namespace arci
             texture_attribute_name.data());
         opengl_check();
 
-        CHECK(location != -1)
-            << "Error on getting location for texture uniform name";
+        CHECK(location != -1);
 
         const GLint texture_unit { 0 };
         glActiveTexture(GL_TEXTURE0 + texture_unit);
@@ -173,7 +168,7 @@ namespace arci
                 log.resize(log_length);
                 glGetProgramInfoLog(m_program, log_length, nullptr, log.data());
                 opengl_check();
-                LOG(ERROR) << log;
+                fmt::print(log);
             }
 
             glDeleteProgram(m_program);
@@ -203,7 +198,7 @@ namespace arci
                 log.resize(log_length);
                 glGetProgramInfoLog(m_program, log_length, nullptr, log.data());
                 opengl_check();
-                LOG(ERROR) << log;
+                fmt::print(log);
             }
 
             glDeleteProgram(m_program);
@@ -218,7 +213,13 @@ namespace arci
 
         std::ifstream file { path.data() };
 
-        CHECK(file.is_open()) << "Error on opening " << path;
+        std::ostringstream error_on_opening {};
+        error_on_opening << "Error on opening " << path;
+
+        if (!file.is_open())
+        {
+            print_ostream_msg_and_exit(error_on_opening);
+        }
 
         const std::filesystem::path fs_path { path.data() };
 
@@ -228,10 +229,20 @@ namespace arci
         shader_code.resize(bytes_to_read);
 
         file.read(shader_code.data(), bytes_to_read);
-        CHECK(file.good()) << "Error on reading " << path << " file";
+        std::ostringstream error_on_reading {};
+        error_on_reading << "Error on reading " << path;
+        if (!file.good())
+        {
+            print_ostream_msg_and_exit(error_on_reading);
+        }
 
         file.close();
-        CHECK(file.good()) << "Error on closing " << path << " file";
+        std::ostringstream error_on_closing {};
+        error_on_closing << "Error on closing " << path;
+        if (!file.good())
+        {
+            print_ostream_msg_and_exit(error_on_closing);
+        }
 
         return shader_code;
     }

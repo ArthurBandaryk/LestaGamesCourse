@@ -2,10 +2,13 @@
 
 //
 #include <glm/ext/matrix_float2x2_precision.hpp>
-#include <glog/logging.h>
+
+#include <fmt/core.h>
 
 //
 #include <imgui.h>
+
+#include <helper.hxx>
 
 //
 #include <algorithm>
@@ -114,16 +117,14 @@ void game_over_menu(const std::size_t width,
     ImGui::End();
 }
 
-int main(int, char** argv)
+int main(int, char**)
 {
-    FLAGS_logtostderr = true;
-    google::InitGoogleLogging(argv[0]);
-
     // Create engine.
-    std::unique_ptr<arci::iengine, void (*)(arci::iengine*)> engine {
-        arci::engine_create(),
-        arci::engine_destroy
-    };
+    std::unique_ptr<arci::iengine, void (*)(arci::iengine*)>
+        engine {
+            arci::engine_create(),
+            arci::engine_destroy
+        };
 
     engine->init();
 

@@ -12,9 +12,6 @@
 #include <imgui_impl_opengl.hxx>
 
 //
-#include <glog/logging.h>
-
-//
 #include <algorithm>
 #include <array>
 #include <chrono>
@@ -363,7 +360,12 @@ namespace arci
 
         std::ifstream file { path.data(), std::ios::binary };
 
-        CHECK(file.is_open());
+        std::ostringstream error_on_opening {};
+        error_on_opening << "Error on opening texture for path " << path;
+        if (!file.is_open())
+        {
+            print_ostream_msg_and_exit(error_on_opening);
+        }
 
         const std::filesystem::path fs_path { path.data() };
 
@@ -371,7 +373,7 @@ namespace arci
             std::filesystem::file_size(fs_path)
         };
 
-        CHECK(bytes_to_read) << "Nothing to read";
+        CHECK(bytes_to_read);
 
         raw_png_image.resize(bytes_to_read);
 
@@ -389,9 +391,7 @@ namespace arci
                                               raw_png_image.data(),
                                               raw_png_image.size());
 
-        CHECK(decoding_status == 0)
-            << "Error on decoding " << path
-            << ". Error code: " << decoding_status;
+        CHECK(decoding_status == 0);
         CHECK(raw_pixels_after_decoding.size());
 
         glGenTextures(1, &m_texture_id);
@@ -424,7 +424,7 @@ namespace arci
     {
         SDL_RWops* rwop_ptr_file = SDL_RWFromFile(audio_file_name.data(),
                                                   "rb");
-        CHECK(rwop_ptr_file) << SDL_GetError();
+        CHECK(rwop_ptr_file);
 
         SDL_AudioSpec audio_spec {};
 
@@ -435,7 +435,7 @@ namespace arci
                                                    &buffer,
                                                    &size);
 
-        CHECK(music_spec) << SDL_GetError();
+        CHECK(music_spec);
 
         if (audio_spec.freq != desired_audio_spec.freq
             || audio_spec.channels != desired_audio_spec.channels
@@ -454,7 +454,7 @@ namespace arci
                                                        &new_converted_buffer,
                                                        &new_length);
 
-            CHECK(status == 0) << SDL_GetError();
+            CHECK(status == 0);
             CHECK_NOTNULL(new_converted_buffer);
 
             SDL_free(buffer);
@@ -466,65 +466,36 @@ namespace arci
     void engine_using_sdl::init()
     {
         // SDL initialization.
-        CHECK_EQ(SDL_Init(SDL_INIT_EVERYTHING), 0)
-            << "`SDL_Init()` failed with the following error: "
-            << SDL_GetError();
+        CHECK(SDL_Init(SDL_INIT_EVERYTHING) == 0);
 
-        CHECK_EQ(
-            SDL_GL_SetAttribute(
-                SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG),
-            0)
-            << "`SDL_GL_SetAttribute()` for debug failed with the error: "
-            << SDL_GetError();
+        CHECK(SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS,
+                                  SDL_GL_CONTEXT_DEBUG_FLAG)
+              == 0);
 
-        CHECK_EQ(
-            SDL_GL_SetAttribute(
-                SDL_GL_CONTEXT_PROFILE_MASK,
-                SDL_GL_CONTEXT_PROFILE_CORE),
-            0)
-            << "`SDL_GL_SetAttribute()` for profile failed with the error: "
-            << SDL_GetError();
+        CHECK(SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK,
+                                  SDL_GL_CONTEXT_PROFILE_CORE)
+              == 0);
 
         int opengl_major_version { 3 }, opengl_minor_version { 2 };
 
-        CHECK_EQ(
-            SDL_GL_SetAttribute(
-                SDL_GL_CONTEXT_MAJOR_VERSION,
-                opengl_major_version),
-            0)
-            << "`SDL_GL_SetAttribute()` for opengl major"
-               " version failed with the error: "
-            << SDL_GetError();
+        CHECK(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION,
+                                  opengl_major_version)
+              == 0);
 
-        CHECK_EQ(
-            SDL_GL_SetAttribute(
-                SDL_GL_CONTEXT_MINOR_VERSION,
-                opengl_minor_version),
-            0)
-            << "`SDL_GL_SetAttribute()` for opengl minor"
-               " version failed with the error: "
-            << SDL_GetError();
+        CHECK(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION,
+                                  opengl_minor_version)
+              == 0);
 
-        CHECK_EQ(
-            SDL_GL_GetAttribute(
-                SDL_GL_CONTEXT_MAJOR_VERSION,
-                &opengl_major_version),
-            0)
-            << "`SDL_GL_GetAttribute()` for opengl major"
-               " version failed with the error: "
-            << SDL_GetError();
+        CHECK(SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION,
+                                  &opengl_major_version)
+              == 0);
 
-        CHECK_EQ(
-            SDL_GL_GetAttribute(
-                SDL_GL_CONTEXT_MINOR_VERSION,
-                &opengl_minor_version),
-            0)
-            << "`SDL_GL_GetAttribute()` for opengl minor"
-               " version failed with the error: "
-            << SDL_GetError();
+        CHECK(SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION,
+                                  &opengl_minor_version)
+              == 0);
 
-        CHECK(opengl_major_version == 3) << "Invalid opengl major version";
-        CHECK(opengl_minor_version == 2) << "Invalid opengl minor version";
+        CHECK(opengl_major_version == 3);
+        CHECK(opengl_minor_version == 2);
 
         m_screen_width = 1024u;
         m_screen_height = 768u;
@@ -538,23 +509,17 @@ namespace arci
                 SDL_WINDOW_OPENGL),
             SDL_DestroyWindow);
 
-        CHECK(m_window)
-            << "`SDL_CreateWindow()` failed with the following error: "
-            << SDL_GetError();
+        CHECK(m_window.get());
 
-        CHECK_EQ(
-            SDL_SetWindowPosition(
-                m_window.get(),
-                SDL_WINDOWPOS_CENTERED,
-                SDL_WINDOWPOS_CENTERED),
-            0)
-            << "`SDL_SetWindowPosition()` failed with the following error: "
-            << SDL_GetError();
+        CHECK(SDL_SetWindowPosition(m_window.get(),
+                                    SDL_WINDOWPOS_CENTERED,
+                                    SDL_WINDOWPOS_CENTERED)
+              == 0);
 
         m_opengl_context = std::unique_ptr<void, int (*)(SDL_GLContext)>(
             SDL_GL_CreateContext(m_window.get()),
             SDL_GL_DeleteContext);
-        CHECK_NOTNULL(m_opengl_context);
+        CHECK_NOTNULL(m_opengl_context.get());
 
         auto load_opengl_func_pointer = [](const char* func_name) -> void* {
             SDL_FunctionPointer sdl_func_pointer
@@ -623,22 +588,16 @@ namespace arci
                                   &returned_from_open_audio_device,
                                   SDL_AUDIO_ALLOW_ANY_CHANGE);
 
-        CHECK(m_audio_device_id != 0) << SDL_GetError();
+        CHECK(m_audio_device_id != 0);
 
         CHECK(m_desired_audio_spec.freq
-              == returned_from_open_audio_device.freq)
-            << "Desired frequency differs from returned frequency"
-            << " from SDL_OpenAudioDevice()";
+              == returned_from_open_audio_device.freq);
 
         CHECK(m_desired_audio_spec.channels
-              == returned_from_open_audio_device.channels)
-            << "Desired number of channels differs from returned number"
-            << " from SDL_OpenAudioDevice()";
+              == returned_from_open_audio_device.channels);
 
         CHECK(m_desired_audio_spec.format
-              == returned_from_open_audio_device.format)
-            << "Desired format differs from returned format"
-            << " from SDL_OpenAudioDevice()";
+              == returned_from_open_audio_device.format);
 
         SDL_PlayAudioDevice(m_audio_device_id);
     }
@@ -865,7 +824,7 @@ namespace arci
 
     void engine_using_sdl::uninit()
     {
-        CHECK(SDL_PauseAudioDevice(m_audio_device_id) == 0) << SDL_GetError();
+        CHECK(SDL_PauseAudioDevice(m_audio_device_id) == 0);
         SDL_CloseAudioDevice(m_audio_device_id);
         SDL_Quit();
     }
@@ -971,7 +930,7 @@ namespace arci
 
         static iengine* get_instance()
         {
-            CHECK(!m_is_existing) << "Engine has been already created";
+            CHECK(!m_is_existing);
             m_is_existing = true;
             return m_engine;
         }
@@ -995,7 +954,7 @@ namespace arci
 
     void engine_destroy(iengine* engine)
     {
-        CHECK(engine) << "Invalid engine state on engine destroy";
+        CHECK(engine);
         delete engine;
     }
 
