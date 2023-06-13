@@ -134,10 +134,10 @@ int main(int, char**)
     arci::itexture* texture = engine->create_texture("worm.png");
 
     std::vector<arci::vertex> vertices {
-        { -0.3f, -0.3f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 1.f },
-        { 0.3f, -0.3f, 0.f, 0.f, 0.f, 0.f, 1.f, 1.f, 1.f },
-        { -0.3f, 0.3f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f },
-        { 0.3f, 0.3f, 0.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f },
+        { -0.3f, -0.3f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f }, // Bottom left.
+        { 0.3f, -0.3f, 0.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f },  // Bottom right.
+        { -0.3f, 0.3f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 1.f },  // Top left.
+        { 0.3f, 0.3f, 0.f, 0.f, 0.f, 0.f, 1.f, 1.f, 1.f },   // Top right.
     };
 
     std::vector<uint32_t> indices { 0, 1, 2, 2, 3, 1 };

@@ -25,9 +25,7 @@ list(
   "engine/imgui/imstb_rectpack.h"
   "engine/imgui/imstb_textedit.h"
   "engine/imgui/imstb_truetype.h"
-  "engine/imgui/imgui_impl_opengl.hxx"
-  "engine/opengl-debug.hxx"
-  "engine/helper.hxx")
+  "engine/imgui/imgui_impl_opengl.hxx")
 
 list(
   APPEND
@@ -97,9 +95,8 @@ set_property(TARGET imgui-lib PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 add_library(
   engine
-  engine/opengl-debug.hxx engine/opengl-shader-programm.hxx
-  engine/opengl-shader-programm.cxx engine/engine.hxx engine/engine.cxx
-  engine/picopng.hxx)
+  engine/opengl-debug.hxx engine/stb_image.h engine/opengl-shader-programm.hxx
+  engine/opengl-shader-programm.cxx engine/engine.hxx engine/engine.cxx)
 target_link_libraries(
   engine
   compiler-flags-lib

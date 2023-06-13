@@ -2,7 +2,6 @@
 #include "glad/glad.h"
 #include "opengl-debug.hxx"
 #include "opengl-shader-programm.hxx"
-#include "picopng.hxx"
 
 //
 #include <SDL3/SDL.h>
@@ -10,6 +9,9 @@
 //
 #include <imgui.h>
 #include <imgui_impl_opengl.hxx>
+
+#define STB_IMAGE_IMPLEMENTATION // Should be defined before including stb_image.h.
+#include <stb_image.h>
 
 //
 #include <algorithm>
@@ -384,16 +386,22 @@ namespace arci
         file.close();
         CHECK(file.good());
 
-        std::vector<unsigned char> raw_pixels_after_decoding {};
+        int w {}, h {}, components {}, required_comps { 4 };
 
-        const int decoding_status = decodePNG(raw_pixels_after_decoding,
-                                              m_texture_width,
-                                              m_texture_height,
-                                              raw_png_image.data(),
-                                              raw_png_image.size());
+        stbi_set_flip_vertically_on_load(true);
 
-        CHECK(decoding_status == 0);
-        CHECK(raw_pixels_after_decoding.size());
+        unsigned char* raw_pixels_after_decoding
+            = stbi_load_from_memory(raw_png_image.data(),
+                                    static_cast<int>(raw_png_image.size()),
+                                    &w,
+                                    &h,
+                                    &components,
+                                    required_comps);
+
+        CHECK_NOTNULL(raw_pixels_after_decoding);
+
+        m_texture_width = w;
+        m_texture_height = h;
 
         glGenTextures(1, &m_texture_id);
         opengl_check();
@@ -414,7 +422,7 @@ namespace arci
                      0,
                      GL_RGBA,
                      GL_UNSIGNED_BYTE,
-                     raw_pixels_after_decoding.data());
+                     raw_pixels_after_decoding);
         opengl_check();
         glGenerateMipmap(GL_TEXTURE_2D);
         opengl_check();
