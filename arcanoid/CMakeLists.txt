@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.22)
 
-# Project configuration
-
+# Project configuration.
 project(
     arcanoid
     VERSION 0.1.0
@@ -12,48 +11,46 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug)
 endif()
 
-if(CMAKE_BUILD_TYPE STREQUAL "Release" )
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
     message("=== RELEASE MODE ===")
-    add_definitions( "-DRELEASE" )
-    add_definitions( "-O2" )
+    add_definitions("-DRELEASE")
+    add_definitions("-O2")
 else()
     message("=== DEBUG MODE ===")
-    add_definitions( "-DDEBUG" )
+    add_definitions("-DDEBUG")
 endif()
 
-# CMake stuff
-
+# CMake stuff.
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules")
 
 # Check if `fmt` git submodule is initialized.
-
 if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../submodules/fmt)
-  message(
-    FATAL_ERROR
-      "Submodule `fmt` is not initialized. "
-      "Make sure you've cloned this repo with '--recurse-submodules' option.")
+    message(
+        FATAL_ERROR
+            "Submodule `fmt` is not initialized. "
+            "Make sure you've cloned this repo with '--recurse-submodules' option."
+    )
 endif()
 
 # Check if `SDL` git submodule is initialized.
-
 if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../submodules/sdl)
     message(
         FATAL_ERROR
-        "Submodule `SDL` is not initialized. "
-        "Make sure you've cloned this repo with '--recurse-submodules' option.")
+            "Submodule `SDL` is not initialized. "
+            "Make sure you've cloned this repo with '--recurse-submodules' option."
+    )
 endif()
 
 # Check if `Glm` git submodule is initialized.
-
 if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../submodules/glm)
-  message(
+    message(
         FATAL_ERROR
-        "Submodule `glm` is not initialized. "
-        "Make sure you've cloned this repo with '--recurse-submodules' option.")
+            "Submodule `glm` is not initialized. "
+            "Make sure you've cloned this repo with '--recurse-submodules' option."
+    )
 endif()
 
-# Submodules
-
+# Submodules.
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../submodules/fmt
                  ${CMAKE_BINARY_DIR}/fmt)
 
@@ -63,21 +60,20 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../submodules/sdl
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../submodules/glm
                  ${CMAKE_BINARY_DIR}/glm)
 
-# Game
+# Official CMake doc doesn't recommend to use GLOB. Check this:
+# https://cmake.org/cmake/help/latest/command/include_directories.html
+list(APPEND APP_SOURCES src/game.cxx)
 
-include_directories(
-    ${PROJECT_SOURCE_DIR}/src
-    ${PROJECT_SOURCE_DIR}/engine/include
-    ${PROJECT_SOURCE_DIR}/engine/external/imgui/include)
-
-file(GLOB_RECURSE APP_SOURCES src/*.cxx)
-
+# Game.
 add_executable(arcanoid ${APP_SOURCES})
-target_compile_options(arcanoid PRIVATE "$<$<CXX_COMPILER_ID:Clang,AppleClang,GNU>:-Wall;-Wextra;-Wpedantic;-Werror>")
+target_compile_options(
+    arcanoid
+    PRIVATE
+        "$<$<CXX_COMPILER_ID:Clang,AppleClang,GNU>:-Wall;-Wextra;-Wpedantic;-Werror>"
+)
 
 include(AddModule)
 add_module(arcanoid engine ${PROJECT_SOURCE_DIR}/engine)
 
-# Resources
-
+# Resources.
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/res")
