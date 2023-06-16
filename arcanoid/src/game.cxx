@@ -15,6 +15,8 @@ namespace arcanoid
         const auto [w, h] = m_engine->get_screen_resolution();
         m_screen_w = w;
         m_screen_h = h;
+        m_sprite_system.screen_width = w;
+        m_sprite_system.screen_height = h;
 
         arci::iaudio_buffer* background_sound
             = m_engine->create_audio_buffer("res/music.wav");

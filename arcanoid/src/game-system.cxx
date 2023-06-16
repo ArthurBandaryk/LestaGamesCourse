@@ -20,9 +20,10 @@ namespace arcanoid
                 arci::CHECK_NOTNULL(texture);
 
                 std::vector<arci::vertex> vertices {};
-                auto from_world_to_ndc = [](const glm::vec2& world_pos) {
-                    return glm::vec2 { -1.f + world_pos[0] * 2.f / 1024.f,
-                                       1.f - world_pos[1] * 2 / 768.f };
+
+                auto from_world_to_ndc = [this](const glm::vec2& world_pos) {
+                    return glm::vec2 { -1.f + world_pos[0] * 2.f / screen_width,
+                                       1.f - world_pos[1] * 2 / screen_height };
                 };
 
                 glm::vec2 tex_coordinates[4] {
