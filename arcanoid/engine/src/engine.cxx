@@ -311,6 +311,9 @@ namespace arci
                     i_index_buffer* ebo,
                     itexture* const texture,
                     const glm::mediump_mat3& matrix) override;
+        void render(ivertex_buffer* vertex_buffer,
+                    i_index_buffer* ebo,
+                    itexture* const texture) override;
         itexture* create_texture(const std::string_view path) override;
         void destroy_texture(const itexture* const texture) override;
         ivertex_buffer* create_vertex_buffer(
@@ -344,6 +347,7 @@ namespace arci
             m_opengl_context { nullptr, nullptr };
 
         opengl_shader_program m_textured_triangle_program {};
+        opengl_shader_program m_tex_no_math_program {};
 
         // Desired audio spec for all sounds.
         std::vector<audio_buffer*> m_sounds {};
@@ -556,6 +560,12 @@ namespace arci
                                                 "texture.frag");
         m_textured_triangle_program.prepare_program();
 
+        m_tex_no_math_program.load_shader(GL_VERTEX_SHADER,
+                                          "tex-no-math.vert");
+        m_tex_no_math_program.load_shader(GL_FRAGMENT_SHADER,
+                                          "tex-no-math.frag");
+        m_tex_no_math_program.prepare_program();
+
         glGenBuffers(1, &m_vbo);
         opengl_check();
 
@@ -755,6 +765,68 @@ namespace arci
     {
         ImGui::Render();
         ImGui_ImplSdlGL3_RenderDrawLists(ImGui::GetDrawData());
+    }
+
+    void engine_using_sdl::render(ivertex_buffer* vertex_buffer,
+                                  i_index_buffer* ebo,
+                                  itexture* const texture)
+    {
+        m_tex_no_math_program.apply_shader_program();
+
+        m_tex_no_math_program.set_uniform("s_texture");
+
+        texture->bind();
+        vertex_buffer->bind();
+        ebo->bind();
+
+        glEnableVertexAttribArray(0);
+        opengl_check();
+        glEnableVertexAttribArray(1);
+        opengl_check();
+        glEnableVertexAttribArray(2);
+        opengl_check();
+
+        glVertexAttribPointer(
+            0,
+            2,
+            GL_FLOAT,
+            GL_FALSE,
+            sizeof(vertex),
+            reinterpret_cast<void*>(0));
+        opengl_check();
+
+        glVertexAttribPointer(
+            1,
+            4,
+            GL_FLOAT,
+            GL_FALSE,
+            sizeof(vertex),
+            reinterpret_cast<void*>(3 * sizeof(float)));
+        opengl_check();
+
+        glVertexAttribPointer(
+            2,
+            2,
+            GL_FLOAT,
+            GL_FALSE,
+            sizeof(vertex),
+            reinterpret_cast<void*>(7 * sizeof(float)));
+        opengl_check();
+
+        glDrawElements(GL_TRIANGLES,
+                       ebo->get_indices_number(),
+                       GL_UNSIGNED_INT,
+                       0);
+        opengl_check();
+
+        glDisableVertexAttribArray(0);
+        opengl_check();
+
+        glDisableVertexAttribArray(1);
+        opengl_check();
+
+        glDisableVertexAttribArray(2);
+        opengl_check();
     }
 
     void engine_using_sdl::render(ivertex_buffer* vertex_buffer,

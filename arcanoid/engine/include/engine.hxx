@@ -169,7 +169,10 @@ namespace arci
         virtual void render(ivertex_buffer* vertex_buffer,
                             i_index_buffer* ebo,    
                             itexture* const texture,
-                            const glm::mediump_mat3& matrix) = 0;                    
+                            const glm::mediump_mat3& matrix) = 0;
+        virtual void render(ivertex_buffer* vertex_buffer,
+                    i_index_buffer* ebo,
+                    itexture* const texture) = 0;
 
         virtual ivertex_buffer* create_vertex_buffer(
             const std::vector<triangle>& triangles) = 0;

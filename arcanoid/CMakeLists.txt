@@ -62,7 +62,15 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../submodules/glm
 
 # Official CMake doc doesn't recommend to use GLOB. Check this:
 # https://cmake.org/cmake/help/latest/command/include_directories.html
-list(APPEND APP_SOURCES src/game.cxx)
+list(
+    APPEND
+    APP_SOURCES
+    src/main.cxx
+    src/component.cxx
+    src/entity.cxx
+    src/game-system.cxx
+    src/game.cxx
+    src/coordinator.cxx)
 
 # Game.
 add_executable(arcanoid ${APP_SOURCES})

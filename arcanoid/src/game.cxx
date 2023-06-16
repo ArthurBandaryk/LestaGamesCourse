@@ -1,290 +1,177 @@
-#include <engine.hxx>
-#include <imgui.h>
+#include "game.hxx"
+#include "helper.hxx"
 
-#include <glm/ext/matrix_float2x2_precision.hpp>
-
-#include <fmt/core.h>
-
-//
-#include <imgui.h>
-
-#include <helper.hxx>
-
-//
-#include <algorithm>
-#include <cmath>
-#include <memory>
-
-enum class game_status
+namespace arcanoid
 {
-    main_menu,
-    game_start,
-    game_over,
-    exit
-};
-
-void main_menu(const std::size_t width,
-               const std::size_t height,
-               game_status& status)
-{
-    const ImGuiViewport* main_viewport = ImGui::GetMainViewport();
-    ImGui::SetNextWindowPos(ImVec2(main_viewport->WorkPos.x,
-                                   main_viewport->WorkPos.y),
-                            ImGuiCond_Always);
-    ImGui::SetNextWindowSize(ImVec2(width, height), ImGuiCond_Always);
-    ImGuiWindowFlags window_flags = 0;
-    window_flags |= ImGuiWindowFlags_NoTitleBar;
-    window_flags |= ImGuiWindowFlags_NoResize;
-
-    ImGuiStyle& style = ImGui::GetStyle();
-    style.WindowBorderSize = 0.0f;
-
-    ImGui::Begin("Main menu", nullptr, window_flags);
-
-    // Game name text label.
-    const char game_name[] { "ARCANOID" };
-    const float game_name_offset_y { height / 10.f };
-    const float game_text_width = ImGui::CalcTextSize(game_name).x;
-    const float game_text_height = ImGui::CalcTextSize(game_name).y;
-    ImGui::SetCursorPosX((width - game_text_width) * 0.5f);
-    ImGui::SetCursorPosY(game_name_offset_y);
-    ImGui::Text(game_name);
-
-    // Start game button.
-    const char start_button_name[] { "START" };
-    const float start_button_width { game_text_width * 2.f };
-    const float start_button_height { game_text_height * 2.f };
-    ImGui::SetCursorPosX((width - start_button_width) * 0.5f);
-    ImGui::SetCursorPosY(game_name_offset_y
-                         + game_text_height
-                         + game_name_offset_y / 2.f);
-    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(255.f, 128.f, 0.f, 255.f));
-    if (ImGui::Button(start_button_name,
-                      ImVec2(start_button_width, start_button_height)))
+    void game::on_init()
     {
-        status = game_status::game_start;
-    }
-    ImGui::PopStyleColor();
-
-    // Exit button.
-    const char exit_button_name[] { "EXIT" };
-    const float exit_button_width { start_button_width };
-    const float exit_button_height { start_button_height };
-    ImGui::SetCursorPosX((width - exit_button_width) * 0.5f);
-    ImGui::SetCursorPosY(game_name_offset_y
-                         + game_text_height
-                         + game_name_offset_y / 2.f
-                         + start_button_height
-                         + game_name_offset_y / 2.f);
-    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(255.f, 0.f, 0.f, 255.f));
-    if (ImGui::Button(exit_button_name,
-                      ImVec2(exit_button_width, exit_button_height)))
-    {
-        status = game_status::exit;
-    }
-    ImGui::PopStyleColor();
-
-    ImGui::End();
-}
-
-void game_over_menu(const std::size_t width,
-                    const std::size_t height)
-{
-    const ImGuiViewport* main_viewport = ImGui::GetMainViewport();
-    ImGui::SetNextWindowPos(ImVec2(main_viewport->WorkPos.x,
-                                   main_viewport->WorkPos.y),
-                            ImGuiCond_Always);
-    ImGui::SetNextWindowSize(ImVec2(width, height), ImGuiCond_Always);
-    ImGuiWindowFlags window_flags = 0;
-    window_flags |= ImGuiWindowFlags_NoTitleBar;
-    window_flags |= ImGuiWindowFlags_NoResize;
-
-    ImGuiStyle& style = ImGui::GetStyle();
-    style.WindowBorderSize = 0.0f;
-
-    ImGui::Begin("Main menu", nullptr, window_flags);
-
-    // Game over text label.
-    const char title[] { "GAME OVER!" };
-    const float title_offset_y { height / 2.f };
-    const float title_text_width = ImGui::CalcTextSize(title).x;
-    ImGui::SetCursorPosX((width - title_text_width) * 0.5f);
-    ImGui::SetCursorPosY(title_offset_y);
-    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(255.f, 0.f, 0.f, 255.f));
-    ImGui::Text(title);
-    ImGui::PopStyleColor();
-
-    ImGui::End();
-}
-
-int main(int, char**)
-{
-    // Create engine.
-    std::unique_ptr<arci::iengine, void (*)(arci::iengine*)>
-        engine {
+        m_engine = std::unique_ptr<arci::iengine, void (*)(arci::iengine*)> {
             arci::engine_create(),
             arci::engine_destroy
         };
 
-    engine->init();
+        m_engine->init();
 
-    const auto [screen_width, screen_height]
-        = engine->get_screen_resolution();
+        const auto [w, h] = m_engine->get_screen_resolution();
+        m_screen_w = w;
+        m_screen_h = h;
 
-    arci::itexture* texture = engine->create_texture("res/worm.png");
+        arci::iaudio_buffer* background_sound
+            = m_engine->create_audio_buffer("res/music.wav");
+        arci::iaudio_buffer* hit_ball_sound
+            = m_engine->create_audio_buffer("res/music.wav");
+        m_sounds.insert({ "background", background_sound });
+        m_sounds.insert({ "hit_ball", hit_ball_sound });
 
-    std::vector<arci::vertex> vertices {
-        { -0.3f, -0.3f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f }, // Bottom left.
-        { 0.3f, -0.3f, 0.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f },  // Bottom right.
-        { -0.3f, 0.3f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 1.f },  // Top left.
-        { 0.3f, 0.3f, 0.f, 0.f, 0.f, 0.f, 1.f, 1.f, 1.f },   // Top right.
-    };
+        m_sounds["background"]->play(
+            arci::iaudio_buffer::running_mode::for_ever);
 
-    std::vector<uint32_t> indices { 0, 1, 2, 2, 3, 1 };
-
-    arci::ivertex_buffer* vertex_buffer = engine->create_vertex_buffer(vertices);
-    arci::i_index_buffer* index_buffer = engine->create_ebo(indices);
-    arci::iaudio_buffer* background_music
-        = engine->create_audio_buffer("res/music.wav");
-    arci::iaudio_buffer* hit_sound = engine->create_audio_buffer("res/hit.wav");
-
-    background_music->play(arci::iaudio_buffer::running_mode::for_ever);
-
-    game_status status = game_status::main_menu;
-
-    glm::vec3 worm_pos { 0.f, 0.f, 1.f };
-    glm::vec2 worm_scale { 1.f, 1.f };
-
-    constexpr float pi { 3.14159f };
-    float worm_direction { 0.f };
-    float reflection_y { 1.f };
-    float speed_x { 0.01f }, speed_y { 0.01f };
-
-    bool loop_continue { true };
-
-    while (loop_continue)
-    {
-        arci::event event {};
-
-        while (engine->process_input(event))
-        {
-            if (event.is_quitting)
-            {
-                loop_continue = false;
-                break;
-            }
-        }
-
-        if (engine->key_down(arci::keys::magnify))
-        {
-            worm_scale[0] += 0.1;
-            worm_scale[1] += 0.1;
-            hit_sound->play(arci::iaudio_buffer::running_mode::once);
-        }
-        else if (engine->key_down(arci::keys::reduce))
-        {
-            worm_scale[0] -= 0.1;
-            worm_scale[1] -= 0.1;
-        }
-        else if (engine->key_down(arci::keys::left))
-        {
-            worm_direction = 0.f;
-            reflection_y = 1.f;
-            worm_pos[0] -= speed_x;
-        }
-        else if (engine->key_down(arci::keys::right))
-        {
-            worm_direction = 0.f;
-            reflection_y = -1.f;
-            worm_pos[0] += speed_x;
-        }
-        else if (engine->key_down(arci::keys::up))
-        {
-            worm_direction = 0.f;
-            worm_pos[1] += speed_y;
-        }
-        else if (engine->key_down(arci::keys::down))
-        {
-            worm_direction = pi / 2.f;
-            reflection_y = 1.f;
-            worm_pos[1] -= speed_y;
-        }
-        else if (engine->key_down(arci::keys::button1))
-        {
-            reflection_y = 1.f;
-            worm_direction += 0.1f;
-        }
-
-        const glm::mediump_mat3x3 aspect_matrix {
-            1.f, 0.f, 0.f,
-            0.f, static_cast<float>(screen_width) / screen_height, 0.f,
-            0.f, 0.f, 1.f
-        };
-
-        const glm::mediump_mat3x3 scale_matrix {
-            worm_scale[0], 0.f, 0.f,
-            0.f, worm_scale[1], 0.f,
-            0.f, 0.f, 1.f
-        };
-
-        const glm::mediump_mat3x3 rotation_matrix {
-            std::cos(worm_direction), std::sin(worm_direction), 0.f,
-            -std::sin(worm_direction), std::cos(worm_direction), 0.f,
-            0.f, 0.f, 1.f
-        };
-
-        const glm::mediump_mat3x3 reflection_matrix {
-            reflection_y, 0.f, 0.f,
-            0.f, 1.f, 0.f,
-            0.f, 0.f, 1.f
-        };
-
-        const glm::mediump_mat3x3 move_matrix {
-            1.f, 0.f, 0.f,
-            0.f, 1.f, 0.f,
-            worm_pos[0], worm_pos[1], 1.f
-        };
-
-        const glm::mediump_mat3 result_matrix
-            = aspect_matrix * move_matrix * scale_matrix
-            * rotation_matrix * reflection_matrix;
-
-        if (status == game_status::game_start)
-        {
-            engine->render(vertex_buffer, index_buffer, texture, result_matrix);
-        }
-        else if (status == game_status::exit)
-        {
-            loop_continue = false;
-            break;
-        }
-        else if (status == game_status::game_over)
-        {
-            engine->imgui_new_frame();
-
-            game_over_menu(screen_width, screen_height);
-
-            engine->imgui_render();
-        }
-        else if (status == game_status::main_menu)
-        {
-            engine->imgui_new_frame();
-
-            main_menu(screen_width, screen_height, status);
-
-            engine->imgui_render();
-        }
-
-        engine->swap_buffers();
+        init_game_objects();
     }
 
-    engine->imgui_uninit();
-    engine->uninit();
-    engine->destroy_texture(texture);
-    engine->destroy_vertex_buffer(vertex_buffer);
-    engine->destroy_ebo(index_buffer);
-    engine->destroy_audio_buffer(background_music);
-    engine->destroy_audio_buffer(hit_sound);
+    void game::init_game_objects()
+    {
+        init_background();
+        init_bricks();
+        init_ball();
+        init_platform();
+    }
 
-    return EXIT_SUCCESS;
+    void game::init_bricks()
+    {
+        arci::itexture* yellow_brick_texture
+            = m_engine->create_texture("res/yellow_brick.png");
+        arci::CHECK_NOTNULL(yellow_brick_texture);
+        m_textures.push_back(yellow_brick_texture);
+
+        const float brick_width { m_screen_w / 10.f };
+        const float brick_height { m_screen_h / 20.f };
+
+        for (int i = 0; i < 10; i++)
+        {
+            for (int j = 0; j < 10; j++)
+            {
+                entity brick = create_entity();
+
+                position brick_position {
+                    glm::vec2 { 0.f + brick_width * j,
+                                0.f + brick_height * i },
+                    glm::vec2 { brick_width + brick_width * j,
+                                0.f + brick_height * i },
+                    glm::vec2 { brick_width + brick_width * j,
+                                brick_height + brick_height * i },
+                    glm::vec2 { 0.f + brick_width * j,
+                                brick_height + brick_height * i },
+                };
+                const auto [it1, position_inserted]
+                    = m_coordinator.positions.insert({ brick, brick_position });
+                arci::CHECK(position_inserted);
+
+                sprite brick_sprite { yellow_brick_texture };
+                const auto [it2, sprite_inserted]
+                    = m_coordinator.sprites.insert({ brick, brick_sprite });
+                arci::CHECK(sprite_inserted);
+            }
+        }
+    }
+
+    void game::init_background()
+    {
+        entity background = create_entity();
+
+        arci::itexture* background_texture
+            = m_engine->create_texture("res/background1.png");
+        arci::CHECK_NOTNULL(background_texture);
+        m_textures.push_back(background_texture);
+
+        position pos {
+            glm::vec2 { 0.f, 0.f },
+            glm::vec2 { m_screen_w, 0.f },
+            glm::vec2 { m_screen_w, m_screen_h },
+            glm::vec2 { 0.f, m_screen_h },
+        };
+        const auto [it1, pos_inserted]
+            = m_coordinator.positions.insert({ background, pos });
+        arci::CHECK(pos_inserted);
+
+        sprite spr { background_texture };
+        const auto [it2, sprite_inserted]
+            = m_coordinator.sprites.insert({ background, spr });
+        arci::CHECK(sprite_inserted);
+    }
+
+    void game::init_ball()
+    {
+        entity ball = create_entity();
+
+        arci::itexture* texture
+            = m_engine->create_texture("res/ball.png");
+        arci::CHECK_NOTNULL(texture);
+        m_textures.push_back(texture);
+
+        const float ball_width { m_screen_w / 35.f };
+        const float ball_height { m_screen_w / 35.f };
+
+        position pos {
+            glm::vec2 { m_screen_w / 2.f - ball_width / 2.f,
+                        3.f * m_screen_h / 4.f - ball_height / 2.f },
+            glm::vec2 { m_screen_w / 2.f + ball_width / 2.f,
+                        3.f * m_screen_h / 4.f - ball_height / 2.f },
+            glm::vec2 { m_screen_w / 2.f + ball_width / 2.f,
+                        3.f * m_screen_h / 4.f + ball_height / 2.f },
+            glm::vec2 { m_screen_w / 2.f - ball_width / 2.f,
+                        3.f * m_screen_h / 4.f + ball_height / 2.f },
+        };
+        const auto [it1, pos_inserted]
+            = m_coordinator.positions.insert({ ball, pos });
+        arci::CHECK(pos_inserted);
+
+        sprite spr { texture };
+        const auto [it2, sprite_inserted]
+            = m_coordinator.sprites.insert({ ball, spr });
+        arci::CHECK(sprite_inserted);
+    }
+
+    void game::init_platform()
+    {
+        entity platform = create_entity();
+
+        arci::itexture* texture
+            = m_engine->create_texture("res/platform1.png");
+        arci::CHECK_NOTNULL(texture);
+        m_textures.push_back(texture);
+
+        const float platform_width { m_screen_w / 5.f };
+        const float platform_height { m_screen_w / 25.f };
+
+        position pos {
+            glm::vec2 { m_screen_w / 2.f - platform_width / 2.f,
+                        m_screen_h - platform_height },
+            glm::vec2 { m_screen_w / 2.f + platform_width / 2.f,
+                        m_screen_h - platform_height },
+            glm::vec2 { m_screen_w / 2.f + platform_width / 2.f,
+                        m_screen_h },
+            glm::vec2 { m_screen_w / 2.f - platform_width / 2.f,
+                        m_screen_h },
+        };
+        const auto [it1, pos_inserted]
+            = m_coordinator.positions.insert({ platform, pos });
+        arci::CHECK(pos_inserted);
+
+        sprite spr { texture };
+        const auto [it2, sprite_inserted]
+            = m_coordinator.sprites.insert({ platform, spr });
+        arci::CHECK(sprite_inserted);
+    }
+
+    void game::on_update([[maybe_unused]] const float dt)
+    {
+    }
+
+    void game::on_render()
+    {
+        m_sprite_system.render(m_engine.get(), m_coordinator);
+
+        m_engine->swap_buffers();
+    }
 }
