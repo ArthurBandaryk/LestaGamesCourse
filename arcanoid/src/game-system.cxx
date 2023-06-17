@@ -123,7 +123,6 @@ namespace arcanoid
                                            dt,
                                            screen_width,
                                            screen_height);
-                continue;
             }
 
             if (collidable.first == a_coordinator.collidable_ids.at("platform"))
