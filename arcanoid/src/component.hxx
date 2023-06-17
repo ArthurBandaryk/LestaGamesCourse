@@ -28,6 +28,10 @@ namespace arcanoid
     {
     };
 
+    struct collision
+    {
+    };
+
     struct life
     {
         std::uint32_t lives_number {};

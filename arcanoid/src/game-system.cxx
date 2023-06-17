@@ -108,4 +108,59 @@ namespace arcanoid
             }
         }
     }
+
+    void collision_system::update(coordinator& a_coordinator,
+                                  const float dt,
+                                  const std::size_t screen_width,
+                                  const std::size_t screen_height)
+    {
+        for (auto& collidable : a_coordinator.collidable_entities)
+        {
+            if (collidable.first == a_coordinator.collidable_ids.at("ball"))
+            {
+                resolve_collision_for_ball(collidable.first,
+                                           a_coordinator,
+                                           dt,
+                                           screen_width,
+                                           screen_height);
+            }
+
+            if (collidable.first == a_coordinator.collidable_ids.at("platform"))
+            {
+                resolve_collision_for_platform(collidable.first,
+                                               a_coordinator,
+                                               dt,
+                                               screen_width);
+            }
+        }
+    }
+
+    void collision_system::resolve_collision_for_platform(
+        const entity id,
+        coordinator& a_coordinator,
+        const float dt,
+        const std::size_t screen_width)
+    {
+        position& pos = a_coordinator.positions.at(id);
+
+        for (const auto& vertex : pos.vertices)
+        {
+            const float new_x
+                = vertex.x + a_coordinator.transformations.at(id).speed_x * dt;
+            if (new_x < 0.f || new_x > screen_width)
+            {
+                a_coordinator.transformations.at(id).speed_x = 0.f;
+                break;
+            }
+        }
+    }
+
+    void collision_system::resolve_collision_for_ball(
+        [[maybe_unused]] const entity id,
+        [[maybe_unused]] coordinator& a_coordinator,
+        [[maybe_unused]] const float dt,
+        [[maybe_unused]] const std::size_t screen_width,
+        [[maybe_unused]] const std::size_t screen_height)
+    {
+    }
 }

@@ -4,6 +4,7 @@
 #include "entity.hxx"
 
 #include <map>
+#include <string>
 
 namespace arcanoid
 {
@@ -13,5 +14,7 @@ namespace arcanoid
         std::map<entity, sprite> sprites {};
         std::map<entity, transform2d> transformations {};
         std::map<entity, key_inputs> inputs {};
+        std::map<entity, collision> collidable_entities {};
+        std::map<std::string, entity> collidable_ids {};
     };
 }

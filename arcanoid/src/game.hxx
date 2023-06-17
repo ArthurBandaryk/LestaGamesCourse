@@ -42,9 +42,10 @@ namespace arcanoid
         std::map<std::string, arci::iaudio_buffer*> m_sounds {};
 
         coordinator m_coordinator {};
+        input_system m_input_system {};
         sprite_system m_sprite_system {};
         transform_system m_transform_system {};
-        input_system m_input_system {};
+        collision_system m_collision_system {};
 
         std::unique_ptr<arci::iengine,
                         void (*)(arci::iengine*)>

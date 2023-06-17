@@ -57,7 +57,7 @@ namespace arcanoid
     void game::on_update(const float dt)
     {
         m_input_system.update(m_coordinator, m_engine.get(), dt);
-        // Here put code for a collidable system.
+        m_collision_system.update(m_coordinator, dt, m_screen_w, m_screen_h);
         m_transform_system.update(m_coordinator, dt);
     }
 
@@ -212,6 +212,16 @@ namespace arcanoid
         const auto [it2, sprite_inserted]
             = m_coordinator.sprites.insert({ ball, spr });
         arci::CHECK(sprite_inserted);
+
+        collision collision_component {};
+        const auto [it3, collision_inserted]
+            = m_coordinator.collidable_entities.insert(
+                { ball, collision_component });
+        arci::CHECK(collision_inserted);
+
+        const auto [it4, collision_id_inserted]
+            = m_coordinator.collidable_ids.insert({ "ball", ball });
+        arci::CHECK(collision_id_inserted);
     }
 
     void game::init_platform()
@@ -254,5 +264,15 @@ namespace arcanoid
         const auto [it4, input_inserted]
             = m_coordinator.inputs.insert({ platform, input });
         arci::CHECK(input_inserted);
+
+        collision collision_component {};
+        const auto [it5, collision_inserted]
+            = m_coordinator.collidable_entities.insert(
+                { platform, collision_component });
+        arci::CHECK(collision_inserted);
+
+        const auto [it6, collision_id_inserted]
+            = m_coordinator.collidable_ids.insert({ "platform", platform });
+        arci::CHECK(collision_id_inserted);
     }
 }

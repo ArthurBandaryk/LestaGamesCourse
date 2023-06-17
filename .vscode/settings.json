@@ -74,6 +74,7 @@
     "cmake.sourceDirectory": "/home/arc1/LestaGames/LestaGamesCourse/arcanoid",
     "cSpell.words": [
         "arci",
+        "collidable",
         "GLES",
         "icomponent",
         "iengine",
