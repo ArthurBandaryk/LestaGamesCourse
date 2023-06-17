@@ -18,14 +18,14 @@ namespace arcanoid
         arci::itexture* texture { nullptr };
     };
 
-    struct transform2D
+    struct transform2d
     {
-        glm::vec2 scale {};
+        float speed_x { 0.f };
+        float speed_y { 0.f };
     };
 
-    struct motion2D
+    struct key_inputs
     {
-        float speed { 0.f };
     };
 
     struct life
@@ -33,4 +33,5 @@ namespace arcanoid
         std::uint32_t lives_number {};
         std::uint32_t lives_left {};
     };
+
 }

@@ -15,21 +15,24 @@ namespace arcanoid
     class game final
     {
     public:
-        void on_init();
-        void on_event(arci::event& event);
-        void on_update(const float dt);
-        void on_render();
+        void main_loop();
+        ~game();
 
+    private:
         enum class game_status
         {
             main_menu,
-            game_start,
+            game,
             game_over,
             exit
         };
 
-    private:
-        void init_game_objects();
+        void on_init();
+        void on_event();
+        void on_update(const float dt);
+        void on_render();
+
+        void init_world();
         void init_bricks();
         void init_ball();
         void init_platform();
@@ -40,12 +43,14 @@ namespace arcanoid
 
         coordinator m_coordinator {};
         sprite_system m_sprite_system {};
+        transform_system m_transform_system {};
+        input_system m_input_system {};
 
         std::unique_ptr<arci::iengine,
                         void (*)(arci::iengine*)>
             m_engine { nullptr, nullptr };
         std::size_t m_screen_w {};
         std::size_t m_screen_h {};
-        game_status status { game_status::game_start };
+        game_status m_status { game_status::game };
     };
 }

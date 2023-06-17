@@ -11,5 +11,7 @@ namespace arcanoid
     {
         std::map<entity, position> positions {};
         std::map<entity, sprite> sprites {};
+        std::map<entity, transform2d> transformations {};
+        std::map<entity, key_inputs> inputs {};
     };
 }

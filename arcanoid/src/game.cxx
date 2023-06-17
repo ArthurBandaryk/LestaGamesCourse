@@ -3,6 +3,57 @@
 
 namespace arcanoid
 {
+    void game::main_loop()
+    {
+        on_init();
+
+        bool loop_continue { true };
+
+        while (loop_continue)
+        {
+            on_event();
+            if (m_status == game_status::exit)
+            {
+                loop_continue = false;
+                break;
+            }
+            on_update(1.f);
+            if (m_status == game_status::exit)
+            {
+                loop_continue = false;
+                break;
+            }
+            on_render();
+        }
+    }
+
+    void game::on_event()
+    {
+        arci::event event;
+        while (m_engine->process_input(event))
+        {
+            if (event.is_quitting)
+            {
+                m_status = game_status::exit;
+                break;
+            }
+        }
+    }
+
+    void game::on_update(const float dt)
+    {
+        m_input_system.update(m_coordinator, m_engine.get());
+        // Here put code for a collidable system.
+        m_transform_system.update(m_coordinator, dt);
+    }
+
+    void game::on_render()
+    {
+        m_sprite_system.render(m_engine.get(), m_coordinator);
+
+        m_engine->swap_buffers();
+    }
+
     void game::on_init()
     {
         m_engine = std::unique_ptr<arci::iengine, void (*)(arci::iengine*)> {
@@ -28,10 +79,25 @@ namespace arcanoid
         m_sounds["background"]->play(
             arci::iaudio_buffer::running_mode::for_ever);
 
-        init_game_objects();
+        init_world();
     }
 
-    void game::init_game_objects()
+    game::~game()
+    {
+        for (auto texture : m_textures)
+        {
+            m_engine->destroy_texture(texture);
+        }
+
+        for (auto [_, audio_buffer] : m_sounds)
+        {
+            m_engine->destroy_audio_buffer(audio_buffer);
+        }
+        m_engine->uninit();
+        m_engine->imgui_uninit();
+    }
+
+    void game::init_world()
     {
         init_background();
         init_bricks();
@@ -164,16 +230,15 @@ namespace arcanoid
         const auto [it2, sprite_inserted]
             = m_coordinator.sprites.insert({ platform, spr });
         arci::CHECK(sprite_inserted);
-    }
 
-    void game::on_update([[maybe_unused]] const float dt)
-    {
-    }
+        transform2d transform {};
+        const auto [it3, transform_inserted]
+            = m_coordinator.transformations.insert({ platform, transform });
+        arci::CHECK(transform_inserted);
 
-    void game::on_render()
-    {
-        m_sprite_system.render(m_engine.get(), m_coordinator);
-
-        m_engine->swap_buffers();
+        key_inputs input {};
+        const auto [it4, input_inserted]
+            = m_coordinator.inputs.insert({ platform, input });
+        arci::CHECK(input_inserted);
     }
 }

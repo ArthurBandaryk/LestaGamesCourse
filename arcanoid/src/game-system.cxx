@@ -4,7 +4,7 @@
 
 namespace arcanoid
 {
-    void sprite_system::update([[maybe_unused]] float dt)
+    void sprite_system::update([[maybe_unused]] const float dt)
     {
     }
 
@@ -13,7 +13,8 @@ namespace arcanoid
     {
         for (entity i = 1; i <= entities_number; i++)
         {
-            if (a_coordinator.sprites.count(i))
+            if (a_coordinator.sprites.count(i)
+                && a_coordinator.positions.count(i))
             {
                 const position pos = a_coordinator.positions.at(i);
                 arci::itexture* texture = a_coordinator.sprites.at(i).texture;
@@ -61,6 +62,51 @@ namespace arcanoid
                 engine->render(vbo, ebo, texture);
                 engine->destroy_vertex_buffer(vbo);
                 engine->destroy_ebo(ebo);
+            }
+        }
+    }
+
+    void transform_system::update(coordinator& a_coordinator, const float dt)
+    {
+        for (entity i = 1; i <= entities_number; i++)
+        {
+            if (a_coordinator.transformations.count(i)
+                && a_coordinator.positions.count(i))
+            {
+                position& pos = a_coordinator.positions.at(i);
+                for (auto& vertex : pos.vertices)
+                {
+                    vertex.x
+                        += a_coordinator.transformations.at(i).speed_x * dt;
+                    vertex.y
+                        += a_coordinator.transformations.at(i).speed_y * dt;
+                }
+            }
+        }
+    }
+
+    void input_system::update(coordinator& a_coordinator, arci::iengine* engine)
+    {
+        const float speed { 20.f };
+
+        for (entity i = 1; i <= entities_number; i++)
+        {
+            if (a_coordinator.inputs.count(i)
+                && a_coordinator.transformations.count(i))
+            {
+                if (engine->key_down(arci::keys::left))
+                {
+                    a_coordinator.transformations.at(i).speed_x = -speed;
+                }
+                if (engine->key_down(arci::keys::right))
+                {
+                    a_coordinator.transformations.at(i).speed_x = speed;
+                }
+                if (!engine->key_down(arci::keys::right)
+                    && !engine->key_down(arci::keys::left))
+                {
+                    a_coordinator.transformations.at(i).speed_x = 0.f;
+                }
             }
         }
     }
