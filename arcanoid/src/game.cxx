@@ -1,6 +1,9 @@
 #include "game.hxx"
 #include "helper.hxx"
 
+#include <chrono>
+#include <thread>
+
 namespace arcanoid
 {
     void game::main_loop()
@@ -12,17 +15,28 @@ namespace arcanoid
         while (loop_continue)
         {
             on_event();
+
             if (m_status == game_status::exit)
             {
                 loop_continue = false;
                 break;
             }
-            on_update(1.f);
+
+            static auto start_time = std::chrono::steady_clock::now();
+            auto current_time = std::chrono::steady_clock::now();
+            const std::chrono::duration<float> delta
+                = current_time - start_time;
+            const float dt = delta.count();
+            start_time = current_time;
+
+            on_update(dt);
+
             if (m_status == game_status::exit)
             {
                 loop_continue = false;
                 break;
             }
+
             on_render();
         }
     }
@@ -42,7 +56,7 @@ namespace arcanoid
 
     void game::on_update(const float dt)
     {
-        m_input_system.update(m_coordinator, m_engine.get());
+        m_input_system.update(m_coordinator, m_engine.get(), dt);
         // Here put code for a collidable system.
         m_transform_system.update(m_coordinator, dt);
     }

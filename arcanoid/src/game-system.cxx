@@ -4,10 +4,6 @@
 
 namespace arcanoid
 {
-    void sprite_system::update([[maybe_unused]] const float dt)
-    {
-    }
-
     void sprite_system::render(arci::iengine* engine,
                                coordinator& a_coordinator)
     {
@@ -85,9 +81,11 @@ namespace arcanoid
         }
     }
 
-    void input_system::update(coordinator& a_coordinator, arci::iengine* engine)
+    void input_system::update(coordinator& a_coordinator,
+                              arci::iengine* engine,
+                              const float dt)
     {
-        const float speed { 20.f };
+        const float speed { 20.f / dt };
 
         for (entity i = 1; i <= entities_number; i++)
         {

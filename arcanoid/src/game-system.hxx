@@ -7,7 +7,6 @@ namespace arcanoid
 {
     struct sprite_system
     {
-        void update(const float dt);
         void render(arci::iengine* engine,
                     coordinator& a_coordinator);
 
@@ -22,6 +21,6 @@ namespace arcanoid
 
     struct input_system
     {
-        void update(coordinator& a_coordinator, arci::iengine* engine);
+        void update(coordinator& a_coordinator, arci::iengine* engine, const float dt);
     };
 }
