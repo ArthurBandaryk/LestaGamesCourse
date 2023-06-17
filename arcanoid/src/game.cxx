@@ -191,8 +191,8 @@ namespace arcanoid
         arci::CHECK_NOTNULL(texture);
         m_textures.push_back(texture);
 
-        const float ball_width { m_screen_w / 35.f };
-        const float ball_height { m_screen_w / 35.f };
+        const float ball_width { m_screen_w / 45.f };
+        const float ball_height { m_screen_w / 45.f };
 
         position pos {
             glm::vec2 { m_screen_w / 2.f - ball_width / 2.f,
@@ -213,13 +213,18 @@ namespace arcanoid
             = m_coordinator.sprites.insert({ ball, spr });
         arci::CHECK(sprite_inserted);
 
+        transform2d transform { -350.f, -480.f };
+        const auto [it3, transform_inserted]
+            = m_coordinator.transformations.insert({ ball, transform });
+        arci::CHECK(transform_inserted);
+
         collision collision_component {};
-        const auto [it3, collision_inserted]
+        const auto [it4, collision_inserted]
             = m_coordinator.collidable_entities.insert(
                 { ball, collision_component });
         arci::CHECK(collision_inserted);
 
-        const auto [it4, collision_id_inserted]
+        const auto [it5, collision_id_inserted]
             = m_coordinator.collidable_ids.insert({ "ball", ball });
         arci::CHECK(collision_id_inserted);
     }

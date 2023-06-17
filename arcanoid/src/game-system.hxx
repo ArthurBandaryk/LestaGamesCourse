@@ -41,5 +41,16 @@ namespace arcanoid
                                             coordinator& a_coordinator,
                                             const float dt,
                                             const std::size_t screen_width);
+        void resolve_ball_vs_walls(const entity id,
+                                   coordinator& a_coordinator,
+                                   const float dt,
+                                   const std::size_t screen_width,
+                                   const std::size_t screen_height);
+
+        void resolve_ball_vs_brick(const entity ball_id,
+                                   const entity brick_id,
+                                   coordinator& a_coordinator,
+                                   const float dt,
+                                   bool& is_collidable);
     };
 }

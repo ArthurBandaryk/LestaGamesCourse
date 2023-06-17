@@ -123,6 +123,7 @@ namespace arcanoid
                                            dt,
                                            screen_width,
                                            screen_height);
+                continue;
             }
 
             if (collidable.first == a_coordinator.collidable_ids.at("platform"))
@@ -155,12 +156,77 @@ namespace arcanoid
         }
     }
 
+    void collision_system::resolve_ball_vs_walls(
+        const entity id,
+        coordinator& a_coordinator,
+        [[maybe_unused]] const float dt,
+        const std::size_t screen_width,
+        const std::size_t screen_height)
+    {
+        const position& pos = a_coordinator.positions.at(id);
+
+        for (const auto& vertex : pos.vertices)
+        {
+            const float new_x = vertex.x
+                + a_coordinator.transformations.at(id).speed_x * dt;
+            const float new_y = vertex.y
+                + a_coordinator.transformations.at(id).speed_y * dt;
+            if (new_x < 0.f || new_x > screen_width)
+            {
+                a_coordinator.transformations.at(id).speed_x *= -1.f;
+            }
+
+            if (new_y < 0.f || new_y > screen_height)
+            {
+                a_coordinator.transformations.at(id).speed_y *= -1.f;
+                break;
+            }
+        }
+    }
+
     void collision_system::resolve_collision_for_ball(
-        [[maybe_unused]] const entity id,
+        const entity id,
+        coordinator& a_coordinator,
+        const float dt,
+        const std::size_t screen_width,
+        const std::size_t screen_height)
+    {
+        resolve_ball_vs_walls(id,
+                              a_coordinator,
+                              dt,
+                              screen_width,
+                              screen_height);
+
+        // If the ball is collidable with some brick.
+        // We're using this flag just to know that we should
+        // not change the direction cause we've already
+        // done it.
+        bool is_collidable { false };
+
+        for (entity ent = 1; ent <= entities_number; ent++)
+        {
+            // There is no any need to check collision to itself.
+            if (ent == id)
+            {
+                continue;
+            }
+
+            if (ent == a_coordinator.collidable_ids.at("platform"))
+            {
+                // Do nothing for now.
+                continue;
+            }
+
+            resolve_ball_vs_brick(id, ent, a_coordinator, dt, is_collidable);
+        }
+    }
+
+    void collision_system::resolve_ball_vs_brick(
+        [[maybe_unused]] const entity ball_id,
+        [[maybe_unused]] const entity brick_id,
         [[maybe_unused]] coordinator& a_coordinator,
         [[maybe_unused]] const float dt,
-        [[maybe_unused]] const std::size_t screen_width,
-        [[maybe_unused]] const std::size_t screen_height)
+        [[maybe_unused]] bool& is_collidable)
     {
     }
 }
