@@ -14,6 +14,7 @@ namespace arcanoid
 
         while (loop_continue)
         {
+            m_frame_timer.update();
             on_event();
 
             if (m_status == game_status::exit)
@@ -22,14 +23,8 @@ namespace arcanoid
                 break;
             }
 
-            static auto start_time = std::chrono::steady_clock::now();
-            auto current_time = std::chrono::steady_clock::now();
-            const std::chrono::duration<float> delta
-                = current_time - start_time;
-            const float dt = delta.count();
-            start_time = current_time;
-
-            on_update(dt);
+            const auto frame_delta = m_frame_timer.getFrameDeltaTime();
+            on_update(frame_delta);
 
             if (m_status == game_status::exit)
             {
