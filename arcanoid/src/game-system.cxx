@@ -293,8 +293,7 @@ namespace arcanoid
             // First case. Ball intersects only horizontal line of brick.
             if (ball_x_left >= brick_x_left && ball_x_right <= brick_x_right)
             {
-                a_coordinator.transformations.at(ball_id).speed_y
-                    = -a_coordinator.transformations.at(ball_id).speed_y;
+                a_coordinator.transformations.at(ball_id).speed_y *= -1.f;
                 return;
             }
 
@@ -304,8 +303,7 @@ namespace arcanoid
                 || (ball_x_right >= brick_x_right && ball_y_top > brick_y_top
                     && ball_y_bottom <= brick_y_bottom))
             {
-                a_coordinator.transformations.at(ball_id).speed_x
-                    = -a_coordinator.transformations.at(ball_id).speed_x;
+                a_coordinator.transformations.at(ball_id).speed_x *= -1.f;
                 return;
             }
 
@@ -315,9 +313,9 @@ namespace arcanoid
                 || (ball_x_left < brick_x_left && brick_y_bottom < ball_y_bottom)
                 || (ball_x_right > brick_x_right && brick_y_bottom < ball_y_bottom))
             {
-                // Calculate length of collision and choose max.
-                a_coordinator.transformations.at(ball_id).speed_x
-                    = -a_coordinator.transformations.at(ball_id).speed_x;
+                // TODO(arci): needs to be more specific here (find max length for
+                // collidable side).
+                a_coordinator.transformations.at(ball_id).speed_x *= -1.f;
                 return;
             }
         }
