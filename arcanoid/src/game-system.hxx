@@ -52,5 +52,10 @@ namespace arcanoid
                                    coordinator& a_coordinator,
                                    const float dt,
                                    bool& is_collidable);
+
+        void resolve_ball_vs_platform(const entity ball_id,
+                                      const entity platform_id,
+                                      coordinator& a_coordinator,
+                                      const float dt);
     };
 }

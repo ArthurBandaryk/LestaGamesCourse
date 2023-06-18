@@ -219,7 +219,7 @@ namespace arcanoid
             = m_coordinator.sprites.insert({ ball, spr });
         arci::CHECK(sprite_inserted);
 
-        transform2d transform { -350.f, -480.f };
+        transform2d transform { -120.f, -480.f };
         const auto [it3, transform_inserted]
             = m_coordinator.transformations.insert({ ball, transform });
         arci::CHECK(transform_inserted);
@@ -244,8 +244,8 @@ namespace arcanoid
         arci::CHECK_NOTNULL(texture);
         m_textures.push_back(texture);
 
-        const float platform_width { m_screen_w / 5.f };
-        const float platform_height { m_screen_w / 25.f };
+        const float platform_width { m_screen_w / 6.f };
+        const float platform_height { m_screen_w / 35.f };
 
         position pos {
             glm::vec2 { m_screen_w / 2.f - platform_width / 2.f,

@@ -125,6 +125,7 @@ namespace arcanoid
                                            dt,
                                            screen_width,
                                            screen_height);
+                continue;
             }
 
             if (collidable.first == a_coordinator.collidable_ids.at("platform"))
@@ -220,8 +221,8 @@ namespace arcanoid
 
             if (ent == a_coordinator.collidable_ids.at("platform"))
             {
-                // Do nothing for now.
-                continue;
+                resolve_ball_vs_platform(id, ent, a_coordinator, dt);
+                return;
             }
 
             resolve_ball_vs_brick(id, ent, a_coordinator, dt, is_collidable);
@@ -378,6 +379,84 @@ namespace arcanoid
                     return;
                 }
             }
+        }
+    }
+
+    void collision_system::resolve_ball_vs_platform(
+        const entity ball_id,
+        const entity platform_id,
+        coordinator& a_coordinator,
+        const float dt)
+    {
+        position& ball_pos = a_coordinator.positions.at(ball_id);
+        position& platform_pos = a_coordinator.positions.at(platform_id);
+
+        // Calculate ball new position for a next frame.
+        glm::vec2 ball_new_pos[4] {};
+
+        for (std::size_t i = 0; i < ball_pos.vertices.size(); i++)
+        {
+            ball_new_pos[i].x = ball_pos.vertices[i].x
+                + a_coordinator.transformations.at(ball_id).speed_x * dt;
+            ball_new_pos[i].y = ball_pos.vertices[i].y
+                + a_coordinator.transformations.at(ball_id).speed_y * dt;
+        }
+
+        const float ball_x_left { ball_new_pos[0].x };
+        const float ball_x_right { ball_new_pos[1].x };
+        const float ball_y_top { ball_new_pos[0].y };
+        const float ball_y_bottom { ball_new_pos[2].y };
+
+        const float platform_x_left { platform_pos.vertices[0].x };
+        const float platform_x_right { platform_pos.vertices[1].x };
+        const float platform_y_top { platform_pos.vertices[0].y };
+        const float platform_y_bottom { platform_pos.vertices[2].y };
+
+        // Check if ball is collidable with platform.
+        if ((platform_x_right <= ball_x_right
+             && platform_x_right >= ball_x_left)
+            || (platform_x_left <= ball_x_right
+                && platform_x_left >= ball_x_left)
+            || (ball_x_left >= platform_x_left
+                && ball_x_left <= platform_x_right))
+        {
+            if ((platform_y_top <= ball_y_bottom && platform_y_top >= ball_y_top)
+                || (ball_y_top <= platform_y_bottom && ball_y_top >= platform_y_top)
+                || (platform_y_bottom <= ball_y_bottom && platform_y_bottom >= ball_y_top))
+            {
+                a_coordinator.transformations.at(ball_id).speed_y *= -1.f;
+            }
+            // Ball and platform do not collide for Y axis.
+            else
+            {
+                return;
+            }
+        }
+        // Ball and platform do not collide for X axis.
+        else
+        {
+            return;
+        }
+
+        // Set reflection angle for X axis.
+        const float platform_w_half
+            = (platform_x_right - platform_x_left) / 2.f;
+        const float ball_w_half = (ball_x_right - ball_x_left) / 2.f;
+        const float ball_center_x = ball_x_left + ball_w_half;
+        const float platform_center_x = platform_w_half + platform_x_left;
+        const float delta = std::abs(ball_center_x - platform_center_x);
+        const float tau = delta / platform_w_half;
+        const float v1 = 10.f / dt;
+        const float v2 = 0.f;
+        if (ball_center_x < platform_center_x)
+        {
+            a_coordinator.transformations.at(ball_id).speed_x
+                = -v1 + (v2 + v1) * tau;
+        }
+        else
+        {
+            a_coordinator.transformations.at(ball_id).speed_x
+                = v1 + (v2 - v1) * tau;
         }
     }
 }
