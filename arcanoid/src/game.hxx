@@ -6,6 +6,8 @@
 #include "entity.hxx"
 #include "game-system.hxx"
 
+#include "FrameTimer.hxx"
+
 #include <map>
 #include <memory>
 #include <string>
@@ -53,5 +55,7 @@ namespace arcanoid
         std::size_t m_screen_w {};
         std::size_t m_screen_h {};
         game_status m_status { game_status::game };
+
+        cFrameTimer m_frame_timer;
     };
 }
