@@ -89,6 +89,7 @@ namespace arcanoid
             arci::iaudio_buffer::running_mode::for_ever);
 
         init_world();
+        m_frame_timer.restart();
     }
 
     game::~game()
