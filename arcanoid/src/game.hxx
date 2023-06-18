@@ -31,7 +31,7 @@ namespace arcanoid
 
         void on_init();
         void on_event();
-        void on_update(const float dt);
+        void on_update(float dt);
         void on_render();
 
         void init_world();

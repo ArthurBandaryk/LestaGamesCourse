@@ -49,8 +49,9 @@ namespace arcanoid
         }
     }
 
-    void game::on_update(const float dt)
+    void game::on_update(float dt)
     {
+        dt = std::min(dt, 1.0f / 60.0f);
         m_input_system.update(m_coordinator, m_engine.get(), dt);
         m_collision_system.update(m_coordinator, dt, m_screen_w, m_screen_h);
         m_transform_system.update(m_coordinator, dt);
