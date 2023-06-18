@@ -233,7 +233,7 @@ namespace arcanoid
         const entity brick_id,
         coordinator& a_coordinator,
         const float dt,
-        [[maybe_unused]] bool& is_collidable)
+        bool& is_collidable)
     {
         position& ball_pos = a_coordinator.positions.at(ball_id);
         position& brick_pos = a_coordinator.positions.at(brick_id);
