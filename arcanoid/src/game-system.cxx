@@ -2,6 +2,8 @@
 #include "entity.hxx"
 #include "helper.hxx"
 
+#include <cmath>
+
 namespace arcanoid
 {
     void sprite_system::render(arci::iengine* engine,
@@ -199,11 +201,17 @@ namespace arcanoid
         // If the ball is collidable with some brick.
         // We're using this flag just to know that we should
         // not change the direction cause we've already
-        // done it.
+        // done it per this frame.
         bool is_collidable { false };
 
         for (entity ent = 1; ent <= entities_number; ent++)
         {
+            // Entity is not collidable. So just continue.
+            if (!a_coordinator.collidable_entities.count(ent))
+            {
+                continue;
+            }
+
             // There is no any need to check collision to itself.
             if (ent == id)
             {
@@ -221,11 +229,97 @@ namespace arcanoid
     }
 
     void collision_system::resolve_ball_vs_brick(
-        [[maybe_unused]] const entity ball_id,
-        [[maybe_unused]] const entity brick_id,
-        [[maybe_unused]] coordinator& a_coordinator,
-        [[maybe_unused]] const float dt,
+        const entity ball_id,
+        const entity brick_id,
+        coordinator& a_coordinator,
+        const float dt,
         [[maybe_unused]] bool& is_collidable)
     {
+        position& ball_pos = a_coordinator.positions.at(ball_id);
+        position& brick_pos = a_coordinator.positions.at(brick_id);
+
+        // Calculate ball new position for a next frame.
+        glm::vec2 ball_new_pos[4] {};
+
+        for (std::size_t i = 0; i < ball_pos.vertices.size(); i++)
+        {
+            ball_new_pos[i].x = ball_pos.vertices[i].x
+                + a_coordinator.transformations.at(ball_id).speed_x * dt;
+            ball_new_pos[i].y = ball_pos.vertices[i].y
+                + a_coordinator.transformations.at(ball_id).speed_y * dt;
+        }
+
+        const float ball_x_left { ball_new_pos[0].x };
+        const float ball_x_right { ball_new_pos[1].x };
+        const float ball_y_top { ball_new_pos[0].y };
+        const float ball_y_bottom { ball_new_pos[2].y };
+
+        const float brick_x_left { brick_pos.vertices[0].x };
+        const float brick_x_right { brick_pos.vertices[1].x };
+        const float brick_y_top { brick_pos.vertices[0].y };
+        const float brick_y_bottom { brick_pos.vertices[2].y };
+
+        // Check if ball is collidable with brick.
+        if ((brick_x_right <= ball_x_right && brick_x_right >= ball_x_left)
+            || (brick_x_left <= ball_x_right && brick_x_left >= ball_x_left)
+            || (ball_x_left >= brick_x_left && ball_x_left <= brick_x_right))
+        {
+            if ((brick_y_top <= ball_y_bottom && brick_y_top >= ball_y_top)
+                || (ball_y_top <= brick_y_bottom && ball_y_top >= brick_y_top)
+                || (brick_y_bottom <= ball_y_bottom && brick_y_bottom >= ball_y_top))
+            {
+                // Ball collides with brick. Just remove the brick
+                // from all data.
+                a_coordinator.destroy_entity(brick_id);
+            }
+            // Ball and brick do not collide for Y axis.
+            else
+            {
+                return;
+            }
+        }
+        // Ball and brick do not collide for X axis.
+        else
+        {
+            return;
+        }
+
+        // Calculate reflection. Basically I'm looking which side
+        // of brick the ball collides.
+        if (!is_collidable)
+        {
+            is_collidable = true;
+
+            // First case. Ball intersects only horizontal line of brick.
+            if (ball_x_left >= brick_x_left && ball_x_right <= brick_x_right)
+            {
+                a_coordinator.transformations.at(ball_id).speed_y
+                    = -a_coordinator.transformations.at(ball_id).speed_y;
+                return;
+            }
+
+            // Second case. Ball intersects only vertical line of brick.
+            if ((ball_x_left <= brick_x_left && ball_y_top > brick_y_top
+                 && ball_y_bottom <= brick_y_bottom)
+                || (ball_x_right >= brick_x_right && ball_y_top > brick_y_top
+                    && ball_y_bottom <= brick_y_bottom))
+            {
+                a_coordinator.transformations.at(ball_id).speed_x
+                    = -a_coordinator.transformations.at(ball_id).speed_x;
+                return;
+            }
+
+            // Third case. Ball intersects brick's edge.
+            if ((ball_x_left < brick_x_left && brick_y_top < ball_y_top)
+                || (ball_x_right > brick_x_right && brick_y_top < ball_y_top)
+                || (ball_x_left < brick_x_left && brick_y_bottom < ball_y_bottom)
+                || (ball_x_right > brick_x_right && brick_y_bottom < ball_y_bottom))
+            {
+                // Calculate length of collision and choose max.
+                a_coordinator.transformations.at(ball_id).speed_x
+                    = -a_coordinator.transformations.at(ball_id).speed_x;
+                return;
+            }
+        }
     }
 }

@@ -153,6 +153,12 @@ namespace arcanoid
                 const auto [it2, sprite_inserted]
                     = m_coordinator.sprites.insert({ brick, brick_sprite });
                 arci::CHECK(sprite_inserted);
+
+                collision collision_component {};
+                const auto [it3, collision_inserted]
+                    = m_coordinator.collidable_entities.insert(
+                        { brick, collision_component });
+                arci::CHECK(collision_inserted);
             }
         }
     }
