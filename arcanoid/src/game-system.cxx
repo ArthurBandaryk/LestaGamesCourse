@@ -87,9 +87,10 @@ namespace arcanoid
 
     void input_system::update(coordinator& a_coordinator,
                               arci::iengine* engine,
-                              const float dt)
+                              [[maybe_unused]] const float dt)
     {
-        const float speed { 20.f / dt };
+        const float t = 1.f / 60.f;
+        const float speed { 15.f / t };
 
         for (entity i = 1; i <= entities_number; i++)
         {

@@ -241,7 +241,6 @@ namespace arcanoid
             = m_coordinator.sprites.insert({ ball, spr });
         arci::CHECK(sprite_inserted);
 
-        // transform2d transform { -120.f, -380.f };
         const float t = 1.f / 60.f;
         transform2d transform { -1.f / t, -6.f / t };
         const auto [it3, transform_inserted]
