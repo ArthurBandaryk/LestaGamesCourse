@@ -123,11 +123,13 @@ namespace arcanoid
             m_engine->destroy_texture(texture);
         }
 
+        m_engine->uninit();
+
         for (auto [_, audio_buffer] : m_coordinator.sounds)
         {
             m_engine->destroy_audio_buffer(audio_buffer);
         }
-        m_engine->uninit();
+
         m_engine->imgui_uninit();
     }
 
