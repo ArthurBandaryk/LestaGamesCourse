@@ -2,7 +2,6 @@
 #include "helper.hxx"
 
 #include <chrono>
-#include <thread>
 
 namespace arcanoid
 {
@@ -82,11 +81,11 @@ namespace arcanoid
         arci::iaudio_buffer* background_sound
             = m_engine->create_audio_buffer("res/music.wav");
         arci::iaudio_buffer* hit_ball_sound
-            = m_engine->create_audio_buffer("res/music.wav");
-        m_sounds.insert({ "background", background_sound });
-        m_sounds.insert({ "hit_ball", hit_ball_sound });
+            = m_engine->create_audio_buffer("res/hit.wav");
+        m_coordinator.sounds.insert({ "background", background_sound });
+        m_coordinator.sounds.insert({ "hit_ball", hit_ball_sound });
 
-        m_sounds["background"]->play(
+        m_coordinator.sounds["background"]->play(
             arci::iaudio_buffer::running_mode::for_ever);
 
         init_world();
@@ -100,7 +99,7 @@ namespace arcanoid
             m_engine->destroy_texture(texture);
         }
 
-        for (auto [_, audio_buffer] : m_sounds)
+        for (auto [_, audio_buffer] : m_coordinator.sounds)
         {
             m_engine->destroy_audio_buffer(audio_buffer);
         }
@@ -126,7 +125,7 @@ namespace arcanoid
         const float brick_width { m_screen_w / 10.f };
         const float brick_height { m_screen_h / 20.f };
 
-        for (int i = 0; i < 10; i++)
+        for (int i = 0; i < 7; i++)
         {
             for (int j = 0; j < 10; j++)
             {

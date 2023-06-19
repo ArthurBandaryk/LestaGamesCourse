@@ -175,11 +175,15 @@ namespace arcanoid
                 + a_coordinator.transformations.at(id).speed_y * dt;
             if (new_x < 0.f || new_x > screen_width)
             {
+                a_coordinator.sounds["hit_ball"]->play(
+                    arci::iaudio_buffer::running_mode::once);
                 a_coordinator.transformations.at(id).speed_x *= -1.f;
             }
 
             if (new_y < 0.f || new_y > screen_height)
             {
+                a_coordinator.sounds["hit_ball"]->play(
+                    arci::iaudio_buffer::running_mode::once);
                 a_coordinator.transformations.at(id).speed_y *= -1.f;
                 break;
             }
@@ -290,6 +294,9 @@ namespace arcanoid
         if (!is_collidable)
         {
             is_collidable = true;
+
+            a_coordinator.sounds["hit_ball"]->play(
+                arci::iaudio_buffer::running_mode::once);
 
             // First case. Ball intersects only horizontal line of brick.
             if (ball_x_left >= brick_x_left && ball_x_right <= brick_x_right)
@@ -424,6 +431,8 @@ namespace arcanoid
                 || (ball_y_top <= platform_y_bottom && ball_y_top >= platform_y_top)
                 || (platform_y_bottom <= ball_y_bottom && platform_y_bottom >= ball_y_top))
             {
+                a_coordinator.sounds["hit_ball"]->play(
+                    arci::iaudio_buffer::running_mode::once);
                 a_coordinator.transformations.at(ball_id).speed_y *= -1.f;
             }
             // Ball and platform do not collide for Y axis.

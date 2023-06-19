@@ -16,6 +16,7 @@ namespace arcanoid
         std::map<entity, key_inputs> inputs {};
         std::map<entity, collision> collidable_entities {};
         std::map<std::string, entity> collidable_ids {};
+        std::map<std::string, arci::iaudio_buffer*> sounds {};
 
         void destroy_entity(const entity id);
     };

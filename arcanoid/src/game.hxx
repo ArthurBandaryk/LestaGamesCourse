@@ -41,7 +41,6 @@ namespace arcanoid
         void init_background();
 
         std::vector<arci::itexture*> m_textures {};
-        std::map<std::string, arci::iaudio_buffer*> m_sounds {};
 
         coordinator m_coordinator {};
         input_system m_input_system {};
