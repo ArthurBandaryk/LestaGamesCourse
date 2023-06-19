@@ -79,6 +79,7 @@ target_compile_options(
     PRIVATE
         "$<$<CXX_COMPILER_ID:Clang,AppleClang,GNU>:-Wall;-Wextra;-Wpedantic;-Werror>"
 )
+target_compile_features(arcanoid PRIVATE cxx_std_17)
 
 include(AddModule)
 add_module(arcanoid engine ${PROJECT_SOURCE_DIR}/engine)

@@ -213,7 +213,7 @@ namespace arci
     {
         std::string shader_code {};
 
-        std::ifstream file { path.data() };
+        std::ifstream file { path.data(), std::ios::binary };
 
         std::ostringstream error_on_opening {};
         error_on_opening << "Error on opening " << path << "\n";

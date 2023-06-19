@@ -239,7 +239,7 @@ namespace arcanoid
             = m_coordinator.sprites.insert({ ball, spr });
         arci::CHECK(sprite_inserted);
 
-        transform2d transform { -120.f, -480.f };
+        transform2d transform { -120.f, -380.f };
         const auto [it3, transform_inserted]
             = m_coordinator.transformations.insert({ ball, transform });
         arci::CHECK(transform_inserted);

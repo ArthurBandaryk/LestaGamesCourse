@@ -6,16 +6,13 @@ include(AddModule)
 
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/shaders")
 
-file(GLOB ENGINE_SOURCES
-     imgui_impl/*.cxx
-     src/*.cxx
-     src/common/*.cxx)
+file(GLOB ENGINE_SOURCES imgui_impl/*.cxx src/*.cxx src/common/*.cxx)
 
 add_library(engine ${ENGINE_SOURCES})
+target_compile_features(engine PRIVATE cxx_std_17)
 
-target_include_directories(
-     engine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
-     ${CMAKE_CURRENT_SOURCE_DIR}/src/common)
+target_include_directories(engine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
+                                         ${CMAKE_CURRENT_SOURCE_DIR}/src/common)
 
 target_include_directories(
     engine PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/imgui_impl
