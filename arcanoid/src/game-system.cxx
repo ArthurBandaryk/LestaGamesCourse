@@ -455,12 +455,13 @@ namespace arcanoid
         const float platform_center_x = platform_w_half + platform_x_left;
         const float delta = std::abs(ball_center_x - platform_center_x);
         const float tau = delta / platform_w_half;
-        const float v1 = 10.f / dt;
-        const float v2 = 0.f;
+        const float v1 = 0.f;
+        float v2 = 7.f / dt;
         if (ball_center_x < platform_center_x)
         {
+            v2 = -v2;
             a_coordinator.transformations.at(ball_id).speed_x
-                = -v1 + (v2 + v1) * tau;
+                = v1 + (v2 - v1) * tau;
         }
         else
         {
