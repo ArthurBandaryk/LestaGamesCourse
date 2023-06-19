@@ -22,7 +22,7 @@ namespace arcanoid
                 break;
             }
 
-            const auto frame_delta = m_frame_timer.getFrameDeltaTime();
+            const float frame_delta = m_frame_timer.getFrameDeltaTime();
             on_update(frame_delta);
 
             if (m_status == game_status::exit)
@@ -50,7 +50,17 @@ namespace arcanoid
 
     void game::on_update(float dt)
     {
+        // When debugging dt is too big. So set it being 1/60.
         dt = std::min(dt, 1.0f / 60.0f);
+
+        m_game_over_system.update(m_coordinator, m_status, m_screen_h);
+
+        if (m_status == game_status::game_over)
+        {
+            m_status = game_status::exit;
+            return;
+        }
+
         m_input_system.update(m_coordinator, m_engine.get(), dt);
         m_collision_system.update(m_coordinator, dt, m_screen_w, m_screen_h);
         m_transform_system.update(m_coordinator, dt);

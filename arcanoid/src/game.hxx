@@ -21,14 +21,6 @@ namespace arcanoid
         ~game();
 
     private:
-        enum class game_status
-        {
-            main_menu,
-            game,
-            game_over,
-            exit
-        };
-
         void on_init();
         void on_event();
         void on_update(float dt);
@@ -47,6 +39,7 @@ namespace arcanoid
         sprite_system m_sprite_system {};
         transform_system m_transform_system {};
         collision_system m_collision_system {};
+        game_over_system m_game_over_system {};
 
         std::unique_ptr<arci::iengine,
                         void (*)(arci::iengine*)>

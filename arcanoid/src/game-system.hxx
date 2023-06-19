@@ -44,8 +44,7 @@ namespace arcanoid
         void resolve_ball_vs_walls(const entity id,
                                    coordinator& a_coordinator,
                                    const float dt,
-                                   const std::size_t screen_width,
-                                   const std::size_t screen_height);
+                                   const std::size_t screen_width);
 
         void resolve_ball_vs_brick(const entity ball_id,
                                    const entity brick_id,
@@ -57,5 +56,20 @@ namespace arcanoid
                                       const entity platform_id,
                                       coordinator& a_coordinator,
                                       const float dt);
+    };
+
+    enum class game_status
+    {
+        main_menu,
+        game,
+        game_over,
+        exit
+    };
+
+    struct game_over_system
+    {
+        void update(coordinator& a_coordinator,
+                    game_status& status,
+                    const std::size_t screen_height);
     };
 }

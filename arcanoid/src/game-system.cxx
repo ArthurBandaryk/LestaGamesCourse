@@ -162,8 +162,7 @@ namespace arcanoid
         const entity id,
         coordinator& a_coordinator,
         [[maybe_unused]] const float dt,
-        const std::size_t screen_width,
-        const std::size_t screen_height)
+        const std::size_t screen_width)
     {
         const position& pos = a_coordinator.positions.at(id);
 
@@ -180,7 +179,7 @@ namespace arcanoid
                 a_coordinator.transformations.at(id).speed_x *= -1.f;
             }
 
-            if (new_y < 0.f || new_y > screen_height)
+            if (new_y < 0.f)
             {
                 a_coordinator.sounds["hit_ball"]->play(
                     arci::iaudio_buffer::running_mode::once);
@@ -195,13 +194,12 @@ namespace arcanoid
         coordinator& a_coordinator,
         const float dt,
         const std::size_t screen_width,
-        const std::size_t screen_height)
+        [[maybe_unused]] const std::size_t screen_height)
     {
         resolve_ball_vs_walls(id,
                               a_coordinator,
                               dt,
-                              screen_width,
-                              screen_height);
+                              screen_width);
 
         // If the ball is collidable with some brick.
         // We're using this flag just to know that we should
@@ -466,6 +464,20 @@ namespace arcanoid
         {
             a_coordinator.transformations.at(ball_id).speed_x
                 = v1 + (v2 - v1) * tau;
+        }
+    }
+
+    void game_over_system::update(
+        coordinator& a_coordinator,
+        game_status& status,
+        const std::size_t screen_height)
+    {
+        const entity ball_id = a_coordinator.collidable_ids.at("ball");
+        const position& ball_pos = a_coordinator.positions.at(ball_id);
+
+        if (ball_pos.vertices[2].y > screen_height)
+        {
+            status = game_status::game_over;
         }
     }
 }
