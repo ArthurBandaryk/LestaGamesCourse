@@ -71,5 +71,17 @@ namespace arcanoid
         void update(coordinator& a_coordinator,
                     game_status& status,
                     const std::size_t screen_height);
+
+        void render(arci::iengine* engine,
+                    std::size_t width,
+                    const std::size_t height);
+    };
+
+    struct menu_system
+    {
+        void render(arci::iengine* engine,
+                    game_status& status,
+                    std::size_t width,
+                    const std::size_t height);
     };
 }

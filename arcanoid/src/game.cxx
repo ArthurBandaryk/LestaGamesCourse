@@ -50,17 +50,15 @@ namespace arcanoid
 
     void game::on_update(float dt)
     {
+        if (m_status != game_status::game)
+        {
+            return;
+        }
+
         // When debugging dt is too big. So set it being 1/60.
         dt = std::min(dt, 1.0f / 60.0f);
 
         m_game_over_system.update(m_coordinator, m_status, m_screen_h);
-
-        if (m_status == game_status::game_over)
-        {
-            m_status = game_status::exit;
-            return;
-        }
-
         m_input_system.update(m_coordinator, m_engine.get(), dt);
         m_collision_system.update(m_coordinator, dt, m_screen_w, m_screen_h);
         m_transform_system.update(m_coordinator, dt);
@@ -68,7 +66,23 @@ namespace arcanoid
 
     void game::on_render()
     {
-        m_sprite_system.render(m_engine.get(), m_coordinator);
+        if (m_status == game_status::game_over)
+        {
+            m_game_over_system.render(m_engine.get(),
+                                      m_screen_w,
+                                      m_screen_h);
+        }
+        else if (m_status == game_status::main_menu)
+        {
+            m_menu_system.render(m_engine.get(),
+                                 m_status,
+                                 m_screen_w,
+                                 m_screen_h);
+        }
+        else
+        {
+            m_sprite_system.render(m_engine.get(), m_coordinator);
+        }
 
         m_engine->swap_buffers();
     }

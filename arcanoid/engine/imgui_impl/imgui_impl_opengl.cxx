@@ -155,8 +155,8 @@ void ImGui_ImplSdlGL3_RenderDrawLists(ImDrawData* draw_data)
 
     arci::opengl_check();
 
-    // glBindVertexArray(g_VaoHandle);
-    // glBindSampler(0, 0); // Rely on combined texture/sampler state.
+    glBindVertexArray(g_VaoHandle);
+    arci::opengl_check();
 
     for (int n = 0; n < draw_data->CmdListsCount; n++)
     {
@@ -463,8 +463,10 @@ bool ImGui_ImplSdlGL3_CreateDeviceObjects()
     glGenBuffers(1, &g_ElementsHandle);
     arci::opengl_check();
 
-    // glGenVertexArrays(1, &g_VaoHandle);
-    // glBindVertexArray(g_VaoHandle);
+    glGenVertexArrays(1, &g_VaoHandle);
+    arci::opengl_check();
+    glBindVertexArray(g_VaoHandle);
+    arci::opengl_check();
     glBindBuffer(GL_ARRAY_BUFFER, g_VboHandle);
     arci::opengl_check();
 

@@ -40,13 +40,14 @@ namespace arcanoid
         transform_system m_transform_system {};
         collision_system m_collision_system {};
         game_over_system m_game_over_system {};
+        menu_system m_menu_system {};
 
         std::unique_ptr<arci::iengine,
                         void (*)(arci::iengine*)>
             m_engine { nullptr, nullptr };
         std::size_t m_screen_w {};
         std::size_t m_screen_h {};
-        game_status m_status { game_status::game };
+        game_status m_status { game_status::main_menu };
 
         cFrameTimer m_frame_timer;
     };

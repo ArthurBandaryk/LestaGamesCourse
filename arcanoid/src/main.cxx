@@ -74,36 +74,6 @@ void main_menu(const std::size_t width,
     ImGui::End();
 }
 
-void game_over_menu(const std::size_t width,
-                    const std::size_t height)
-{
-    const ImGuiViewport* main_viewport = ImGui::GetMainViewport();
-    ImGui::SetNextWindowPos(ImVec2(main_viewport->WorkPos.x,
-                                   main_viewport->WorkPos.y),
-                            ImGuiCond_Always);
-    ImGui::SetNextWindowSize(ImVec2(width, height), ImGuiCond_Always);
-    ImGuiWindowFlags window_flags = 0;
-    window_flags |= ImGuiWindowFlags_NoTitleBar;
-    window_flags |= ImGuiWindowFlags_NoResize;
-
-    ImGuiStyle& style = ImGui::GetStyle();
-    style.WindowBorderSize = 0.0f;
-
-    ImGui::Begin("Main menu", nullptr, window_flags);
-
-    // Game over text label.
-    const char title[] { "GAME OVER!" };
-    const float title_offset_y { height / 2.f };
-    const float title_text_width = ImGui::CalcTextSize(title).x;
-    ImGui::SetCursorPosX((width - title_text_width) * 0.5f);
-    ImGui::SetCursorPosY(title_offset_y);
-    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(255.f, 0.f, 0.f, 255.f));
-    ImGui::Text(title);
-    ImGui::PopStyleColor();
-
-    ImGui::End();
-}
-
 int main(int, char**)
 {
     arcanoid::game arcanoid {};
