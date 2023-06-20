@@ -353,27 +353,6 @@ namespace arcanoid
         position& ball_pos = a_coordinator.positions.at(ball_id);
         position& platform_pos = a_coordinator.positions.at(platform_id);
 
-        // Calculate ball new position for a next frame.
-        glm::vec2 ball_new_pos[4] {};
-
-        for (std::size_t i = 0; i < ball_pos.vertices.size(); i++)
-        {
-            ball_new_pos[i].x = ball_pos.vertices[i].x
-                + a_coordinator.transformations.at(ball_id).speed_x * dt;
-            ball_new_pos[i].y = ball_pos.vertices[i].y
-                + a_coordinator.transformations.at(ball_id).speed_y * dt;
-        }
-
-        const float ball_x_left { ball_new_pos[0].x };
-        const float ball_x_right { ball_new_pos[1].x };
-        [[maybe_unused]] const float ball_y_top { ball_new_pos[0].y };
-        [[maybe_unused]] const float ball_y_bottom { ball_new_pos[2].y };
-
-        const float platform_x_left { platform_pos.vertices[0].x };
-        const float platform_x_right { platform_pos.vertices[1].x };
-        [[maybe_unused]] const float platform_y_top { platform_pos.vertices[0].y };
-        [[maybe_unused]] const float platform_y_bottom { platform_pos.vertices[2].y };
-
         if (!are_collidable(platform_pos, ball_pos))
         {
             return;
@@ -382,29 +361,82 @@ namespace arcanoid
         {
             a_coordinator.sounds["hit_ball"]->play(
                 arci::iaudio_buffer::running_mode::once);
-            a_coordinator.transformations.at(ball_id).speed_y *= -1.f;
+
+            reflect_ball_from_platform(ball_id,
+                                       ball_pos,
+                                       platform_pos,
+                                       a_coordinator,
+                                       dt);
         }
+    }
+
+    void collision_system::reflect_ball_from_platform(
+        const entity ball_id,
+        const position& ball_pos,
+        const position& platform_pos,
+        coordinator& a_coordinator,
+        float dt)
+    {
+        const float ball_x_left { ball_pos.vertices[0].x };
+        const float ball_x_right { ball_pos.vertices[1].x };
+        const float ball_y_top { ball_pos.vertices[0].y };
+        const float ball_y_bottom { ball_pos.vertices[2].y };
+
+        const float platform_x_left { platform_pos.vertices[0].x };
+        const float platform_x_right { platform_pos.vertices[1].x };
+        const float platform_y_top { platform_pos.vertices[0].y };
+        const float platform_y_bottom { platform_pos.vertices[2].y };
+
+        const float ball_w_half { (ball_x_right - ball_x_left) / 2.f };
+        const float ball_h_half { (ball_y_bottom - ball_y_top) / 2.f };
+        const float cx = ball_x_left + ball_w_half;
+        const float cy = ball_y_top + ball_h_half;
 
         // Set reflection angle for X axis.
         const float platform_w_half
             = (platform_x_right - platform_x_left) / 2.f;
-        const float ball_w_half = (ball_x_right - ball_x_left) / 2.f;
-        const float ball_center_x = ball_x_left + ball_w_half;
         const float platform_center_x = platform_w_half + platform_x_left;
-        const float delta = std::abs(ball_center_x - platform_center_x);
+        const float delta = std::abs(cx - platform_center_x);
         const float tau = delta / platform_w_half;
         const float v1 = 0.f;
         float v2 = 7.f / dt;
-        if (ball_center_x < platform_center_x)
+
+        transform2d& tr = a_coordinator.transformations.at(ball_id);
+
+        if (cx < platform_center_x)
         {
             v2 = -v2;
-            a_coordinator.transformations.at(ball_id).speed_x
-                = v1 + (v2 - v1) * tau;
+            tr.speed_x = v1 + (v2 - v1) * tau;
         }
         else
         {
-            a_coordinator.transformations.at(ball_id).speed_x
-                = v1 + (v2 - v1) * tau;
+            tr.speed_x = v1 + (v2 - v1) * tau;
+        }
+
+        // First case. Ball intersects only horizontal line of platform.
+        if (cx <= platform_x_right && cx >= platform_x_left)
+        {
+            tr.speed_y *= -1.f;
+            return;
+        }
+
+        // Second case. Ball intersects only vertical line of platform.
+        if (cy <= platform_y_bottom && cy >= platform_y_top)
+        {
+            tr.speed_x *= -1.f;
+            return;
+        }
+        // Ball intersects edge of the platform.
+        else
+        {
+            if (tr.speed_y < 0.f)
+            {
+                tr.speed_y *= -1.f;
+            }
+            else
+            {
+                tr.speed_x *= -1.f;
+            }
         }
     }
 

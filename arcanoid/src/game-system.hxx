@@ -60,6 +60,12 @@ namespace arcanoid
                                      const position& ball_pos,
                                      const position& brick_pos,
                                      coordinator& a_coordinator);
+
+        void reflect_ball_from_platform(const entity ball_id,
+                                        const position& ball_pos,
+                                        const position& platform_pos,
+                                        coordinator& a_coordinator,
+                                        float dt);
     };
 
     enum class game_status
