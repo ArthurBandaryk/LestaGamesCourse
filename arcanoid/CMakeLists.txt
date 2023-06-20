@@ -50,6 +50,15 @@ if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../submodules/glm)
     )
 endif()
 
+# Check if `entt` git submodule is initialized.
+if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../submodules/entt)
+    message(
+        FATAL_ERROR
+            "Submodule `entt` is not initialized. "
+            "Make sure you've cloned this repo with '--recurse-submodules' option."
+    )
+endif()
+
 # Submodules.
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../submodules/fmt
                  ${CMAKE_BINARY_DIR}/fmt)
@@ -59,6 +68,9 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../submodules/sdl
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../submodules/glm
                  ${CMAKE_BINARY_DIR}/glm)
+
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../submodules/entt
+                 ${CMAKE_BINARY_DIR}/entt)
 
 # Official CMake doc doesn't recommend to use GLOB. Check this:
 # https://cmake.org/cmake/help/latest/command/include_directories.html
@@ -80,6 +92,15 @@ target_compile_options(
         "$<$<CXX_COMPILER_ID:Clang,AppleClang,GNU>:-Wall;-Wextra;-Wpedantic;-Werror>"
 )
 target_compile_features(arcanoid PRIVATE cxx_std_17)
+
+# Testing entt.
+add_executable(testing-entt src/entt-test.cxx)
+target_link_libraries(testing-entt PRIVATE EnTT::EnTT)
+target_compile_options(
+    testing-entt
+    PRIVATE
+        "$<$<CXX_COMPILER_ID:Clang,AppleClang,GNU>:-Wall;-Wextra;-Wpedantic;-Werror>"
+)
 
 include(AddModule)
 add_module(arcanoid engine ${PROJECT_SOURCE_DIR}/engine)

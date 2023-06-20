@@ -10,3 +10,6 @@
 [submodule "submodules/fmt"]
 	path = submodules/fmt
 	url = https://github.com/fmtlib/fmt.git
+[submodule "submodules/entt"]
+	path = submodules/entt
+	url = https://github.com/skypjack/entt.git
