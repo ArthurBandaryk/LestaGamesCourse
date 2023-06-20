@@ -55,7 +55,7 @@ namespace arcanoid
 
         m_game_over_system.update(m_coordinator, m_status, m_screen_h);
         m_input_system.update(m_coordinator, m_engine.get(), dt);
-        m_collision_system.update(m_coordinator, dt, m_screen_w, m_screen_h);
+        m_collision_system.update(m_coordinator, dt, m_screen_w);
         m_transform_system.update(m_coordinator, dt);
     }
 
@@ -236,8 +236,7 @@ namespace arcanoid
             = m_coordinator.sprites.insert({ ball, spr });
         arci::CHECK(sprite_inserted);
 
-        const float t = 1.f / 60.f;
-        transform2d transform { -1.f / t, -6.f / t };
+        transform2d transform { -60.f, -360.f };
         const auto [it3, transform_inserted]
             = m_coordinator.transformations.insert({ ball, transform });
         arci::CHECK(transform_inserted);

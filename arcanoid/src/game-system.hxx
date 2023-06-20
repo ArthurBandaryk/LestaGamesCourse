@@ -28,15 +28,15 @@ namespace arcanoid
     {
         void update(coordinator& a_coordinator,
                     const float dt,
-                    const std::size_t screen_width,
-                    const std::size_t screen_height);
+                    const std::size_t screen_width);
+
+        bool are_collidable(const position& pos1, const position& pos2);
 
     private:
         void resolve_collision_for_ball(const entity id,
                                         coordinator& a_coordinator,
                                         const float dt,
-                                        const std::size_t screen_width,
-                                        const std::size_t screen_height);
+                                        const std::size_t screen_width);
         void resolve_collision_for_platform(const entity id,
                                             coordinator& a_coordinator,
                                             const float dt,
@@ -49,13 +49,17 @@ namespace arcanoid
         void resolve_ball_vs_brick(const entity ball_id,
                                    const entity brick_id,
                                    coordinator& a_coordinator,
-                                   const float dt,
                                    bool& is_collidable);
 
         void resolve_ball_vs_platform(const entity ball_id,
                                       const entity platform_id,
                                       coordinator& a_coordinator,
                                       const float dt);
+
+        void reflect_ball_from_brick(const entity ball_id,
+                                     const position& ball_pos,
+                                     const position& brick_pos,
+                                     coordinator& a_coordinator);
     };
 
     enum class game_status

@@ -116,8 +116,7 @@ namespace arcanoid
 
     void collision_system::update(coordinator& a_coordinator,
                                   const float dt,
-                                  const std::size_t screen_width,
-                                  const std::size_t screen_height)
+                                  const std::size_t screen_width)
     {
         for (auto& collidable : a_coordinator.collidable_entities)
         {
@@ -126,8 +125,7 @@ namespace arcanoid
                 resolve_collision_for_ball(collidable.first,
                                            a_coordinator,
                                            dt,
-                                           screen_width,
-                                           screen_height);
+                                           screen_width);
                 continue;
             }
 
@@ -139,6 +137,34 @@ namespace arcanoid
                                                screen_width);
             }
         }
+    }
+
+    bool collision_system::are_collidable(const position& pos1,
+                                          const position& pos2)
+    {
+        const float x1_left { pos1.vertices[0].x };
+        const float x1_right { pos1.vertices[1].x };
+        const float y1_top { pos1.vertices[0].y };
+        const float y1_bottom { pos1.vertices[2].y };
+
+        const float x2_left { pos2.vertices[0].x };
+        const float x2_right { pos2.vertices[1].x };
+        const float y2_top { pos2.vertices[0].y };
+        const float y2_bottom { pos2.vertices[2].y };
+
+        // Check if collision occurs for X axis.
+        if ((x2_left <= x1_right && x2_left >= x1_left)
+            || (x2_right <= x1_right && x2_right >= x1_left))
+        {
+            // Check if collision occurs for Y axis.
+            if ((y2_top <= y1_bottom && y2_top >= y1_top)
+                || (y2_bottom <= y1_bottom && y2_bottom >= y1_top))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     void collision_system::resolve_collision_for_platform(
@@ -164,7 +190,7 @@ namespace arcanoid
     void collision_system::resolve_ball_vs_walls(
         const entity id,
         coordinator& a_coordinator,
-        [[maybe_unused]] const float dt,
+        const float dt,
         const std::size_t screen_width)
     {
         const position& pos = a_coordinator.positions.at(id);
@@ -196,8 +222,7 @@ namespace arcanoid
         const entity id,
         coordinator& a_coordinator,
         const float dt,
-        const std::size_t screen_width,
-        [[maybe_unused]] const std::size_t screen_height)
+        const std::size_t screen_width)
     {
         resolve_ball_vs_walls(id,
                               a_coordinator,
@@ -230,7 +255,7 @@ namespace arcanoid
                 return;
             }
 
-            resolve_ball_vs_brick(id, ent, a_coordinator, dt, is_collidable);
+            resolve_ball_vs_brick(id, ent, a_coordinator, is_collidable);
         }
     }
 
@@ -238,60 +263,23 @@ namespace arcanoid
         const entity ball_id,
         const entity brick_id,
         coordinator& a_coordinator,
-        const float dt,
         bool& is_collidable)
     {
         position& ball_pos = a_coordinator.positions.at(ball_id);
         position& brick_pos = a_coordinator.positions.at(brick_id);
 
-        // Calculate ball new position for a next frame.
-        glm::vec2 ball_new_pos[4] {};
-
-        for (std::size_t i = 0; i < ball_pos.vertices.size(); i++)
-        {
-            ball_new_pos[i].x = ball_pos.vertices[i].x
-                + a_coordinator.transformations.at(ball_id).speed_x * dt;
-            ball_new_pos[i].y = ball_pos.vertices[i].y
-                + a_coordinator.transformations.at(ball_id).speed_y * dt;
-        }
-
-        const float ball_x_left { ball_new_pos[0].x };
-        const float ball_x_right { ball_new_pos[1].x };
-        const float ball_y_top { ball_new_pos[0].y };
-        const float ball_y_bottom { ball_new_pos[2].y };
-
-        const float brick_x_left { brick_pos.vertices[0].x };
-        const float brick_x_right { brick_pos.vertices[1].x };
-        const float brick_y_top { brick_pos.vertices[0].y };
-        const float brick_y_bottom { brick_pos.vertices[2].y };
-
-        // Check if ball is collidable with brick.
-        if ((brick_x_right <= ball_x_right && brick_x_right >= ball_x_left)
-            || (brick_x_left <= ball_x_right && brick_x_left >= ball_x_left)
-            || (ball_x_left >= brick_x_left && ball_x_left <= brick_x_right))
-        {
-            if ((brick_y_top <= ball_y_bottom && brick_y_top >= ball_y_top)
-                || (ball_y_top <= brick_y_bottom && ball_y_top >= brick_y_top)
-                || (brick_y_bottom <= ball_y_bottom && brick_y_bottom >= ball_y_top))
-            {
-                // Ball collides with brick. Just remove the brick
-                // from all data.
-                a_coordinator.destroy_entity(brick_id);
-            }
-            // Ball and brick do not collide for Y axis.
-            else
-            {
-                return;
-            }
-        }
-        // Ball and brick do not collide for X axis.
-        else
+        if (!are_collidable(brick_pos, ball_pos))
         {
             return;
         }
+        else
+        {
+            // Ball collides with brick. Just remove the brick
+            // from all data.
+            a_coordinator.destroy_entity(brick_id);
+        }
 
-        // Calculate reflection. Basically I'm looking which side
-        // of brick the ball collides.
+        // Reflect the ball if we've not done this on this frame.
         if (!is_collidable)
         {
             is_collidable = true;
@@ -299,93 +287,59 @@ namespace arcanoid
             a_coordinator.sounds["hit_ball"]->play(
                 arci::iaudio_buffer::running_mode::once);
 
-            // First case. Ball intersects only horizontal line of brick.
-            if (ball_x_left >= brick_x_left && ball_x_right <= brick_x_right)
+            reflect_ball_from_brick(ball_id,
+                                    ball_pos,
+                                    brick_pos,
+                                    a_coordinator);
+        }
+    }
+
+    void collision_system::reflect_ball_from_brick(
+        const entity ball_id,
+        const position& ball_pos,
+        const position& brick_pos,
+        coordinator& a_coordinator)
+    {
+        const float ball_x_left { ball_pos.vertices[0].x };
+        const float ball_x_right { ball_pos.vertices[1].x };
+        const float ball_y_top { ball_pos.vertices[0].y };
+        const float ball_y_bottom { ball_pos.vertices[2].y };
+
+        const float brick_x_left { brick_pos.vertices[0].x };
+        const float brick_x_right { brick_pos.vertices[1].x };
+        const float brick_y_top { brick_pos.vertices[0].y };
+        const float brick_y_bottom { brick_pos.vertices[2].y };
+
+        const float ball_w_half { (ball_x_right - ball_x_left) / 2.f };
+        const float ball_h_half { (ball_y_bottom - ball_y_top) / 2.f };
+        const float cx = ball_x_left + ball_w_half;
+        const float cy = ball_y_top + ball_h_half;
+
+        // First case. Ball intersects only horizontal line of brick.
+        if (cx <= brick_x_right && cx >= brick_x_left)
+        {
+            a_coordinator.transformations.at(ball_id).speed_y *= -1.f;
+            return;
+        }
+
+        // Second case. Ball intersects only vertical line of brick.
+        if (cy <= brick_y_bottom && cy >= brick_y_top)
+        {
+            a_coordinator.transformations.at(ball_id).speed_x *= -1.f;
+            return;
+        }
+        // Ball intersects edge of the brick.
+        else
+        {
+            transform2d& tr = a_coordinator.transformations.at(ball_id);
+
+            if (tr.speed_y < 0.f)
             {
-                a_coordinator.transformations.at(ball_id).speed_y *= -1.f;
-                return;
+                tr.speed_y *= -1.f;
             }
-
-            // Second case. Ball intersects only vertical line of brick.
-            if ((ball_x_left <= brick_x_left && ball_y_top > brick_y_top
-                 && ball_y_bottom <= brick_y_bottom)
-                || (ball_x_right >= brick_x_right && ball_y_top > brick_y_top
-                    && ball_y_bottom <= brick_y_bottom))
+            else
             {
-                a_coordinator.transformations.at(ball_id).speed_x *= -1.f;
-                return;
-            }
-
-            // Ball intersects left top brick's edge.
-            if ((ball_x_left < brick_x_left && brick_y_top < ball_y_top))
-            {
-                const float ly = std::abs(brick_y_top - ball_y_bottom);
-                const float lx = std::abs(brick_x_left - ball_x_right);
-
-                if (ly >= lx)
-                {
-                    a_coordinator.transformations.at(ball_id).speed_x *= -1.f;
-                    return;
-                }
-                else
-                {
-                    a_coordinator.transformations.at(ball_id).speed_y *= -1.f;
-                    return;
-                }
-            }
-
-            // Ball intersects left bottom brick's edge.
-            if ((ball_x_left < brick_x_left && brick_y_bottom < ball_y_bottom))
-            {
-                const float ly = std::abs(brick_y_bottom - ball_y_top);
-                const float lx = std::abs(brick_x_left - ball_x_right);
-
-                if (ly >= lx)
-                {
-                    a_coordinator.transformations.at(ball_id).speed_x *= -1.f;
-                    return;
-                }
-                else
-                {
-                    a_coordinator.transformations.at(ball_id).speed_y *= -1.f;
-                    return;
-                }
-            }
-
-            // Ball intersects right top brick's edge.
-            if ((ball_x_right > brick_x_right && brick_y_top < ball_y_top))
-            {
-                const float ly = std::abs(brick_y_top - ball_y_bottom);
-                const float lx = std::abs(brick_x_right - ball_x_left);
-
-                if (ly >= lx)
-                {
-                    a_coordinator.transformations.at(ball_id).speed_x *= -1.f;
-                    return;
-                }
-                else
-                {
-                    a_coordinator.transformations.at(ball_id).speed_y *= -1.f;
-                    return;
-                }
-            }
-
-            // Ball intersects right bottom brick's edge.
-            if ((ball_x_right > brick_x_right && brick_y_bottom < ball_y_bottom))
-            {
-                const float ly = std::abs(brick_y_bottom - ball_y_top);
-                const float lx = std::abs(brick_x_right - ball_x_left);
-
-                if (ly >= lx)
-                {
-                    a_coordinator.transformations.at(ball_id).speed_x *= -1.f;
-                    return;
-                }
-                else
-                {
-                    a_coordinator.transformations.at(ball_id).speed_y *= -1.f;
-                    return;
-                }
+                tr.speed_x *= -1.f;
             }
         }
     }
@@ -412,40 +366,23 @@ namespace arcanoid
 
         const float ball_x_left { ball_new_pos[0].x };
         const float ball_x_right { ball_new_pos[1].x };
-        const float ball_y_top { ball_new_pos[0].y };
-        const float ball_y_bottom { ball_new_pos[2].y };
+        [[maybe_unused]] const float ball_y_top { ball_new_pos[0].y };
+        [[maybe_unused]] const float ball_y_bottom { ball_new_pos[2].y };
 
         const float platform_x_left { platform_pos.vertices[0].x };
         const float platform_x_right { platform_pos.vertices[1].x };
-        const float platform_y_top { platform_pos.vertices[0].y };
-        const float platform_y_bottom { platform_pos.vertices[2].y };
+        [[maybe_unused]] const float platform_y_top { platform_pos.vertices[0].y };
+        [[maybe_unused]] const float platform_y_bottom { platform_pos.vertices[2].y };
 
-        // Check if ball is collidable with platform.
-        if ((platform_x_right <= ball_x_right
-             && platform_x_right >= ball_x_left)
-            || (platform_x_left <= ball_x_right
-                && platform_x_left >= ball_x_left)
-            || (ball_x_left >= platform_x_left
-                && ball_x_left <= platform_x_right))
-        {
-            if ((platform_y_top <= ball_y_bottom && platform_y_top >= ball_y_top)
-                || (ball_y_top <= platform_y_bottom && ball_y_top >= platform_y_top)
-                || (platform_y_bottom <= ball_y_bottom && platform_y_bottom >= ball_y_top))
-            {
-                a_coordinator.sounds["hit_ball"]->play(
-                    arci::iaudio_buffer::running_mode::once);
-                a_coordinator.transformations.at(ball_id).speed_y *= -1.f;
-            }
-            // Ball and platform do not collide for Y axis.
-            else
-            {
-                return;
-            }
-        }
-        // Ball and platform do not collide for X axis.
-        else
+        if (!are_collidable(platform_pos, ball_pos))
         {
             return;
+        }
+        else
+        {
+            a_coordinator.sounds["hit_ball"]->play(
+                arci::iaudio_buffer::running_mode::once);
+            a_coordinator.transformations.at(ball_id).speed_y *= -1.f;
         }
 
         // Set reflection angle for X axis.
