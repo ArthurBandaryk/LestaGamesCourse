@@ -429,8 +429,7 @@ namespace arcanoid
         // Ball intersects edge of the platform.
         else
         {
-            tr.speed_y *= -1.f;
-            tr.speed_x *= -1.f;
+            tr.speed_y = std::abs(tr.speed_y);
         }
     }
 
