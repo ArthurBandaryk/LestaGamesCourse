@@ -423,7 +423,7 @@ namespace arcanoid
         // Second case. Ball intersects only vertical line of platform.
         if (cy <= platform_y_bottom && cy >= platform_y_top)
         {
-            tr.speed_x *= -1.f;
+            tr.speed_y = std::abs(tr.speed_y);
             return;
         }
         // Ball intersects edge of the platform.
