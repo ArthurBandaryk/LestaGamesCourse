@@ -14,6 +14,7 @@ namespace arcanoid
         while (loop_continue)
         {
             m_frame_timer.update();
+
             on_event();
 
             if (m_status == game_status::exit)
@@ -24,12 +25,6 @@ namespace arcanoid
 
             const float frame_delta = m_frame_timer.getFrameDeltaTime();
             on_update(frame_delta);
-
-            if (m_status == game_status::exit)
-            {
-                loop_continue = false;
-                break;
-            }
 
             on_render();
         }
