@@ -7,6 +7,25 @@ Windows x64(MSVC, LLVM) |
 
 ![Arcanoid](help-imgs/game.png)
 
+## Build steps for Linux
+
+1. Run the following sets of commands in terminal:
+
+```
+git clone --recurse-submodules https://github.com/ArthurBandaryk/LestaGamesCourse.git
+cd LestaGamesCourse/arcanoid
+cmake -B build -G "Ninja" -S .
+cmake --build build
+
+```
+
+2. To run the game just do the following:
+
+```
+cd build && ./arcanoid
+
+```
+
 ## Build steps for Windows
 
 ### Using LLVM compiler infrastructure
