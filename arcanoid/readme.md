@@ -32,21 +32,23 @@ cd build && arcanoid.exe
 
 ### Using MSVC
 
-First of all clone [`this`](https://github.com/ArthurBandaryk/LestaGamesCourse) repo:
+1. First of all clone [`this`](https://github.com/ArthurBandaryk/LestaGamesCourse) repo:
 
 ```
 git clone --recurse-submodules https://github.com/ArthurBandaryk/LestaGamesCourse.git
 
 ```
 
-Then you can open arcanoid folder with Microsoft Visual Studio:
+2. Then you can open arcanoid folder with Microsoft Visual Studio:
 
 ![Open with MSVC](help-imgs/open.png)
 
-After that you should press `CTRL + S` on the root `CMakeLists.txt` (arcanoid/CMakeLists.txt) to generate build files.
+3. Set the workspace root to `arcanoid/CMakeLists.txt` file. 
 
-Then just press `Build` button:
+4. After that you should press `CTRL + S` on the root `CMakeLists.txt` (arcanoid/CMakeLists.txt) to generate build files.
+
+5. Then just press `Build` button:
 
 ![Build with MSVC](help-imgs/build.png)
 
-Then click `Run` button and enjoy it:)
+6. Then click `Run` button and enjoy it:)
