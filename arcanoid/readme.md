@@ -11,9 +11,12 @@ Windows x64(MSVC, LLVM) |
 
 ### Using LLVM compiler infrastructure
 
-First of all make sure you have installed llvm. Use [`this`](https://github.com/llvm/llvm-project/releases/tag/llvmorg-15.0.7) link to download exe needed.
-You may also need for [`ninja`](https://github.com/ninja-build/ninja/releases)
-And of course [`cmake`](https://cmake.org/download/#latest)
+1. First of all make sure you have installed llvm. Use [`this`](https://github.com/llvm/llvm-project/releases/tag/llvmorg-15.0.7) link to download exe needed.
+
+2. You may also need for [`ninja`](https://github.com/ninja-build/ninja/releases).
+3.  And of course [`cmake`](https://cmake.org/download/#latest).
+
+4. Run the following set of commands to build project:
 
 ```
 git clone --recurse-submodules https://github.com/ArthurBandaryk/LestaGamesCourse.git
@@ -23,7 +26,7 @@ cmake --build build
 
 ```
 
-To `run` this game just do the following:
+5. To `run` this game just do the following:
 
 ```
 cd build && arcanoid.exe
