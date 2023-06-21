@@ -592,6 +592,10 @@ namespace arci
         m_desired_audio_spec.freq = 48000;
         m_desired_audio_spec.format = AUDIO_S16LSB;
         m_desired_audio_spec.channels = 1;
+#ifdef WIN32
+        m_desired_audio_spec.format = AUDIO_F32LSB;
+        m_desired_audio_spec.channels = 2;
+#endif
         m_desired_audio_spec.samples = 4096;
         m_desired_audio_spec.callback = sdl_audio_callback;
         m_desired_audio_spec.userdata = this;
@@ -952,6 +956,12 @@ namespace arci
 
         engine_using_sdl* engine = static_cast<engine_using_sdl*>(userdata);
 
+#ifdef WIN32
+        constexpr int32_t AUDIO_FORMAT = AUDIO_F32LSB;
+#else
+        constexpr int32_t AUDIO_FORMAT = AUDIO_S16LSB;
+#endif
+
         for (audio_buffer* sound : engine->m_sounds)
         {
             if (sound->is_running)
@@ -970,7 +980,7 @@ namespace arci
                 {
                     SDL_MixAudioFormat(stream,
                                        start_buffer,
-                                       AUDIO_S16LSB,
+                                       AUDIO_FORMAT,
                                        bytes_left_in_buffer,
                                        SDL_MIX_MAXVOLUME);
                     sound->current_position += bytes_left_in_buffer;
@@ -979,7 +989,7 @@ namespace arci
                 {
                     SDL_MixAudioFormat(stream,
                                        start_buffer,
-                                       AUDIO_S16LSB,
+                                       AUDIO_FORMAT,
                                        stream_len,
                                        SDL_MIX_MAXVOLUME);
                     sound->current_position += stream_len;

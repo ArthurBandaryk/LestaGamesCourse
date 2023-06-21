@@ -60,6 +60,7 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../submodules/sdl
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../submodules/glm
                  ${CMAKE_BINARY_DIR}/glm)
 
+
 # Official CMake doc doesn't recommend to use GLOB. Check this:
 # https://cmake.org/cmake/help/latest/command/include_directories.html
 list(
@@ -83,6 +84,16 @@ target_compile_features(arcanoid PRIVATE cxx_std_17)
 
 include(AddModule)
 add_module(arcanoid engine ${PROJECT_SOURCE_DIR}/engine)
+
+if(WIN32)
+    message("===== Copying SDL lib to arcanoid exe folder =====")
+    add_custom_command(
+        TARGET arcanoid
+        POST_BUILD
+        COMMAND
+            ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:SDL3::SDL3-shared>
+            $<TARGET_FILE_DIR:arcanoid>)
+endif()
 
 # Resources.
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/res")

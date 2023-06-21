@@ -29,6 +29,11 @@ namespace arci
         const GLchar* message,
         [[maybe_unused]] const void* userParam)
     {
+        if (severity == GL_DEBUG_SEVERITY_NOTIFICATION)
+        {
+            return;
+        }
+
         CHECK(length < GL_MAX_DEBUG_MESSAGE_LENGTH);
 
         fmt::print("Message id: {}\n", id);
