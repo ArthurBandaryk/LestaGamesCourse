@@ -590,7 +590,7 @@ namespace arci
 
         SDL_memset(&m_desired_audio_spec, 0, sizeof(m_desired_audio_spec));
         m_desired_audio_spec.freq = 48000;
-#ifdef WIN32
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)
         m_desired_audio_spec.format = AUDIO_F32LSB;
         m_desired_audio_spec.channels = 2;
 #else
@@ -957,7 +957,7 @@ namespace arci
 
         engine_using_sdl* engine = static_cast<engine_using_sdl*>(userdata);
 
-#ifdef WIN32
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)
         constexpr int32_t AUDIO_FORMAT = AUDIO_F32LSB;
 #else
         constexpr int32_t AUDIO_FORMAT = AUDIO_S16LSB;
