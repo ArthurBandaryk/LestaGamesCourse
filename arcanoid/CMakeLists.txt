@@ -60,7 +60,6 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../submodules/sdl
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../submodules/glm
                  ${CMAKE_BINARY_DIR}/glm)
 
-
 # Official CMake doc doesn't recommend to use GLOB. Check this:
 # https://cmake.org/cmake/help/latest/command/include_directories.html
 list(
@@ -90,9 +89,8 @@ if(WIN32)
     add_custom_command(
         TARGET arcanoid
         POST_BUILD
-        COMMAND
-            ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:SDL3::SDL3-shared>
-            $<TARGET_FILE_DIR:arcanoid>)
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                $<TARGET_FILE:SDL3::SDL3-shared> $<TARGET_FILE_DIR:arcanoid>)
 endif()
 
 # Resources.

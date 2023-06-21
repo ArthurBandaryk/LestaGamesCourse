@@ -590,11 +590,12 @@ namespace arci
 
         SDL_memset(&m_desired_audio_spec, 0, sizeof(m_desired_audio_spec));
         m_desired_audio_spec.freq = 48000;
-        m_desired_audio_spec.format = AUDIO_S16LSB;
-        m_desired_audio_spec.channels = 1;
 #ifdef WIN32
         m_desired_audio_spec.format = AUDIO_F32LSB;
         m_desired_audio_spec.channels = 2;
+#else
+        m_desired_audio_spec.format = AUDIO_S16LSB;
+        m_desired_audio_spec.channels = 1;
 #endif
         m_desired_audio_spec.samples = 4096;
         m_desired_audio_spec.callback = sdl_audio_callback;
