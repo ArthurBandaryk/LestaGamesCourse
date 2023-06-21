@@ -5,6 +5,8 @@ Build Platform          |
 Linux x64(gcc, clang)   |
 Windows x64(MSVC, LLVM) |
 
+![Arcanoid](help-imgs/game.png)
+
 ## Build steps for Windows
 
 ### Using LLVM compiler infrastructure
